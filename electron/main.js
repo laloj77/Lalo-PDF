@@ -58,6 +58,27 @@ let mainWindow = null;
 let pendingOpenPath =
   process.argv.slice(1).find((arg) => /\.pdf$/i.test(arg) && !arg.startsWith('-')) || null;
 
+// Red de seguridad para el cierre en Windows. El temporizador NO lleva unref():
+// si el apagado ordenado se cuelga, debe seguir vivo para poder forzar la salida.
+let forceQuitTimer = null;
+
+function armForceQuit() {
+  if (process.platform === 'darwin' || forceQuitTimer) return;
+  forceQuitTimer = setTimeout(() => {
+    forceQuitTimer = null;
+    app.exit(0);
+  }, 2500);
+}
+
+function cleanupTemp() {
+  stopDragWatch();
+  try {
+    fsSync.rmSync(dragDir(), { recursive: true, force: true });
+  } catch {
+    /* la carpeta temporal puede estar en uso */
+  }
+}
+
 async function openPathInWindow(filePath) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   try {
@@ -213,16 +234,8 @@ async function createWindow() {
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.on('close', () => {
-    // Red de seguridad: si por cualquier motivo el cierre ordenado se queda
-    // colgado, forzamos la salida para que el proceso no quede vivo.
-    if (process.platform === 'darwin') return;
-    const forceExit = setTimeout(() => {
-      const windows = BrowserWindow.getAllWindows();
-      if (!windows.length || windows.every((win) => win.isDestroyed() || !win.isVisible())) {
-        app.exit(0);
-      }
-    }, 3000);
-    forceExit.unref();
+    // Cubre el cierre aunque no llegue a dispararse window-all-closed.
+    armForceQuit();
     stopDragWatch();
   });
   mainWindow.on('closed', () => {
@@ -659,27 +672,18 @@ app.whenReady().then(async () => {
   });
 });
 
+app.on('before-quit', () => {
+  // Se arma aquí también para cubrir «Salir» del menú, no solo el botón de cerrar.
+  armForceQuit();
+});
+
 app.on('will-quit', () => {
-  stopDragWatch();
-  try {
-    fsSync.rmSync(dragDir(), { recursive: true, force: true });
-  } catch {
-    /* la carpeta temporal puede estar en uso */
-  }
+  cleanupTemp();
 });
 
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') return;
-  // En Windows, a veces el proceso principal sobrevive al cierre de la ventana
-  // y deja el portable bloqueado (no se puede volver a abrir). Limpiamos aquí
-  // y forzamos la salida si el cierre ordenado se queda colgado.
-  stopDragWatch();
-  try {
-    fsSync.rmSync(dragDir(), { recursive: true, force: true });
-  } catch {
-    /* la carpeta temporal puede estar en uso */
-  }
-  const forceExit = setTimeout(() => app.exit(0), 3000);
-  forceExit.unref();
+  cleanupTemp();
+  armForceQuit();
   app.quit();
 });

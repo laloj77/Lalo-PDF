@@ -54,7 +54,7 @@ npm run dist:win        # instalador NSIS + versión portable (x64)
 npm run dist:win:nsis   # solo instalador
 ```
 
-Los artefactos quedan en `dist/` (`Lalo-PDF-0.1.1-x64.exe`, etc.).
+Los artefactos quedan en `dist/` (`Lalo-PDF-0.1.2-x64.exe`, etc.).
 
 ## Pruebas
 

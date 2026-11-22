@@ -7,6 +7,15 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.1.2] - 2026-11-22
+
+### Corregido
+
+- Cierre/reapertura en Windows: el temporizador de salida forzada usaba `unref()`
+  y podía no ejecutarse durante el apagado, dejando el proceso vivo y sin ventana
+  al volver a abrir. Ahora la red de seguridad se arma desde `close`,
+  `window-all-closed` y `before-quit`, y se limpian los temporales en `will-quit`.
+
 ## [0.1.1] - 2026-11-22
 
 ### Añadido
