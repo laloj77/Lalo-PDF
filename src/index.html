@@ -6,7 +6,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self' app:; img-src 'self' app: data: blob:; style-src 'self' app: 'unsafe-inline'; script-src 'self' app:; worker-src 'self' app: blob:; font-src 'self' app: data:;"
     />
-    <title>Lalo PDF Converter</title>
+    <title>Lalo PDF</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -186,7 +186,8 @@
           <button id="btn-export" class="pill-btn" title="Exportar cada página como imagen (Ctrl+Shift+E)">
             <svg><use href="#i-share" /></svg><span>Exportar</span>
           </button>
-          <button id="btn-save" class="primary-btn" title="Guardar (Ctrl+S) · Mayús+clic para «Guardar como…»">Guardar</button>
+          <button id="btn-save-as" class="pill-btn" title="Guardar como… (Ctrl+Shift+S)">Guardar como…</button>
+          <button id="btn-save" class="primary-btn" title="Guardar (Ctrl+S)">Guardar</button>
         </div>
       </header>
 
@@ -291,7 +292,7 @@
           <div id="empty-state">
             <div class="empty-card">
               <svg class="empty-icon"><use href="#i-file-pdf" /></svg>
-              <h1>Lalo PDF Converter</h1>
+              <h1>Lalo PDF</h1>
               <p>Abre un PDF para verlo, reorganizarlo y editarlo,<br />o arrastra archivos aquí.</p>
               <div class="empty-actions">
                 <button id="empty-open" class="primary-btn">Abrir PDF…</button>

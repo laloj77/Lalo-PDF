@@ -1,4 +1,4 @@
-# Lalo PDF Converter
+# Lalo PDF
 
 Visor, editor y organizador de PDF para **Windows**, inspirado en **Preview** de macOS
 (Electron + pdf.js + pdf-lib).
@@ -54,7 +54,7 @@ npm run dist:win        # instalador NSIS + versión portable (x64)
 npm run dist:win:nsis   # solo instalador
 ```
 
-Los artefactos quedan en `dist/` (`Lalo-PDF-Converter-0.1.0-x64.exe`, etc.).
+Los artefactos quedan en `dist/` (`Lalo-PDF-0.1.1-x64.exe`, etc.).
 
 ## Pruebas
 

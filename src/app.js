@@ -140,7 +140,7 @@
       el.pageCount.textContent = '0 páginas';
       el.zoomLabel.textContent = '100 %';
       el.emptyState.hidden = false;
-      document.title = 'Lalo PDF Converter';
+      document.title = 'Lalo PDF';
       return;
     }
     state.current = clamp(state.current, 0, total - 1);
@@ -152,7 +152,7 @@
     el.statusRight.textContent = `${Math.round(state.currentScale * 100)} %  ·  ${labelForMode()}`;
     el.pageCount.textContent = `${total} página${total === 1 ? '' : 's'}`;
     el.zoomLabel.textContent = `${Math.round(state.currentScale * 100)} %`;
-    document.title = `${state.dirty ? '● ' : ''}${state.fileName} — Lalo PDF Converter`;
+    document.title = `${state.dirty ? '● ' : ''}${state.fileName} — Lalo PDF`;
   }
 
   function colorInUse() {
@@ -2758,8 +2758,8 @@
     }
     toast(
       info
-        ? `Lalo PDF Converter ${info.version} · Electron ${info.electron}`
-        : 'Lalo PDF Converter',
+        ? `Lalo PDF ${info.version} · Electron ${info.electron}`
+        : 'Lalo PDF',
       4200,
     );
   }
@@ -2782,6 +2782,7 @@
     el.btnSearch.addEventListener('click', openSearch);
     el.btnPrint.addEventListener('click', printPdf);
     $('#btn-export').addEventListener('click', exportImages);
+    $('#btn-save-as').addEventListener('click', saveAs);
     $('#btn-save').addEventListener('click', (event) => {
       if (event.shiftKey) saveAs();
       else save();

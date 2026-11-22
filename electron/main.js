@@ -7,6 +7,7 @@ const {
   dialog,
   ipcMain,
   nativeImage,
+  nativeTheme,
   protocol,
   screen,
   shell,
@@ -17,6 +18,18 @@ const fsSync = require('node:fs');
 
 const APP_SCHEME = 'lalo';
 const SRC_DIR = path.join(__dirname, '..', 'src');
+
+const TITLEBAR_LIGHT = '#f6f6f8';
+const TITLEBAR_DARK = '#262629';
+
+function winTitleOverlay() {
+  const dark = nativeTheme.shouldUseDarkColors;
+  return {
+    color: dark ? TITLEBAR_DARK : TITLEBAR_LIGHT,
+    symbolColor: dark ? '#f5f5f7' : '#2c2c2e',
+    height: 52,
+  };
+}
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -73,13 +86,13 @@ function buildMenu() {
           {
             label: app.name,
             submenu: [
-              { role: 'about', label: 'Acerca de Lalo PDF Converter' },
+              { role: 'about', label: 'Acerca de Lalo PDF' },
               { type: 'separator' },
               { role: 'hide', label: 'Ocultar' },
               { role: 'hideOthers', label: 'Ocultar otros' },
               { role: 'unhide', label: 'Mostrar todo' },
               { type: 'separator' },
-              { role: 'quit', label: 'Salir de Lalo PDF Converter' },
+              { role: 'quit', label: 'Salir de Lalo PDF' },
             ],
           },
         ]
@@ -167,7 +180,7 @@ function buildMenu() {
       label: 'Ayuda',
       submenu: [
         { label: 'Atajos de teclado', click: () => send('shortcuts') },
-        { label: 'Acerca de Lalo PDF Converter', click: () => send('about') },
+        { label: 'Acerca de Lalo PDF', click: () => send('about') },
       ],
     },
   ];
@@ -181,12 +194,12 @@ async function createWindow() {
     minWidth: 960,
     minHeight: 620,
     show: false,
-    backgroundColor: '#f2f2f4',
-    title: 'Lalo PDF Converter',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? TITLEBAR_DARK : '#f2f2f4',
+    title: 'Lalo PDF',
     ...(process.platform === 'win32'
       ? {
           titleBarStyle: 'hidden',
-          titleBarOverlay: { color: '#f6f6f8', symbolColor: '#2c2c2e', height: 52 },
+          titleBarOverlay: winTitleOverlay(),
         }
       : { titleBarStyle: 'hiddenInset' }),
     webPreferences: {
@@ -199,6 +212,19 @@ async function createWindow() {
   });
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.on('close', () => {
+    // Red de seguridad: si por cualquier motivo el cierre ordenado se queda
+    // colgado, forzamos la salida para que el proceso no quede vivo.
+    if (process.platform === 'darwin') return;
+    const forceExit = setTimeout(() => {
+      const windows = BrowserWindow.getAllWindows();
+      if (!windows.length || windows.every((win) => win.isDestroyed() || !win.isVisible())) {
+        app.exit(0);
+      }
+    }, 3000);
+    forceExit.unref();
+    stopDragWatch();
+  });
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -621,6 +647,13 @@ app.whenReady().then(async () => {
   buildMenu();
   await createWindow();
 
+  nativeTheme.on('updated', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const dark = nativeTheme.shouldUseDarkColors;
+    mainWindow.setTitleBarOverlay(winTitleOverlay());
+    mainWindow.setBackgroundColor(dark ? TITLEBAR_DARK : '#f2f2f4');
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -636,5 +669,17 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform === 'darwin') return;
+  // En Windows, a veces el proceso principal sobrevive al cierre de la ventana
+  // y deja el portable bloqueado (no se puede volver a abrir). Limpiamos aquí
+  // y forzamos la salida si el cierre ordenado se queda colgado.
+  stopDragWatch();
+  try {
+    fsSync.rmSync(dragDir(), { recursive: true, force: true });
+  } catch {
+    /* la carpeta temporal puede estar en uso */
+  }
+  const forceExit = setTimeout(() => app.exit(0), 3000);
+  forceExit.unref();
+  app.quit();
 });

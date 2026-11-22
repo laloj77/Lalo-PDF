@@ -1,13 +1,35 @@
 # Changelog
 
-Todos los cambios notables de **Lalo PDF Converter** se documentan en este archivo.
+Todos los cambios notables de **Lalo PDF** se documentan en este archivo.
 
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/)
 y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
-_(Nada todavía.)_
+## [0.1.1] - 2026-11-22
+
+### Añadido
+
+- Botón **«Guardar como…»** visible en la barra de herramientas (también
+  disponible en *Archivo* y con `Ctrl+Shift+S`).
+
+### Cambiado
+
+- El nombre de la aplicación pasa a ser **Lalo PDF** en todas partes: título de la
+  ventana, menús, «Acerca de», pantalla de inicio, nombre del producto y acceso
+  directo de Windows. El proceso del Administrador de tareas también se llama
+  **Lalo PDF**.
+
+### Corregido
+
+- Los botones de minimizar, maximizar y cerrar de Windows ahora siguen el tema
+  del sistema: iconos claros sobre fondo oscuro cuando Windows está en modo
+  oscuro, y oscuros sobre fondo claro en modo claro. El cambio de tema en caliente
+  también se aplica sin reiniciar.
+- El proceso de Windows ya no queda vivo en el Administrador de tareas al cerrar
+  la ventana: se limpian los temporales y se fuerza la salida si el cierre
+  ordenado se bloquea, de modo que la app se puede volver a abrir.
 
 ## [0.1.0] - 2026-11-22
 

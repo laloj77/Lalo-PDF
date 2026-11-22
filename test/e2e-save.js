@@ -4,7 +4,7 @@
 //  1. abre un PDF (copia temporal)
 //  2. edita páginas (rotar + borrar)
 //  3. «Guardar» escribe sobre el mismo archivo (sin diálogo)
-//  4. Mayús+clic en «Guardar» abre «Guardar como…»
+//  4. El botón «Guardar como…» abre el diálogo de guardado
 //  5. «Exportar» genera un PNG por página
 //
 // Uso: npx electron test/e2e-save.js [archivo.pdf]
@@ -131,12 +131,8 @@ app.on('browser-window-created', (_event, win) => {
       log('PDF guardado: paginas =', savedDoc.getPageCount());
       log('copia.pdf existe antes de Guardar como:', await fs.access(savePath).then(() => true, () => false));
 
-      // --- Mayús+clic = Guardar como…
-      await win.webContents.executeJavaScript(`
-        document.querySelector('#btn-save').dispatchEvent(
-          new MouseEvent('click', { bubbles: true, shiftKey: true })
-        )
-      `);
+      // --- Botón «Guardar como…»
+      await win.webContents.executeJavaScript("document.querySelector('#btn-save-as').click()");
       log('toast guardar como:', await waitForToast(win, '/Guardado|No se pudo/'));
       const copy = await fs.readFile(savePath).catch(() => null);
       log('copia.pdf:', copy ? `${copy.length} bytes, sha ${hash(copy)}` : 'AUSENTE');
