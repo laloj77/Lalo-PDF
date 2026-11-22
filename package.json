@@ -1,0 +1,81 @@
+{
+  "name": "lalo-pdf-converter",
+  "productName": "Lalo PDF Converter",
+  "version": "0.1.0",
+  "description": "Visor, editor y organizador de PDF inspirado en Preview de macOS, para Windows.",
+  "main": "electron/main.js",
+  "author": "Lalo",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "vendor": "node scripts/copy-vendor.mjs",
+    "postinstall": "node scripts/copy-vendor.mjs",
+    "dist:win": "electron-builder --win nsis portable --x64",
+    "dist:win:nsis": "electron-builder --win nsis --x64",
+    "dist:dir": "electron-builder --dir",
+    "test:e2e": "electron test/e2e-save.js",
+    "test:errors": "electron test/e2e-errors.js",
+    "test:markup": "electron test/e2e-annotation.js",
+    "test:shapes": "electron test/e2e-shapes.js",
+    "test:drag": "electron test/e2e-drag.js",
+    "test:reorder": "electron test/e2e-reorder.js",
+    "test:print": "electron test/e2e-print.js"
+  },
+  "dependencies": {
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "3.11.174"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.lalo.pdfconverter",
+    "productName": "Lalo PDF Converter",
+    "copyright": "Copyright © 2026 Lalo",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "Lalo-PDF-Converter-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Lalo PDF Converter"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg"
+      ]
+    }
+  }
+}

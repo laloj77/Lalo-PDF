@@ -1,0 +1,45 @@
+'use strict';
+
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
+
+contextBridge.exposeInMainWorld('lalo', {
+  platform: process.platform,
+  openPdfs: () => ipcRenderer.invoke('dialog:open-pdfs'),
+  openImages: () => ipcRenderer.invoke('dialog:open-images'),
+  savePdf: (defaultName, bytes) => ipcRenderer.invoke('dialog:save-pdf', { defaultName, bytes }),
+  savePdfInPlace: (filePath, bytes) => ipcRenderer.invoke('file:write-pdf', { filePath, bytes }),
+  prepareDragFile: (fileName, bytes) =>
+    ipcRenderer.invoke('file:prepare-drag', { fileName, bytes }),
+  armDrag: (filePath, icon) => ipcRenderer.invoke('drag:arm', { filePath, icon }),
+  startDrag: (filePath, icon) => ipcRenderer.invoke('drag:start', { filePath, icon }),
+  cancelDrag: () => ipcRenderer.invoke('drag:disarm'),
+  exportImages: (baseName, images, startFolder) =>
+    ipcRenderer.invoke('dialog:export-images', { baseName, images, startFolder }),
+  print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
+  showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
+  appInfo: () => ipcRenderer.invoke('app:info'),
+  pathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return file?.path || '';
+    }
+  },
+  getPathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch {
+      return file?.path || '';
+    }
+  },
+  onMenu: (callback) => {
+    const listener = (_event, action, payload) => callback(action, payload);
+    ipcRenderer.on('menu-action', listener);
+    return () => ipcRenderer.removeListener('menu-action', listener);
+  },
+  onDragNative: (callback) => {
+    const listener = (_event, action, payload) => callback(action, payload);
+    ipcRenderer.on('drag:native', listener);
+    return () => ipcRenderer.removeListener('drag:native', listener);
+  },
+});
