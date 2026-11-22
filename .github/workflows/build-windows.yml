@@ -26,7 +26,7 @@ jobs:
         run: npm ci
 
       - name: Compilar instalador y portable
-        run: npm run dist:win
+        run: npm run dist:win -- --publish never
 
       - name: Publicar en Releases
         uses: softprops/action-gh-release@v2
