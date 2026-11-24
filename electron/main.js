@@ -768,22 +768,14 @@ function registerIpc() {
                 : `${result.filePath}.jpg`;
               const ext = path.extname(target).toLowerCase();
               let outBytes = data;
+              if (ext === '.pdf') {
+                done({ action: 'save-pdf', target, name: path.basename(target) });
+                return;
+              }
               if (ext === '.png') {
                 outBytes = nativeImage.createFromBuffer(data).toPNG();
               } else if (ext === '.webp' && webpBytes) {
                 outBytes = toBuffer(webpBytes);
-              } else if (ext === '.pdf') {
-                const { PDFDocument } = require('@cantoo/pdf-lib');
-                const pdfDoc = await PDFDocument.create();
-                const jpgImage = await pdfDoc.embedJpg(data);
-                const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
-                page.drawImage(jpgImage, {
-                  x: 0,
-                  y: 0,
-                  width: jpgImage.width,
-                  height: jpgImage.height,
-                });
-                outBytes = Buffer.from(await pdfDoc.save());
               }
               await fs.mkdir(path.dirname(target), { recursive: true });
               await writeFileAtomic(target, outBytes);

@@ -1251,8 +1251,25 @@
         const { bytes, webpBytes } = await getJpeg();
         if (window.lalo?.showImageContextMenu) {
           const res = await window.lalo.showImageContextMenu(bytes, fileName, webpBytes);
-          if (res?.action === 'copy' && res.ok) toast('Imagen copiada al portapapeles');
-          else if (res?.action === 'save' && !res.canceled && res.name) {
+          if (res?.action === 'copy' && res.ok) {
+            toast('Imagen copiada al portapapeles');
+          } else if (res?.action === 'save-pdf' && res.target) {
+            const pdfDoc = await PDFDocument.create();
+            const jpgImage = await pdfDoc.embedJpg(bytes);
+            const pdfPage = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+            pdfPage.drawImage(jpgImage, {
+              x: 0,
+              y: 0,
+              width: jpgImage.width,
+              height: jpgImage.height,
+            });
+            const pdfBytes = await pdfDoc.save();
+            const written = await window.lalo.savePdfInPlace(res.target, pdfBytes);
+            if (!written || written.ok === false) {
+              throw new Error(written?.error || 'No se pudo guardar el PDF');
+            }
+            toast(`Imagen guardada: ${res.name}`);
+          } else if (res?.action === 'save' && !res.canceled && res.name) {
             toast(`Imagen guardada: ${res.name}`);
           }
         }
