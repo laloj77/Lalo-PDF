@@ -55,19 +55,68 @@ app.on('open-file', (event, filePath) => {
 });
 
 let mainWindow = null;
+let isQuitting = false;
 let pendingOpenPath =
   process.argv.slice(1).find((arg) => /\.pdf$/i.test(arg) && !arg.startsWith('-')) || null;
 
-// Red de seguridad para el cierre en Windows. El temporizador NO lleva unref():
-// si el apagado ordenado se cuelga, debe seguir vivo para poder forzar la salida.
-let forceQuitTimer = null;
+const hasSingleInstanceLock =
+  process.platform === 'darwin' || app.requestSingleInstanceLock();
+
+if (!hasSingleInstanceLock) {
+  app.exit(0);
+  process.exit(0);
+} else if (process.platform !== 'darwin') {
+  app.on('second-instance', (_event, argv) => {
+    if (isQuitting) return;
+    const pdfArg = argv.slice(1).find((arg) => /\.pdf$/i.test(arg) && !arg.startsWith('-'));
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isVisible()) mainWindow.show();
+      mainWindow.focus();
+      if (pdfArg) openPathInWindow(pdfArg);
+    } else if (app.isReady()) {
+      if (pdfArg) pendingOpenPath = pdfArg;
+      createWindow();
+    }
+  });
+}
+
+// Red de seguridad para el cierre en Windows/Linux.
+// Los temporizadores usan unref() para no retrasar la salida si app.quit()
+// termina rápido, pero si Chromium se queda colgado, escalan a app.exit(0)
+// y finalmente a process.exit(0) para no dejar ningún proceso zombi.
+let forceExitTimer = null;
+let hardKillTimer = null;
+
+function disarmForceQuit() {
+  if (forceExitTimer) {
+    clearTimeout(forceExitTimer);
+    forceExitTimer = null;
+  }
+  if (hardKillTimer) {
+    clearTimeout(hardKillTimer);
+    hardKillTimer = null;
+  }
+}
 
 function armForceQuit() {
-  if (process.platform === 'darwin' || forceQuitTimer) return;
-  forceQuitTimer = setTimeout(() => {
-    forceQuitTimer = null;
+  if (process.platform === 'darwin' || forceExitTimer) return;
+  forceExitTimer = setTimeout(() => {
+    forceExitTimer = null;
+    try {
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.destroy();
+    } catch {
+      /* ventana ya destruida */
+    }
     app.exit(0);
-  }, 2500);
+  }, 600);
+  forceExitTimer.unref();
+
+  hardKillTimer = setTimeout(() => {
+    hardKillTimer = null;
+    process.exit(0);
+  }, 1200);
+  hardKillTimer.unref();
 }
 
 function cleanupTemp() {
@@ -232,11 +281,18 @@ async function createWindow() {
     },
   });
 
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => {
+    if (!isQuitting && mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
+  });
   mainWindow.on('close', () => {
+    stopDragWatch();
+    if (process.platform === 'darwin') return;
+    isQuitting = true;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.hide();
+    }
     // Cubre el cierre aunque no llegue a dispararse window-all-closed.
     armForceQuit();
-    stopDragWatch();
   });
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -668,11 +724,12 @@ app.whenReady().then(async () => {
   });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (!isQuitting && BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
 app.on('before-quit', () => {
+  isQuitting = true;
   // Se arma aquí también para cubrir «Salir» del menú, no solo el botón de cerrar.
   armForceQuit();
 });
@@ -681,8 +738,14 @@ app.on('will-quit', () => {
   cleanupTemp();
 });
 
+app.on('quit', () => {
+  disarmForceQuit();
+  cleanupTemp();
+});
+
 app.on('window-all-closed', () => {
   if (process.platform === 'darwin') return;
+  isQuitting = true;
   cleanupTemp();
   armForceQuit();
   app.quit();
