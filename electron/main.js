@@ -4,6 +4,7 @@ const {
   app,
   BrowserWindow,
   Menu,
+  clipboard,
   dialog,
   ipcMain,
   nativeImage,
@@ -595,21 +596,25 @@ function registerIpc() {
     }
   });
 
-  // Prepara el PDF de una página (o varias) en la carpeta temporal para poder
+  // Prepara el archivo (PDF o imagen JPEG/PNG) en la carpeta temporal para poder
   // arrastrarlo fuera de la app como un archivo real, con nombre legible.
   ipcMain.handle('file:prepare-drag', async (_event, { fileName, bytes }) => {
     try {
       const data = toBuffer(bytes);
-      if (!data.length || data.subarray(0, 5).toString('latin1') !== '%PDF-') {
-        return { ok: false, error: 'Los datos del PDF no son válidos.' };
+      const isImageDrag = /\.(jpe?g|png)$/i.test(String(fileName || ''));
+      if (!data.length || (!isImageDrag && data.subarray(0, 5).toString('latin1') !== '%PDF-')) {
+        return { ok: false, error: 'Los datos del archivo no son válidos.' };
       }
       const dir = dragDir();
       await fs.mkdir(dir, { recursive: true });
-      const target = await uniquePath(dir, safePdfName(fileName));
+      const cleanName = isImageDrag
+        ? `${safePdfName(String(fileName).replace(/\.(jpe?g|png)$/i, '')).replace(/\.pdf$/i, '')}${path.extname(fileName).toLowerCase()}`
+        : safePdfName(fileName);
+      const target = await uniquePath(dir, cleanName);
       await fs.writeFile(target, data);
       return { ok: true, path: target, name: path.basename(target), bytes: data.length };
     } catch (error) {
-      console.error('No se pudo preparar el PDF para arrastrar', error);
+      console.error('No se pudo preparar el archivo para arrastrar', error);
       return { ok: false, error: describe(error) };
     }
   });
@@ -713,6 +718,65 @@ function registerIpc() {
 
   ipcMain.handle('shell:show-item', (_event, filePath) => {
     if (typeof filePath === 'string' && filePath) shell.showItemInFolder(filePath);
+  });
+
+  ipcMain.handle('image:context-menu', async (event, { bytes, defaultName }) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return { action: null };
+    const data = toBuffer(bytes);
+    return await new Promise((resolve) => {
+      let resolved = false;
+      const done = (payload) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(payload);
+      };
+      const menu = Menu.buildFromTemplate([
+        {
+          label: 'Copiar imagen',
+          click: () => {
+            try {
+              const img = nativeImage.createFromBuffer(data);
+              clipboard.writeImage(img);
+              done({ action: 'copy', ok: true });
+            } catch (error) {
+              done({ action: 'copy', ok: false, error: describe(error) });
+            }
+          },
+        },
+        {
+          label: 'Guardar imagen como…',
+          click: async () => {
+            try {
+              const result = await dialog.showSaveDialog(win, {
+                title: 'Guardar imagen',
+                defaultPath: defaultName || 'imagen.jpg',
+                filters: [{ name: 'Imagen JPEG', extensions: ['jpg', 'jpeg'] }],
+                properties: ['showOverwriteConfirmation', 'createDirectory'],
+              });
+              if (result.canceled || !result.filePath) {
+                done({ action: 'save', canceled: true });
+                return;
+              }
+              const target = /\.(jpe?g)$/i.test(result.filePath)
+                ? result.filePath
+                : `${result.filePath}.jpg`;
+              await fs.mkdir(path.dirname(target), { recursive: true });
+              await writeFileAtomic(target, data);
+              done({ action: 'save', canceled: false, path: target, name: path.basename(target) });
+            } catch (error) {
+              done({ action: 'save', ok: false, error: describe(error) });
+            }
+          },
+        },
+      ]);
+      menu.popup({
+        window: win,
+        callback: () => {
+          setTimeout(() => done({ action: null }), 120);
+        },
+      });
+    });
   });
 
   ipcMain.handle('app:info', () => ({

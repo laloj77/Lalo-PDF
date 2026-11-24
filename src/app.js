@@ -1138,6 +1138,190 @@
     updateStatus();
   }
 
+  function extractPageImageRects(opList, viewport) {
+    const OPS = pdfjsLib.OPS;
+    const Util = pdfjsLib.Util;
+    const stack = [];
+    let ctm = [1, 0, 0, 1, 0, 0];
+    const rects = [];
+
+    for (let i = 0; i < opList.fnArray.length; i += 1) {
+      const fn = opList.fnArray[i];
+      const args = opList.argsArray[i];
+      if (fn === OPS.save) {
+        stack.push(ctm.slice());
+      } else if (fn === OPS.restore) {
+        if (stack.length) ctm = stack.pop();
+      } else if (fn === OPS.transform && args && args.length === 6) {
+        ctm = Util.transform(ctm, args);
+      } else if (fn === OPS.paintImageXObject || fn === OPS.paintInlineImageXObject) {
+        const corners = [
+          Util.applyTransform([0, 0], ctm),
+          Util.applyTransform([1, 0], ctm),
+          Util.applyTransform([0, 1], ctm),
+          Util.applyTransform([1, 1], ctm),
+        ];
+        const xs = corners.map((p) => p[0]);
+        const ys = corners.map((p) => p[1]);
+        const pdfMinX = Math.min(...xs);
+        const pdfMinY = Math.min(...ys);
+        const pdfMaxX = Math.max(...xs);
+        const pdfMaxY = Math.max(...ys);
+        const vpRect = viewport.convertToViewportRectangle([pdfMinX, pdfMinY, pdfMaxX, pdfMaxY]);
+        const left = Math.max(0, Math.min(vpRect[0], vpRect[2]));
+        const top = Math.max(0, Math.min(vpRect[1], vpRect[3]));
+        const right = Math.min(viewport.width, Math.max(vpRect[0], vpRect[2]));
+        const bottom = Math.min(viewport.height, Math.max(vpRect[1], vpRect[3]));
+        const width = right - left;
+        const height = bottom - top;
+        if (width >= 24 && height >= 24) {
+          rects.push({ left, top, width, height });
+        }
+      }
+    }
+    return rects;
+  }
+
+  async function renderCropAsJpeg(page, rect, viewportScale) {
+    const targetScale = Math.min(3, Math.max(2, 1600 / Math.max(rect.width, rect.height))) * viewportScale;
+    const hiViewport = page.getViewport({ scale: targetScale });
+    const ratio = targetScale / viewportScale;
+    const cropX = Math.max(0, Math.floor(rect.left * ratio));
+    const cropY = Math.max(0, Math.floor(rect.top * ratio));
+    const cropW = Math.max(1, Math.floor(rect.width * ratio));
+    const cropH = Math.max(1, Math.floor(rect.height * ratio));
+
+    const fullCanvas = document.createElement('canvas');
+    fullCanvas.width = Math.max(1, Math.floor(hiViewport.width));
+    fullCanvas.height = Math.max(1, Math.floor(hiViewport.height));
+    const fullCtx = fullCanvas.getContext('2d');
+    fullCtx.fillStyle = '#ffffff';
+    fullCtx.fillRect(0, 0, fullCanvas.width, fullCanvas.height);
+    await page.render({ canvasContext: fullCtx, viewport: hiViewport }).promise;
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = cropW;
+    cropCanvas.height = cropH;
+    const cropCtx = cropCanvas.getContext('2d');
+    cropCtx.fillStyle = '#ffffff';
+    cropCtx.fillRect(0, 0, cropW, cropH);
+    cropCtx.drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+    const blob = await new Promise((resolve) => cropCanvas.toBlob(resolve, 'image/jpeg', 0.92));
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+
+    const iconSize = 72;
+    const iconRatio = Math.min(iconSize / cropW, iconSize / cropH, 1);
+    const iconCanvas = document.createElement('canvas');
+    iconCanvas.width = Math.max(16, Math.round(cropW * iconRatio));
+    iconCanvas.height = Math.max(16, Math.round(cropH * iconRatio));
+    iconCanvas.getContext('2d').drawImage(cropCanvas, 0, 0, iconCanvas.width, iconCanvas.height);
+    return { bytes, icon: iconCanvas.toDataURL('image/png') };
+  }
+
+  function clearSelectedPdfImage() {
+    $$('.page-image-hit.selected', el.viewer).forEach((node) => node.classList.remove('selected'));
+  }
+
+  function attachImageHitEvents(hit, page, rect, pageIndex, imageIndex, viewportScale) {
+    let cachedJpeg = null;
+    const getJpeg = () => {
+      if (!cachedJpeg) cachedJpeg = renderCropAsJpeg(page, rect, viewportScale);
+      return cachedJpeg;
+    };
+    const stem = baseName(state.fileName || 'Documento');
+    const fileName = `${stem} - p${pageIndex + 1} img${imageIndex + 1}.jpg`;
+
+    hit.addEventListener('click', (event) => {
+      if (state.markupOpen) return;
+      event.stopPropagation();
+      clearSelectedPdfImage();
+      hit.classList.add('selected');
+    });
+
+    hit.addEventListener('contextmenu', async (event) => {
+      if (state.markupOpen) return;
+      event.preventDefault();
+      event.stopPropagation();
+      clearSelectedPdfImage();
+      hit.classList.add('selected');
+      try {
+        const { bytes } = await getJpeg();
+        if (window.lalo?.showImageContextMenu) {
+          const res = await window.lalo.showImageContextMenu(bytes, fileName);
+          if (res?.action === 'copy' && res.ok) toast('Imagen copiada al portapapeles');
+          else if (res?.action === 'save' && !res.canceled && res.name) {
+            toast(`Imagen guardada: ${res.name}`);
+          }
+        }
+      } catch (error) {
+        showError('No se pudo procesar la imagen', error);
+      }
+    });
+
+    hit.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || state.markupOpen) return;
+      event.stopPropagation();
+      clearSelectedPdfImage();
+      hit.classList.add('selected');
+
+      const startX = event.clientX;
+      const startY = event.clientY;
+      let started = false;
+      let nativeStarted = false;
+      let preparedPromise = null;
+
+      const onMove = async (moveEvent) => {
+        if (nativeStarted) return;
+        if (!started) {
+          if (Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) < 5) return;
+          started = true;
+          preparedPromise = (async () => {
+            if (!window.lalo?.prepareDragFile) return null;
+            const { bytes, icon } = await getJpeg();
+            const res = await window.lalo.prepareDragFile(fileName, bytes);
+            if (!res || !res.ok) return null;
+            return { path: res.path, icon };
+          })();
+          preparedPromise.then((prep) => {
+            if (prep && started && !nativeStarted) {
+              window.lalo?.armDrag?.(prep.path, prep.icon);
+            }
+          });
+        }
+        const outOfWindow =
+          moveEvent.clientX <= 0 ||
+          moveEvent.clientY <= 0 ||
+          moveEvent.clientX >= window.innerWidth - 1 ||
+          moveEvent.clientY >= window.innerHeight - 1;
+        if (outOfWindow && preparedPromise) {
+          nativeStarted = true;
+          cleanup();
+          const prep = await preparedPromise;
+          if (prep && window.lalo?.startDrag) {
+            await window.lalo.startDrag(prep.path, prep.icon);
+          }
+        }
+      };
+
+      const cleanup = () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+      };
+
+      const onUp = () => {
+        if (!nativeStarted) window.lalo?.cancelDrag?.();
+        started = false;
+        cleanup();
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    });
+  }
+
   function buildPageElement(index, page, viewport, scale, dpr) {
     const model = state.pages[index];
     const wrapper = document.createElement('div');
@@ -1172,11 +1356,14 @@
     textLayer.className = 'textLayer';
     textLayer.style.setProperty('--scale-factor', String(viewport.scale));
 
+    const imageLayer = document.createElement('div');
+    imageLayer.className = 'page-image-layer';
+
     const badge = document.createElement('span');
     badge.className = 'page-badge';
     badge.textContent = String(index + 1);
 
-    wrapper.append(canvas, overlay, textLayer, badge);
+    wrapper.append(canvas, overlay, textLayer, imageLayer, badge);
 
     let rendered = false;
     let rendering = false;
@@ -1202,6 +1389,24 @@
           viewport,
           textDivs: [],
         }).promise;
+        imageLayer.innerHTML = '';
+        try {
+          const opList = await page.getOperatorList();
+          const imageRects = extractPageImageRects(opList, viewport);
+          imageRects.forEach((rect, imgIndex) => {
+            const hit = document.createElement('div');
+            hit.className = 'page-image-hit';
+            hit.style.left = `${rect.left}px`;
+            hit.style.top = `${rect.top}px`;
+            hit.style.width = `${rect.width}px`;
+            hit.style.height = `${rect.height}px`;
+            hit.title = 'Clic para seleccionar · Arrastra fuera para guardar JPEG · Clic derecho para opciones';
+            attachImageHitEvents(hit, page, rect, index, imgIndex, viewport.scale);
+            imageLayer.append(hit);
+          });
+        } catch {
+          /* ignorar si no se pueden listar operadores de imagen */
+        }
         rendered = true;
       } catch (error) {
         if (error?.name !== 'RenderingCancelledException') {
@@ -3141,6 +3346,9 @@
       if (event.target === el.shortcutsModal) el.shortcutsModal.hidden = true;
     });
 
+    el.viewer.addEventListener('pointerdown', (event) => {
+      if (!event.target.closest('.page-image-hit')) clearSelectedPdfImage();
+    });
     el.viewer.addEventListener('scroll', () => {
       if (state.viewMode !== 'continuous') return;
       clearTimeout(state.scrollTimer);

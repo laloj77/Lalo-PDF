@@ -661,6 +661,33 @@ body.thumb-dragging * {
   user-select: none;
 }
 
+.page .page-image-hit {
+  position: absolute;
+  z-index: 4;
+  border-radius: 2px;
+  cursor: grab;
+  transition: outline-color 0.12s, background-color 0.12s;
+}
+
+.page .page-image-hit:hover {
+  outline: 1.5px dashed rgba(10, 132, 255, 0.6);
+  background: rgba(10, 132, 255, 0.04);
+}
+
+.page .page-image-hit.selected {
+  outline: 2px solid var(--accent);
+  background: rgba(10, 132, 255, 0.1);
+}
+
+.page .page-image-hit:active {
+  cursor: grabbing;
+}
+
+#viewer.markup-open .page .page-image-hit,
+#viewer.tool-active .page .page-image-hit {
+  pointer-events: none;
+}
+
 .page .page-badge {
   position: absolute;
   left: 50%;
