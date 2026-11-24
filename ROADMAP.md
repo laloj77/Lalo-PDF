@@ -61,6 +61,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.
 - [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~
   - Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.
+- [x] ~~**Desplegable y entrada directa de porcentaje de zoom**~~
+  - Selector rápido (25 % – 140 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.
 
 ---
 
