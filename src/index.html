@@ -73,6 +73,10 @@
         <symbol id="i-close" viewBox="0 0 24 24">
           <line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" />
         </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="9.5" rx="2" />
+          <path d="M8 11V7.5a4 4 0 0 1 8 0V11" />
+        </symbol>
         <symbol id="i-undo" viewBox="0 0 24 24">
           <path d="M4 9.5h9.5a5.5 5.5 0 0 1 0 11H8" />
           <polyline points="8 5.5 4 9.5 8 13.5" />
@@ -183,6 +187,9 @@
         </div>
 
         <div class="tb-group tb-right">
+          <button id="btn-protect" class="pill-btn" title="Protección y permisos (Ctrl+Shift+L)">
+            <svg><use href="#i-lock" /></svg><span>Proteger</span>
+          </button>
           <button id="btn-export" class="pill-btn" title="Exportar cada página como imagen (Ctrl+Shift+E)">
             <svg><use href="#i-share" /></svg><span>Exportar</span>
           </button>
@@ -394,6 +401,72 @@
           <span>Navegar páginas</span><kbd>← →</kbd>
         </div>
       </div>
+    </div>
+
+    <div id="password-modal" class="modal-backdrop" hidden>
+      <form id="password-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>PDF protegido</h2>
+          <button type="button" id="password-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p id="password-desc" class="modal-desc">Introduce la contraseña para abrir este documento.</p>
+        <div class="modal-field">
+          <label for="password-input">Contraseña</label>
+          <input id="password-input" type="password" autocomplete="current-password" required />
+        </div>
+        <p id="password-error" class="modal-error" hidden>Contraseña incorrecta.</p>
+        <div class="modal-actions">
+          <button type="button" id="password-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" id="password-submit" class="primary-btn">Abrir</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="protect-modal" class="modal-backdrop" hidden>
+      <form id="protect-form" class="modal-card">
+        <div class="modal-head">
+          <h2>Protección y permisos</h2>
+          <button type="button" id="protect-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <div class="modal-field">
+          <label for="protect-user-pass">Contraseña de apertura (opcional)</label>
+          <input id="protect-user-pass" type="password" placeholder="Dejar vacío para abrir sin contraseña" />
+        </div>
+        <div class="modal-field">
+          <label for="protect-owner-pass">Contraseña de permisos (opcional)</label>
+          <input id="protect-owner-pass" type="password" placeholder="Para restringir edición e impresión" />
+        </div>
+        <div class="modal-field">
+          <label for="protect-printing">Impresión</label>
+          <select id="protect-printing">
+            <option value="highResolution">Permitir (alta resolución)</option>
+            <option value="lowResolution">Permitir (baja resolución)</option>
+            <option value="none">No permitir</option>
+          </select>
+        </div>
+        <div class="modal-checks">
+          <label class="modal-check">
+            <input id="protect-modifying" type="checkbox" checked />
+            <span>Permitir modificar el documento</span>
+          </label>
+          <label class="modal-check">
+            <input id="protect-copying" type="checkbox" checked />
+            <span>Permitir copiar texto e imágenes</span>
+          </label>
+          <label class="modal-check">
+            <input id="protect-annotating" type="checkbox" checked />
+            <span>Permitir añadir anotaciones</span>
+          </label>
+        </div>
+        <p id="protect-error" class="modal-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" id="protect-clear" class="pill-btn" hidden>Quitar protección</button>
+          <span class="modal-spacer"></span>
+          <button type="button" id="protect-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" id="protect-apply" class="pill-btn">Aplicar</button>
+          <button type="button" id="protect-save-as" class="primary-btn">Guardar como…</button>
+        </div>
+      </form>
     </div>
 
     <!-- Las páginas que se van a imprimir se dibujan aquí solo mientras dura

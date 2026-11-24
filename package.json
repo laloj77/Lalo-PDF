@@ -24,6 +24,7 @@
     "test:print": "electron test/e2e-print.js"
   },
   "dependencies": {
+    "@cantoo/pdf-lib": "^2.11.1",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "3.11.174"
   },

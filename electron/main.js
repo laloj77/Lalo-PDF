@@ -185,6 +185,11 @@ function buildMenu() {
           accelerator: 'CmdOrCtrl+Shift+E',
           click: () => send('export-images'),
         },
+        {
+          label: 'Protección y permisos…',
+          accelerator: 'CmdOrCtrl+Shift+L',
+          click: () => send('protect'),
+        },
         { type: 'separator' },
         { label: 'Imprimir…', accelerator: 'CmdOrCtrl+P', click: () => send('print') },
         { type: 'separator' },

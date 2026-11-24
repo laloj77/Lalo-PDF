@@ -50,6 +50,7 @@
     workingBytes: null,
     fileName: 'Sin título.pdf',
     filePath: null,
+    security: null,
     dirty: false,
     sidebarHidden: false,
     search: { query: '', occurrences: [], index: -1, rects: new Map(), token: 0 },
@@ -84,10 +85,26 @@
     toast: $('#toast'),
     dropOverlay: $('#drop-overlay'),
     shortcutsModal: $('#shortcuts-modal'),
+    passwordModal: $('#password-modal'),
+    passwordForm: $('#password-form'),
+    passwordDesc: $('#password-desc'),
+    passwordInput: $('#password-input'),
+    passwordError: $('#password-error'),
+    protectModal: $('#protect-modal'),
+    protectForm: $('#protect-form'),
+    protectUserPass: $('#protect-user-pass'),
+    protectOwnerPass: $('#protect-owner-pass'),
+    protectPrinting: $('#protect-printing'),
+    protectModifying: $('#protect-modifying'),
+    protectCopying: $('#protect-copying'),
+    protectAnnotating: $('#protect-annotating'),
+    protectError: $('#protect-error'),
+    protectClear: $('#protect-clear'),
     printRoot: $('#print-root'),
     btnSidebar: $('#btn-sidebar'),
     btnMarkup: $('#btn-markup'),
     btnSearch: $('#btn-search'),
+    btnProtect: $('#btn-protect'),
     btnPrint: $('#btn-print'),
     btnUndo: $('#btn-undo'),
     btnRedo: $('#btn-redo'),
@@ -165,6 +182,7 @@
     el.btnSidebar.classList.toggle('active', !state.sidebarHidden);
     el.btnMarkup.classList.toggle('active', state.markupOpen);
     el.btnSearch.classList.toggle('active', !el.searchPanel.hidden);
+    if (el.btnProtect) el.btnProtect.classList.toggle('is-protected', !!state.security);
     el.markupBar.hidden = !state.markupOpen;
     el.viewer.classList.toggle('tool-active', state.markupOpen && state.tool !== 'select');
     el.viewer.classList.toggle('eraser', state.markupOpen && state.tool === 'eraser');
@@ -259,11 +277,75 @@
 
   /* ------------------------------------------------------------ doc model */
 
+  let passwordPromptResolver = null;
+
+  function resolvePasswordPrompt(value) {
+    const resolver = passwordPromptResolver;
+    passwordPromptResolver = null;
+    if (el.passwordModal) el.passwordModal.hidden = true;
+    if (resolver) resolver(value);
+  }
+
+  function askPdfPassword(fileName, isRetry = false) {
+    if (!el.passwordModal || !el.passwordInput) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      passwordPromptResolver = resolve;
+      el.passwordDesc.textContent = `Introduce la contraseña para abrir «${fileName}».`;
+      el.passwordError.hidden = !isRetry;
+      el.passwordInput.value = '';
+      el.passwordModal.hidden = false;
+      setTimeout(() => el.passwordInput.focus(), 20);
+    });
+  }
+
+  async function loadPdfDocumentWithPassword(bytes, fileName) {
+    try {
+      const doc = await PDFDocument.load(bytes);
+      return { doc, password: undefined };
+    } catch (error) {
+      const msg = String(error?.message || error || '');
+      if (!/encrypted|password/i.test(msg)) throw error;
+    }
+
+    try {
+      const doc = await PDFDocument.load(bytes, { password: '' });
+      return { doc, password: '' };
+    } catch (error) {
+      const msg = String(error?.message || error || '');
+      if (!/password/i.test(msg)) throw error;
+    }
+
+    let isRetry = false;
+    while (true) {
+      const password = await askPdfPassword(fileName, isRetry);
+      if (password === null) return null;
+      try {
+        const doc = await PDFDocument.load(bytes, { password });
+        return { doc, password };
+      } catch (error) {
+        const msg = String(error?.message || error || '');
+        if (/password/i.test(msg)) {
+          isRetry = true;
+          continue;
+        }
+        throw error;
+      }
+    }
+  }
+
   async function appendSourceFile(file) {
     try {
-      const doc = await PDFDocument.load(file.bytes, { ignoreEncryption: true });
+      const loaded = await loadPdfDocumentWithPassword(file.bytes, file.name);
+      if (!loaded) return 0;
+      const { doc, password } = loaded;
       const sourceId = uid('src');
-      state.sources.set(sourceId, { id: sourceId, name: file.name, bytes: file.bytes, type: 'pdf' });
+      state.sources.set(sourceId, {
+        id: sourceId,
+        name: file.name,
+        bytes: file.bytes,
+        password,
+        type: 'pdf',
+      });
       const pages = doc.getPages();
       for (let index = 0; index < pages.length; index += 1) {
         const page = pages[index];
@@ -335,6 +417,7 @@
       state.current = 0;
       state.anchorIndex = null;
       state.zoomMode = 'fit';
+      state.security = null;
       state.fileName = /\.pdf$/i.test(files[0].name)
         ? files[0].name
         : `${baseName(files[0].name)}.pdf`;
@@ -408,7 +491,9 @@
       let sourceDoc = cache.get(model.sourceId);
       if (!sourceDoc) {
         const source = state.sources.get(model.sourceId);
-        sourceDoc = await PDFDocument.load(source.bytes, { ignoreEncryption: true });
+        const loadOpts =
+          source.password !== undefined ? { password: source.password } : { ignoreEncryption: true };
+        sourceDoc = await PDFDocument.load(source.bytes, loadOpts);
         cache.set(model.sourceId, sourceDoc);
       }
       const [copied] = await out.copyPages(sourceDoc, [model.srcIndex]);
@@ -615,8 +700,28 @@
     return doc;
   }
 
-  async function composeBytes(models = state.pages) {
+  async function composeBytes(models = state.pages, { encrypt = false } = {}) {
     const doc = await composePdf(models);
+    if (encrypt && state.security) {
+      const sec = state.security;
+      const ownerPassword =
+        sec.ownerPassword ||
+        sec.userPassword ||
+        Math.random().toString(36).slice(2) + Date.now().toString(36);
+      doc.encrypt({
+        userPassword: sec.userPassword || '',
+        ownerPassword,
+        permissions: {
+          printing: sec.printing === 'none' ? false : sec.printing || 'highResolution',
+          modifying: !!sec.modifying,
+          copying: !!sec.copying,
+          annotating: !!sec.annotating,
+          fillingForms: !!sec.annotating,
+          contentAccessibility: true,
+          documentAssembly: !!sec.modifying,
+        },
+      });
+    }
     return doc.save({ useObjectStreams: false });
   }
 
@@ -668,7 +773,7 @@
     setBusy(true);
     toast('Guardando…', 1500);
     try {
-      const bytes = await composeBytes();
+      const bytes = await composeBytes(state.pages, { encrypt: true });
       const result = await window.lalo.savePdfInPlace(state.filePath, bytes);
       if (!result || result.ok === false) {
         throw new Error((result && result.error) || 'No se pudo escribir el archivo');
@@ -688,7 +793,7 @@
     }
     if (!window.lalo?.savePdf) {
       try {
-        const bytes = await composeBytes();
+        const bytes = await composeBytes(state.pages, { encrypt: true });
         downloadBlob(bytes, state.fileName || 'Documento.pdf', 'application/pdf');
         markSaved();
       } catch (error) {
@@ -698,7 +803,7 @@
     }
     setBusy(true);
     try {
-      const bytes = await composeBytes();
+      const bytes = await composeBytes(state.pages, { encrypt: true });
       const result = await window.lalo.savePdf(state.fileName || 'Documento.pdf', bytes);
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
@@ -3003,6 +3108,14 @@
       const typing =
         target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
       if (event.key === 'Escape') {
+        if (el.passwordModal && !el.passwordModal.hidden) {
+          resolvePasswordPrompt(null);
+          return;
+        }
+        if (el.protectModal && !el.protectModal.hidden) {
+          el.protectModal.hidden = true;
+          return;
+        }
         if (!el.shortcutsModal.hidden) {
           el.shortcutsModal.hidden = true;
           return;
@@ -3191,6 +3304,9 @@
         case 'insert-blank':
           insertBlankPage();
           break;
+        case 'protect':
+          openProtectModal();
+          break;
         case 'shortcuts':
           el.shortcutsModal.hidden = false;
           break;
@@ -3203,8 +3319,99 @@
     });
   }
 
+  function openProtectModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de configurar la protección');
+      return;
+    }
+    const sec = state.security;
+    el.protectUserPass.value = sec?.userPassword || '';
+    el.protectOwnerPass.value = sec?.ownerPassword || '';
+    el.protectPrinting.value = sec?.printing || 'highResolution';
+    el.protectModifying.checked = sec ? !!sec.modifying : true;
+    el.protectCopying.checked = sec ? !!sec.copying : true;
+    el.protectAnnotating.checked = sec ? !!sec.annotating : true;
+    el.protectError.hidden = true;
+    el.protectClear.hidden = !sec;
+    el.protectModal.hidden = false;
+    setTimeout(() => el.protectUserPass.focus(), 20);
+  }
+
+  function applyProtectForm() {
+    const userPassword = el.protectUserPass.value;
+    const ownerPassword = el.protectOwnerPass.value;
+    const printing = el.protectPrinting.value;
+    const modifying = el.protectModifying.checked;
+    const copying = el.protectCopying.checked;
+    const annotating = el.protectAnnotating.checked;
+    const hasRestrictions =
+      printing !== 'highResolution' || !modifying || !copying || !annotating;
+
+    if (!userPassword && !ownerPassword && !hasRestrictions) {
+      el.protectError.textContent = 'Introduce una contraseña o restringe algún permiso.';
+      el.protectError.hidden = false;
+      return false;
+    }
+
+    state.security = {
+      userPassword,
+      ownerPassword,
+      printing,
+      modifying,
+      copying,
+      annotating,
+    };
+    setDirty(true);
+    updateToolbarState();
+    el.protectModal.hidden = true;
+    return true;
+  }
+
+  function bindSecurityModals() {
+    if (el.btnProtect) {
+      el.btnProtect.addEventListener('click', openProtectModal);
+    }
+    if (el.passwordForm) {
+      el.passwordForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        resolvePasswordPrompt(el.passwordInput.value);
+      });
+      $('#password-cancel').addEventListener('click', () => resolvePasswordPrompt(null));
+      $('#password-close').addEventListener('click', () => resolvePasswordPrompt(null));
+      el.passwordModal.addEventListener('click', (event) => {
+        if (event.target === el.passwordModal) resolvePasswordPrompt(null);
+      });
+    }
+    if (el.protectForm) {
+      el.protectForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (applyProtectForm()) toast('Protección aplicada (se guardará en el PDF)');
+      });
+      $('#protect-save-as').addEventListener('click', async () => {
+        if (applyProtectForm()) await saveAs();
+      });
+      el.protectClear.addEventListener('click', () => {
+        state.security = null;
+        setDirty(true);
+        updateToolbarState();
+        el.protectModal.hidden = true;
+        toast('Protección eliminada');
+      });
+      $('#protect-cancel').addEventListener('click', () => {
+        el.protectModal.hidden = true;
+      });
+      $('#protect-close').addEventListener('click', () => {
+        el.protectModal.hidden = true;
+      });
+      el.protectModal.addEventListener('click', (event) => {
+        if (event.target === el.protectModal) el.protectModal.hidden = true;
+      });
+    }
+  }
+
   function init() {
     bindUI();
+    bindSecurityModals();
     bindMenu();
     updateStatus();
     updateToolbarState();

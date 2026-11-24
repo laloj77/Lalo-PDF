@@ -10,7 +10,7 @@ const vendor = join(root, 'src', 'vendor');
 const files = [
   ['node_modules/pdfjs-dist/build/pdf.js', 'pdf.js'],
   ['node_modules/pdfjs-dist/build/pdf.worker.js', 'pdf.worker.js'],
-  ['node_modules/pdf-lib/dist/pdf-lib.min.js', 'pdf-lib.min.js'],
+  ['node_modules/@cantoo/pdf-lib/dist/pdf-lib.min.js', 'pdf-lib.min.js'],
 ];
 
 await mkdir(vendor, { recursive: true });
