@@ -27,7 +27,7 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [ ] **Anotaciones editables nativas**
   - Guardar elementos dibujados como anotaciones PDF reales en lugar de aplanarlos directamente en el lienzo, permitiendo su reeditado posterior.
-- [ ] **Protección por contraseña y permisos**
+- [x] ~~**Protección por contraseña y permisos**~~
   - Abrir PDFs protegidos por contraseña.
   - Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.
 - [ ] **OCR para documentos escaneados**
