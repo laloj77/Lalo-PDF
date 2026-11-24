@@ -62,7 +62,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~
   - Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.
 - [x] ~~**Desplegable y entrada directa de porcentaje de zoom**~~
-  - Selector rápido (25 % – 140 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.
+  - Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.
 
 ---
 
