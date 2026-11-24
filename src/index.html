@@ -154,10 +154,30 @@
             <button id="btn-zoom-out" class="icon-btn small" title="Alejar (Ctrl+-)">
               <svg><use href="#i-minus" /></svg>
             </button>
-            <button id="zoom-label" class="zoom-label" title="Ajustar a la ventana">100 %</button>
+            <input
+              id="zoom-label"
+              class="zoom-label"
+              type="text"
+              value="100 %"
+              aria-label="Porcentaje de zoom"
+              title="Escribir porcentaje o elegir de la lista"
+            />
             <button id="btn-zoom-in" class="icon-btn small" title="Acercar (Ctrl+=)">
               <svg><use href="#i-plus" /></svg>
             </button>
+            <div id="zoom-menu" class="zoom-menu" hidden>
+              <button type="button" class="zoom-option" data-zoom="25">25 %</button>
+              <button type="button" class="zoom-option" data-zoom="50">50 %</button>
+              <button type="button" class="zoom-option" data-zoom="75">75 %</button>
+              <button type="button" class="zoom-option" data-zoom="90">90 %</button>
+              <button type="button" class="zoom-option" data-zoom="100">100 %</button>
+              <button type="button" class="zoom-option" data-zoom="110">110 %</button>
+              <button type="button" class="zoom-option" data-zoom="120">120 %</button>
+              <button type="button" class="zoom-option" data-zoom="130">130 %</button>
+              <button type="button" class="zoom-option" data-zoom="140">140 %</button>
+              <div class="zoom-menu-sep"></div>
+              <button type="button" class="zoom-option" data-zoom="fit">Ajustar</button>
+            </div>
           </div>
 
           <div class="segmented" id="view-modes" role="group" aria-label="Modo de visualización">

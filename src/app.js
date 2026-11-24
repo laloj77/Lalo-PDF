@@ -71,6 +71,7 @@
     statusLeft: $('#status-left'),
     statusRight: $('#status-right'),
     zoomLabel: $('#zoom-label'),
+    zoomMenu: $('#zoom-menu'),
     markupBar: $('#markup-bar'),
     emptyState: $('#empty-state'),
     searchPanel: $('#search-panel'),
@@ -2881,7 +2882,79 @@
 
     $('#btn-zoom-out').addEventListener('click', zoomOut);
     $('#btn-zoom-in').addEventListener('click', zoomIn);
-    el.zoomLabel.addEventListener('click', fitWidth);
+
+    const openZoomMenu = () => {
+      if (!el.zoomMenu) return;
+      const pct = Math.round((state.currentScale || 1) * 100);
+      $$('.zoom-option', el.zoomMenu).forEach((opt) => {
+        const val = opt.dataset.zoom;
+        opt.classList.toggle(
+          'active',
+          val === 'fit' ? state.zoomMode === 'fit' : Number(val) === pct && state.zoomMode !== 'fit',
+        );
+      });
+      el.zoomMenu.hidden = false;
+    };
+
+    const closeZoomMenu = () => {
+      if (el.zoomMenu) el.zoomMenu.hidden = true;
+    };
+
+    const commitZoomInput = () => {
+      const raw = String(el.zoomLabel.value || '').replace('%', '').trim();
+      const num = Number.parseFloat(raw.replace(',', '.'));
+      if (Number.isFinite(num) && num > 0 && state.pages.length) {
+        const clamped = clamp(num, 10, 500);
+        zoomTo(clamped / 100);
+      } else {
+        el.zoomLabel.value = `${Math.round((state.currentScale || 1) * 100)} %`;
+      }
+    };
+
+    el.zoomLabel.addEventListener('focus', () => {
+      el.zoomLabel.select();
+      openZoomMenu();
+    });
+    el.zoomLabel.addEventListener('click', () => {
+      openZoomMenu();
+    });
+    el.zoomLabel.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        closeZoomMenu();
+        commitZoomInput();
+        el.zoomLabel.blur();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        closeZoomMenu();
+        el.zoomLabel.value = `${Math.round((state.currentScale || 1) * 100)} %`;
+        el.zoomLabel.blur();
+      }
+    });
+    el.zoomLabel.addEventListener('blur', () => {
+      setTimeout(() => {
+        if (!el.zoomMenu || el.zoomMenu.hidden) commitZoomInput();
+      }, 150);
+    });
+    if (el.zoomMenu) {
+      el.zoomMenu.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+      });
+      el.zoomMenu.addEventListener('click', (event) => {
+        const option = event.target.closest('.zoom-option');
+        if (!option) return;
+        const val = option.dataset.zoom;
+        closeZoomMenu();
+        if (val === 'fit') fitWidth();
+        else zoomTo(Number(val) / 100);
+        el.zoomLabel.blur();
+      });
+    }
+    document.addEventListener('mousedown', (event) => {
+      if (el.zoomMenu && !el.zoomMenu.hidden && !event.target.closest('.zoom-group')) {
+        closeZoomMenu();
+      }
+    });
     $('#btn-rotate').addEventListener('click', () => rotatePages(90));
     el.btnMarkup.addEventListener('click', () => toggleMarkup());
     el.btnSearch.addEventListener('click', openSearch);
