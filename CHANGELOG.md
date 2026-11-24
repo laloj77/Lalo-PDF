@@ -7,6 +7,17 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.1.3] - 2026-11-24
+
+### Corregido
+
+- Cierre definitivo en Windows: se oculta la ventana inmediatamente al cerrar, los
+  temporizadores de salida usan `.unref()` y escalan a `app.exit(0)` (600 ms) y
+  `process.exit(0)` (1200 ms) para evitar procesos `electron.exe` / `Lalo PDF.exe`
+  colgados en segundo plano.
+- Control de instancia única (`requestSingleInstanceLock` + `second-instance`) para
+  enfocar la ventana existente o abrir un PDF sin bloquear `userData`.
+
 ## [0.1.2] - 2026-11-22
 
 ### Corregido
