@@ -28,8 +28,8 @@ Este documento contiene la lista completa de características planificadas, prio
 - [ ] **Anotaciones editables nativas**
   - Guardar elementos dibujados como anotaciones PDF reales en lugar de aplanarlos directamente en el lienzo, permitiendo su reeditado posterior.
 - [x] ~~**Protección por contraseña y permisos**~~
-  - Abrir PDFs protegidos por contraseña.
-  - Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.
+  - ~~Abrir PDFs protegidos por contraseña.~~
+  - ~~Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.~~
 - [ ] **OCR para documentos escaneados**
   - Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.
 - [ ] **Formularios (AcroForms)**
@@ -60,9 +60,9 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~
   - ~~Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.~~
 - [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~
-  - Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.
+  - ~~Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.~~
 - [x] ~~**Desplegable y entrada directa de porcentaje de zoom**~~
-  - Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.
+  - ~~Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.~~
 
 ---
 
