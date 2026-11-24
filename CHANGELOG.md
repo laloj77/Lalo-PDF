@@ -7,6 +7,22 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-11-24
+
+### Añadido
+
+- **Protección por contraseña y permisos** (`@cantoo/pdf-lib`):
+  - Abrir PDFs protegidos por contraseña con diálogo de desbloqueo.
+  - Guardar/exportar estableciendo contraseña de apertura, contraseña de permisos y restricciones (impresión en alta/baja/prohibida, modificación, copia y anotaciones) desde el botón **Proteger** o *Archivo → Protección y permisos…* (`Ctrl+Shift+L`).
+- **Selección y copia de texto:** capa de texto seleccionable sobre las páginas con soporte de `Ctrl+C`, *Edición → Copiar* y menú contextual con clic derecho.
+- **Selección y extracción de imágenes del PDF:** clic sobre imágenes incrustadas para seleccionarlas, arrastrarlas fuera de la ventana para guardarlas como `.jpg`, o clic derecho para **Copiar imagen** y **Guardar imagen como…** en formato **JPG**, **PNG**, **WebP** o **PDF**.
+- **Selector de zoom editable:** desplegable rápido (`35 %` a `170 %` y *Ajustar*) y entrada directa del porcentaje en la barra de herramientas.
+- **Versión visible** en la esquina inferior derecha de la barra de estado.
+
+### Corregido
+
+- Arrastrar y soltar PDFs sobre la pantalla de inicio vacía y sobre la barra lateral de miniaturas en Windows (`dropEffect = 'copy'` y `preventDefault` en `dragenter`).
+
 ## [0.1.3] - 2026-11-24
 
 ### Corregido
