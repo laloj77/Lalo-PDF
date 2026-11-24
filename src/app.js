@@ -2975,6 +2975,7 @@
     window.addEventListener('dragenter', (event) => {
       const types = Array.from(event.dataTransfer?.types || []);
       if (!types.includes('Files')) return;
+      event.preventDefault();
       dragDepth += 1;
       el.dropOverlay.hidden = false;
     });
@@ -2984,7 +2985,9 @@
     });
     window.addEventListener('dragover', (event) => {
       const types = Array.from(event.dataTransfer?.types || []);
-      if (types.includes('Files')) event.preventDefault();
+      if (!types.includes('Files')) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
     });
     window.addEventListener('drop', async (event) => {
       dragDepth = 0;
