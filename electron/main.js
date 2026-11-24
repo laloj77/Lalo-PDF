@@ -726,6 +726,7 @@ function registerIpc() {
     const data = toBuffer(bytes);
     return await new Promise((resolve) => {
       let resolved = false;
+      let clicked = false;
       const done = (payload) => {
         if (resolved) return;
         resolved = true;
@@ -735,6 +736,7 @@ function registerIpc() {
         {
           label: 'Copiar imagen',
           click: () => {
+            clicked = true;
             try {
               const img = nativeImage.createFromBuffer(data);
               clipboard.writeImage(img);
@@ -747,6 +749,7 @@ function registerIpc() {
         {
           label: 'Guardar imagen como…',
           click: async () => {
+            clicked = true;
             try {
               const result = await dialog.showSaveDialog(win, {
                 title: 'Guardar imagen como',
@@ -789,7 +792,9 @@ function registerIpc() {
       menu.popup({
         window: win,
         callback: () => {
-          setTimeout(() => done({ action: null }), 120);
+          setTimeout(() => {
+            if (!clicked) done({ action: null });
+          }, 120);
         },
       });
     });
