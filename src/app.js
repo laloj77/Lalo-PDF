@@ -156,7 +156,7 @@
       el.statusLeft.textContent = 'Sin documento';
       el.statusRight.textContent = '';
       el.pageCount.textContent = '0 páginas';
-      el.zoomLabel.textContent = '100 %';
+      if (document.activeElement !== el.zoomLabel) el.zoomLabel.value = '100 %';
       el.emptyState.hidden = false;
       document.title = 'Lalo PDF';
       return;
@@ -169,7 +169,9 @@
       (state.fileName ? `  ·  ${state.fileName}` : '');
     el.statusRight.textContent = `${Math.round(state.currentScale * 100)} %  ·  ${labelForMode()}`;
     el.pageCount.textContent = `${total} página${total === 1 ? '' : 's'}`;
-    el.zoomLabel.textContent = `${Math.round(state.currentScale * 100)} %`;
+    if (document.activeElement !== el.zoomLabel) {
+      el.zoomLabel.value = `${Math.round(state.currentScale * 100)} %`;
+    }
     document.title = `${state.dirty ? '● ' : ''}${state.fileName} — Lalo PDF`;
   }
 
