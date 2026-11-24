@@ -263,7 +263,7 @@ body.platform-darwin #toolbar {
   font: inherit;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
 }
 
