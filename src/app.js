@@ -3205,6 +3205,15 @@
     bindMenu();
     updateStatus();
     updateToolbarState();
+    const versionEl = $('#status-version');
+    if (versionEl && window.lalo?.appInfo) {
+      window.lalo
+        .appInfo()
+        .then((info) => {
+          if (info?.version) versionEl.textContent = `v${info.version}`;
+        })
+        .catch(() => {});
+    }
   }
 
   init();
