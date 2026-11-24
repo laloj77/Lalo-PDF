@@ -309,6 +309,15 @@ async function createWindow() {
   mainWindow.webContents.on('did-fail-load', (_event, code, description, url) => {
     console.error('[did-fail-load]', code, description, url);
   });
+  mainWindow.webContents.on('context-menu', (_event, params) => {
+    if (!params.selectionText && !params.isEditable) return;
+    const menu = Menu.buildFromTemplate([
+      ...(params.isEditable ? [{ role: 'cut', label: 'Cortar' }] : []),
+      ...(params.selectionText ? [{ role: 'copy', label: 'Copiar' }] : []),
+      ...(params.isEditable ? [{ role: 'paste', label: 'Pegar' }] : []),
+    ]);
+    menu.popup({ window: mainWindow });
+  });
 
   await mainWindow.loadURL(`${APP_SCHEME}://app/index.html`);
 

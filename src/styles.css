@@ -608,6 +608,57 @@ body.thumb-dragging * {
   inset: 0;
   z-index: 2;
   touch-action: none;
+  pointer-events: none;
+}
+
+#viewer.markup-open .page canvas.page-overlay,
+#viewer.tool-active .page canvas.page-overlay {
+  pointer-events: auto;
+}
+
+.page .textLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+#viewer.markup-open .page .textLayer,
+#viewer.tool-active .page .textLayer {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.page .textLayer span,
+.page .textLayer br {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+}
+
+.page .textLayer ::selection {
+  background: rgba(10, 132, 255, 0.28);
+  color: transparent;
+}
+
+.page .textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: -1;
+  cursor: default;
+  user-select: none;
 }
 
 .page .page-badge {

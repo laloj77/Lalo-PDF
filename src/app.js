@@ -187,6 +187,7 @@
     el.btnSearch.classList.toggle('active', !el.searchPanel.hidden);
     if (el.btnProtect) el.btnProtect.classList.toggle('is-protected', !!state.security);
     el.markupBar.hidden = !state.markupOpen;
+    el.viewer.classList.toggle('markup-open', state.markupOpen);
     el.viewer.classList.toggle('tool-active', state.markupOpen && state.tool !== 'select');
     el.viewer.classList.toggle('eraser', state.markupOpen && state.tool === 'eraser');
     $$('#view-modes button').forEach((button) => {
@@ -1167,11 +1168,15 @@
     paintOverlay(overlay, model.id, viewport.width, viewport.height);
     attachOverlayEvents(overlay, index, scale);
 
+    const textLayer = document.createElement('div');
+    textLayer.className = 'textLayer';
+    textLayer.style.setProperty('--scale-factor', String(viewport.scale));
+
     const badge = document.createElement('span');
     badge.className = 'page-badge';
     badge.textContent = String(index + 1);
 
-    wrapper.append(canvas, overlay, badge);
+    wrapper.append(canvas, overlay, textLayer, badge);
 
     let rendered = false;
     let rendering = false;
@@ -1187,6 +1192,15 @@
           canvasContext: ctx,
           viewport,
           transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined,
+        }).promise;
+        const textContent = await page.getTextContent();
+        textLayer.innerHTML = '';
+        textLayer.style.setProperty('--scale-factor', String(viewport.scale));
+        await pdfjsLib.renderTextLayer({
+          textContentSource: textContent,
+          container: textLayer,
+          viewport,
+          textDivs: [],
         }).promise;
         rendered = true;
       } catch (error) {
