@@ -1209,6 +1209,8 @@
 
     const blob = await new Promise((resolve) => cropCanvas.toBlob(resolve, 'image/jpeg', 0.92));
     const bytes = new Uint8Array(await blob.arrayBuffer());
+    const webpBlob = await new Promise((resolve) => cropCanvas.toBlob(resolve, 'image/webp', 0.92));
+    const webpBytes = webpBlob ? new Uint8Array(await webpBlob.arrayBuffer()) : null;
 
     const iconSize = 72;
     const iconRatio = Math.min(iconSize / cropW, iconSize / cropH, 1);
@@ -1216,7 +1218,7 @@
     iconCanvas.width = Math.max(16, Math.round(cropW * iconRatio));
     iconCanvas.height = Math.max(16, Math.round(cropH * iconRatio));
     iconCanvas.getContext('2d').drawImage(cropCanvas, 0, 0, iconCanvas.width, iconCanvas.height);
-    return { bytes, icon: iconCanvas.toDataURL('image/png') };
+    return { bytes, webpBytes, icon: iconCanvas.toDataURL('image/png') };
   }
 
   function clearSelectedPdfImage() {
@@ -1246,9 +1248,9 @@
       clearSelectedPdfImage();
       hit.classList.add('selected');
       try {
-        const { bytes } = await getJpeg();
+        const { bytes, webpBytes } = await getJpeg();
         if (window.lalo?.showImageContextMenu) {
-          const res = await window.lalo.showImageContextMenu(bytes, fileName);
+          const res = await window.lalo.showImageContextMenu(bytes, fileName, webpBytes);
           if (res?.action === 'copy' && res.ok) toast('Imagen copiada al portapapeles');
           else if (res?.action === 'save' && !res.canceled && res.name) {
             toast(`Imagen guardada: ${res.name}`);

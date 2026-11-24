@@ -17,8 +17,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('dialog:export-images', { baseName, images, startFolder }),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
-  showImageContextMenu: (bytes, defaultName) =>
-    ipcRenderer.invoke('image:context-menu', { bytes, defaultName }),
+  showImageContextMenu: (bytes, defaultName, webpBytes) =>
+    ipcRenderer.invoke('image:context-menu', { bytes, webpBytes, defaultName }),
   appInfo: () => ipcRenderer.invoke('app:info'),
   pathForFile: (file) => {
     try {

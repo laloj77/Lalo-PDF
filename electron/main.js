@@ -720,7 +720,7 @@ function registerIpc() {
     if (typeof filePath === 'string' && filePath) shell.showItemInFolder(filePath);
   });
 
-  ipcMain.handle('image:context-menu', async (event, { bytes, defaultName }) => {
+  ipcMain.handle('image:context-menu', async (event, { bytes, webpBytes, defaultName }) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     if (!win || win.isDestroyed()) return { action: null };
     const data = toBuffer(bytes);
@@ -749,20 +749,44 @@ function registerIpc() {
           click: async () => {
             try {
               const result = await dialog.showSaveDialog(win, {
-                title: 'Guardar imagen',
+                title: 'Guardar imagen como',
                 defaultPath: defaultName || 'imagen.jpg',
-                filters: [{ name: 'Imagen JPEG', extensions: ['jpg', 'jpeg'] }],
+                filters: [
+                  { name: 'Imagen JPEG (*.jpg)', extensions: ['jpg', 'jpeg'] },
+                  { name: 'Imagen PNG (*.png)', extensions: ['png'] },
+                  { name: 'Imagen WebP (*.webp)', extensions: ['webp'] },
+                  { name: 'Documento PDF (*.pdf)', extensions: ['pdf'] },
+                ],
                 properties: ['showOverwriteConfirmation', 'createDirectory'],
               });
               if (result.canceled || !result.filePath) {
                 done({ action: 'save', canceled: true });
                 return;
               }
-              const target = /\.(jpe?g)$/i.test(result.filePath)
+              const target = /\.(jpe?g|png|webp|pdf)$/i.test(result.filePath)
                 ? result.filePath
                 : `${result.filePath}.jpg`;
+              const ext = path.extname(target).toLowerCase();
+              let outBytes = data;
+              if (ext === '.png') {
+                outBytes = nativeImage.createFromBuffer(data).toPNG();
+              } else if (ext === '.webp' && webpBytes) {
+                outBytes = toBuffer(webpBytes);
+              } else if (ext === '.pdf') {
+                const { PDFDocument } = require('@cantoo/pdf-lib');
+                const pdfDoc = await PDFDocument.create();
+                const jpgImage = await pdfDoc.embedJpg(data);
+                const page = pdfDoc.addPage([jpgImage.width, jpgImage.height]);
+                page.drawImage(jpgImage, {
+                  x: 0,
+                  y: 0,
+                  width: jpgImage.width,
+                  height: jpgImage.height,
+                });
+                outBytes = Buffer.from(await pdfDoc.save());
+              }
               await fs.mkdir(path.dirname(target), { recursive: true });
-              await writeFileAtomic(target, data);
+              await writeFileAtomic(target, outBytes);
               done({ action: 'save', canceled: false, path: target, name: path.basename(target) });
             } catch (error) {
               done({ action: 'save', ok: false, error: describe(error) });
