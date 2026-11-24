@@ -45,8 +45,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Confirmación al intentar cerrar si hay cambios pendientes.
 - [ ] **Documentos recientes y pestañas / multi-ventana**
   - Menú de archivos recientes y soporte para trabajar con múltiples documentos a la vez.
-- [ ] **Copiar texto seleccionado**
-  - Herramienta de selección de texto sobre la página para copiar al portapapeles.
+- [x] ~~**Copiar texto seleccionado**~~
+  - ~~Herramienta de selección de texto sobre la página para copiar al portapapeles.~~
 - [ ] **Índice / Marcadores (Tabla de contenidos)**
   - Vista en la barra lateral para navegar por los marcadores del PDF.
 - [ ] **Modo presentación a pantalla completa**
@@ -63,6 +63,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.~~
 - [x] ~~**Desplegable y entrada directa de porcentaje de zoom**~~
   - ~~Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.~~
+- [x] ~~**Selección y extracción de imágenes del PDF**~~
+  - ~~Seleccionar imágenes dentro del PDF, arrastrarlas fuera como JPEG o usar clic derecho para copiar o guardar como JPG, PNG, WebP o PDF.~~
 
 ---
 
