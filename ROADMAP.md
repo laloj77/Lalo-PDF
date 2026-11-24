@@ -6,7 +6,7 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🟢 Prioridad 1: Mucho uso, poco riesgo (Lote Recomendado)
 
-- [x] **Imprimir (`Ctrl+P`)**
+- [x] ~~**Imprimir (`Ctrl+P`)**~~
   - *Estado:* Implementado (v0.1.0).
   - Impresión del documento compuesto usando `webContents.print` y ajuste dinámico de tamaño de hoja (`@page`).
 - [ ] **Extraer / Dividir páginas**
@@ -57,9 +57,9 @@ Este documento contiene la lista completa de características planificadas, prio
   - Configurar "Abrir con Lalo PDF" automáticamente en el instalador de Windows.
 - [ ] **Redacción real (Sanitización)**
   - Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).
-- [x] **Arrastrar PDF a las miniaturas para añadir páginas**
+- [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~
   - Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.
-- [x] **Arrastrar PDF a la pantalla central al iniciar**
+- [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~
   - Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.
 
 ---
