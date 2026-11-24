@@ -58,7 +58,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [ ] **Redacción real (Sanitización)**
   - Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).
 - [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~
-  - Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.
+  - ~~Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.~~
 - [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~
   - Permitir arrastrar y soltar un PDF directamente sobre la pantalla de inicio cuando no hay ningún documento abierto.
 - [x] ~~**Desplegable y entrada directa de porcentaje de zoom**~~
