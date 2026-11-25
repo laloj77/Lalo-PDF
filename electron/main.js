@@ -303,9 +303,9 @@ async function createWindow() {
       event.preventDefault();
       const choice = dialog.showMessageBoxSync(mainWindow, {
         type: 'warning',
-        buttons: ['Guardar', 'No guardar', 'Cancelar'],
+        buttons: ['Guardar', 'Guardar como…', 'No guardar', 'Cancelar'],
         defaultId: 0,
-        cancelId: 2,
+        cancelId: 3,
         title: 'Cambios sin guardar',
         message: 'Tienes cambios sin guardar en el documento.',
         detail: '¿Quieres guardarlos antes de salir?',
@@ -314,7 +314,11 @@ async function createWindow() {
         send('save-and-quit');
         return;
       }
-      if (choice === 2) {
+      if (choice === 1) {
+        send('save-as-and-quit');
+        return;
+      }
+      if (choice === 3) {
         return;
       }
       forceCloseConfirmed = true;

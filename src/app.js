@@ -4338,6 +4338,11 @@
             if (!state.dirty) window.lalo?.confirmQuit?.();
           });
           break;
+        case 'save-as-and-quit':
+          saveAs().then(() => {
+            if (!state.dirty) window.lalo?.confirmQuit?.();
+          });
+          break;
         case 'export-images':
           exportImages();
           break;
