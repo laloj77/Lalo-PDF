@@ -9,7 +9,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Imprimir (`Ctrl+P`)**~~
   - ~~*Estado:* Implementado (v0.1.0).~~
   - ~~Impresión del documento compuesto usando `webContents.print` y ajuste dinámico de tamaño de hoja (`@page`).~~
-- [ ] **Extraer / Dividir páginas**
+- [x] ~~**Extraer / Dividir páginas**~~
   - ~~Seleccionar miniaturas de la barra lateral → *Extraer como PDF…* (y exportar como JPEG/PNG, duplicar, rotar, insertar en blanco o eliminar desde el menú contextual o arrastrando con el botón derecho).~~
   - ~~Opción de *Dividir en varios PDF* (por rangos o por página).~~
 - [x] ~~**Firma digital / manuscrita**~~
