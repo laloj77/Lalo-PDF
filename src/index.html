@@ -792,6 +792,13 @@
             </label>
             <button type="button" class="help-dot" aria-label="Ayuda sobre escala de grises" data-help="Si el documento es en blanco y negro (facturas, escaneos), pasar las imágenes a escala de grises reduce aún más el tamaño.">?</button>
           </div>
+          <div class="compress-opt-row">
+            <label class="compress-check">
+              <input type="checkbox" id="compress-opt-rasterize" />
+              <span>Rasterizar páginas (compresión extrema)</span>
+            </label>
+            <button type="button" class="help-dot" aria-label="Ayuda sobre rasterizar páginas" data-help="Convierte cada página completa en una imagen JPEG (ideal para planos CAD o PDFs con vectores muy pesados). El texto dejará de ser seleccionable y buscable.">?</button>
+          </div>
         </div>
         <div id="compress-help-popover" class="help-popover" hidden></div>
         <div id="compress-compare" class="compress-compare">

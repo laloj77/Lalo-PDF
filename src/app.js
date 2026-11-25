@@ -5404,7 +5404,54 @@
       flattenForms: Boolean($('#compress-opt-flatten')?.checked),
       optimizeStructure: Boolean($('#compress-opt-structure')?.checked),
       grayscale: Boolean($('#compress-opt-grayscale')?.checked),
+      rasterize: Boolean($('#compress-opt-rasterize')?.checked),
     };
+  }
+
+  async function rasterizePdfBytes(sourceBytes, opts, tokenCheck) {
+    const pdf = await pdfjsLib.getDocument({ data: sourceBytes.slice() }).promise;
+    try {
+      const outDoc = await PDFDocument.create();
+      for (let i = 1; i <= pdf.numPages; i += 1) {
+        if (tokenCheck && !tokenCheck()) return null;
+        const page = await pdf.getPage(i);
+        const vp1 = page.getViewport({ scale: 1 });
+        const renderScale =
+          opts.maxDim > 0
+            ? Math.min(2.5, opts.maxDim / Math.max(vp1.width, vp1.height))
+            : 2.0;
+        const viewport = page.getViewport({ scale: Math.max(0.5, renderScale) });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(viewport.width));
+        canvas.height = Math.max(1, Math.round(viewport.height));
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        let outCanvas = canvas;
+        if (opts.grayscale) {
+          outCanvas = document.createElement('canvas');
+          outCanvas.width = canvas.width;
+          outCanvas.height = canvas.height;
+          const octx = outCanvas.getContext('2d');
+          octx.filter = 'grayscale(100%)';
+          octx.drawImage(canvas, 0, 0);
+        }
+
+        const jpgBytes = await canvasToJpegBytes(outCanvas, opts.quality);
+        const jpgImg = await outDoc.embedJpg(jpgBytes);
+        const outPage = outDoc.addPage([vp1.width, vp1.height]);
+        outPage.drawImage(jpgImg, { x: 0, y: 0, width: vp1.width, height: vp1.height });
+      }
+      if (opts.stripMetadata) {
+        stripPdfMetadata(outDoc);
+      }
+      const afterBytes = await outDoc.save({ useObjectStreams: opts.optimizeStructure });
+      return { afterBytes, pageCount: pdf.numPages };
+    } finally {
+      pdf.destroy();
+    }
   }
 
   let compressPreviewToken = 0;
@@ -5431,19 +5478,39 @@
       if (token !== compressPreviewToken) return null;
 
       beforeEl.textContent = formatBytes(beforeBytes.length);
-      if (opts.flattenForms) {
-        try {
-          doc.getForm().flatten();
-        } catch {
-          /* ignore if no form fields */
+
+      let afterBytes = null;
+      let metaText = '';
+      let stats = { totalImages: 0, recompressed: 0 };
+
+      if (opts.rasterize) {
+        const rast = await rasterizePdfBytes(
+          beforeBytes,
+          opts,
+          () => token === compressPreviewToken,
+        );
+        if (!rast || token !== compressPreviewToken) return null;
+        afterBytes = rast.afterBytes;
+        metaText = `${rast.pageCount} página${rast.pageCount === 1 ? '' : 's'} rasterizada${rast.pageCount === 1 ? '' : 's'} como imagen.`;
+      } else {
+        if (opts.flattenForms) {
+          try {
+            doc.getForm().flatten();
+          } catch {
+            /* ignore if no form fields */
+          }
         }
+        stats = await recompressPdfImages(doc, opts);
+        if (opts.stripMetadata) {
+          stripPdfMetadata(doc);
+        }
+        afterBytes = await doc.save({ useObjectStreams: opts.optimizeStructure });
+        if (token !== compressPreviewToken) return null;
+        metaText =
+          stats.totalImages > 0
+            ? `${stats.recompressed} de ${stats.totalImages} imágenes recomprimidas.`
+            : 'No se detectaron imágenes recomprimibles en el documento.';
       }
-      const stats = await recompressPdfImages(doc, opts);
-      if (opts.stripMetadata) {
-        stripPdfMetadata(doc);
-      }
-      const afterBytes = await doc.save({ useObjectStreams: opts.optimizeStructure });
-      if (token !== compressPreviewToken) return null;
 
       const diff = beforeBytes.length - afterBytes.length;
       const pct = beforeBytes.length > 0 ? (diff / beforeBytes.length) * 100 : 0;
@@ -5453,10 +5520,7 @@
       } else {
         afterEl.textContent = `${formatBytes(afterBytes.length)} (sin reducción)`;
       }
-      metaEl.textContent =
-        stats.totalImages > 0
-          ? `${stats.recompressed} de ${stats.totalImages} imágenes recomprimidas.`
-          : 'No se detectaron imágenes recomprimibles en el documento.';
+      metaEl.textContent = metaText;
 
       lastCompressResult = {
         key: JSON.stringify(opts),
@@ -5546,6 +5610,7 @@
       '#compress-opt-flatten',
       '#compress-opt-structure',
       '#compress-opt-grayscale',
+      '#compress-opt-rasterize',
     ].forEach((sel) => $(sel)?.addEventListener('change', triggerPreview));
     $('#compress-preview')?.addEventListener('click', triggerPreview);
 
