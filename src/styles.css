@@ -1349,6 +1349,11 @@ body.thumb-dragging * {
   font-size: 13px;
 }
 
+select option {
+  background-color: var(--panel-bg);
+  color: var(--ink);
+}
+
 .modal-field input:focus,
 .modal-field select:focus {
   outline: 2px solid var(--accent);
