@@ -3625,6 +3625,102 @@
       if (event.target === el.shortcutsModal) el.shortcutsModal.hidden = true;
     });
 
+    el.thumbs.addEventListener('contextmenu', async (event) => {
+      const thumb = event.target.closest('.thumb');
+      if (!thumb || !state.pages.length || !window.lalo?.showThumbContextMenu) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      const index = Number(thumb.dataset.index);
+      const clickedModel = state.pages[index];
+      if (!clickedModel) return;
+
+      if (!state.selected.has(clickedModel.id)) {
+        state.selected.clear();
+        state.selected.add(clickedModel.id);
+        state.anchorIndex = index;
+        state.current = index;
+        updateThumbSelection();
+        updateStatus();
+      }
+
+      const selectedModels = state.pages.filter((p) => state.selected.has(p.id));
+      if (!selectedModels.length) return;
+
+      const res = await window.lalo.showThumbContextMenu(selectedModels.length);
+      if (!res || !res.action) return;
+
+      if (res.action === 'delete') {
+        deletePages();
+        return;
+      }
+
+      if (res.action === 'pdf') {
+        setBusy(true);
+        try {
+          const bytes = await composeBytes(selectedModels);
+          const defaultName = dragFileName(selectedModels);
+          const saved = await window.lalo.savePdf(defaultName, bytes);
+          if (saved && !saved.canceled && !saved.error) {
+            toast(`PDF guardado: ${saved.name}`);
+          } else if (saved?.error) {
+            throw new Error(saved.error);
+          }
+        } catch (error) {
+          showError('No se pudo extraer el PDF', error);
+        } finally {
+          setBusy(false);
+        }
+        return;
+      }
+
+      if (res.action === 'png' || res.action === 'jpg') {
+        const ext = res.action;
+        const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+        setBusy(true);
+        try {
+          const bytes = await composeBytes(selectedModels);
+          const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+          const images = [];
+          try {
+            for (let i = 1; i <= pdf.numPages; i += 1) {
+              const page = await pdf.getPage(i);
+              const base = page.getViewport({ scale: 1 });
+              const scale = Math.min(2, 2600 / Math.max(base.width, base.height));
+              const viewport = page.getViewport({ scale });
+              const canvas = document.createElement('canvas');
+              canvas.width = Math.ceil(viewport.width);
+              canvas.height = Math.ceil(viewport.height);
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              await page.render({ canvasContext: ctx, viewport }).promise;
+              const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
+              if (!blob) throw new Error('No se pudo generar la imagen');
+              images.push({ ext, bytes: new Uint8Array(await blob.arrayBuffer()) });
+            }
+          } finally {
+            await pdf.destroy().catch(() => {});
+          }
+          const name = baseName(state.fileName);
+          const exported = await window.lalo.exportImages(name, images, folderOf(state.filePath));
+          if (exported && !exported.canceled && !exported.error) {
+            toast(
+              `${images.length} imagen${images.length === 1 ? '' : 'es'} exportada${
+                images.length === 1 ? '' : 's'
+              }`,
+            );
+          } else if (exported?.error) {
+            throw new Error(exported.error);
+          }
+        } catch (error) {
+          showError('No se pudieron exportar las páginas', error);
+        } finally {
+          setBusy(false);
+        }
+      }
+    });
+
     el.viewer.addEventListener('pointerdown', (event) => {
       if (!event.target.closest('.page-image-hit')) clearSelectedPdfImage();
     });

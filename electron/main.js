@@ -799,6 +799,60 @@ function registerIpc() {
     }
   });
 
+  ipcMain.handle('thumb:context-menu', async (event, { count = 1 } = {}) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return { action: null };
+    return await new Promise((resolve) => {
+      let resolved = false;
+      let clicked = false;
+      const done = (payload) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(payload);
+      };
+      const suffix = count > 1 ? ` (${count} páginas)` : '';
+      const menu = Menu.buildFromTemplate([
+        {
+          label: `Extraer como PDF…${suffix}`,
+          click: () => {
+            clicked = true;
+            done({ action: 'pdf' });
+          },
+        },
+        {
+          label: `Exportar como JPEG…${suffix}`,
+          click: () => {
+            clicked = true;
+            done({ action: 'jpg' });
+          },
+        },
+        {
+          label: `Exportar como PNG…${suffix}`,
+          click: () => {
+            clicked = true;
+            done({ action: 'png' });
+          },
+        },
+        { type: 'separator' },
+        {
+          label: count > 1 ? `Eliminar ${count} páginas` : 'Eliminar página',
+          click: () => {
+            clicked = true;
+            done({ action: 'delete' });
+          },
+        },
+      ]);
+      menu.popup({
+        window: win,
+        callback: () => {
+          setTimeout(() => {
+            if (!clicked) done({ action: null });
+          }, 120);
+        },
+      });
+    });
+  });
+
   // Imprime el documento tal y como lo prepara el renderer en #print-root.
   // `toPdf` genera un PDF en la carpeta temporal: se usa en las pruebas para
   // verificar el resultado sin depender de una impresora física.

@@ -19,6 +19,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('dialog:export-word', { baseName, pages }),
   saveSignature: (bytes, defaultName) =>
     ipcRenderer.invoke('dialog:save-signature', { bytes, defaultName }),
+  showThumbContextMenu: (count) =>
+    ipcRenderer.invoke('thumb:context-menu', { count }),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
   showImageContextMenu: (bytes, defaultName, webpBytes) =>
