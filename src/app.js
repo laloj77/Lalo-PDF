@@ -1943,7 +1943,7 @@
         ctx.strokeRect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
       }
       ctx.fillStyle = annotation.color;
-      ctx.font = `${size}px ${FONT_FAMILY}`;
+      ctx.font = `${annotation.italic ? 'italic ' : ''}${annotation.bold ? 'bold ' : ''}${size}px ${FONT_FAMILY}`;
       ctx.textBaseline = 'top';
       const align = annotation.align || 'left';
       ctx.textAlign = align;
@@ -1962,6 +1962,25 @@
         const y = box.y + index * lineHeight;
         if (y > box.y + box.h + lineHeight) return;
         ctx.fillText(line, textX, y);
+        if (annotation.underline || annotation.strike) {
+          const lw = ctx.measureText(line).width;
+          const lx =
+            align === 'center' ? textX - lw / 2 : align === 'right' ? textX - lw : textX;
+          ctx.strokeStyle = annotation.color;
+          ctx.lineWidth = Math.max(1, size * 0.07);
+          if (annotation.underline) {
+            ctx.beginPath();
+            ctx.moveTo(lx, y + size * 1.02);
+            ctx.lineTo(lx + lw, y + size * 1.02);
+            ctx.stroke();
+          }
+          if (annotation.strike) {
+            ctx.beginPath();
+            ctx.moveTo(lx, y + size * 0.55);
+            ctx.lineTo(lx + lw, y + size * 0.55);
+            ctx.stroke();
+          }
+        }
       });
       ctx.restore();
     }
@@ -3045,6 +3064,10 @@
     const size = Number(el.textSize.value) || state.fontSize;
     const align = $('#text-align-select')?.value || 'left';
     const borderColor = $('#text-border-select')?.value || 'none';
+    const bold = $('#te-bold')?.classList.contains('active') || false;
+    const italic = $('#te-italic')?.classList.contains('active') || false;
+    const underline = $('#te-underline')?.classList.contains('active') || false;
+    const strike = $('#te-strike')?.classList.contains('active') || false;
     state.fontSize = size;
 
     const x = clamp((inputRect.left - pageRect.left) / pageRect.width, 0, 0.98);
@@ -3068,7 +3091,20 @@
         state.selection = null;
         changed = true;
       } else {
-        Object.assign(existing, { x, y, w, h, text, size, align, borderColor });
+        Object.assign(existing, {
+          x,
+          y,
+          w,
+          h,
+          text,
+          size,
+          align,
+          borderColor,
+          bold,
+          italic,
+          underline,
+          strike,
+        });
         existing.color = state.textColor;
         changed = true;
       }
@@ -3085,6 +3121,10 @@
         size,
         align,
         borderColor,
+        bold,
+        italic,
+        underline,
+        strike,
         color: state.textColor,
         width: state.strokeWidth,
       });
@@ -4026,6 +4066,33 @@
           setBusy(false);
         }
       }
+    });
+
+    $$('.te-fmt-btn').forEach((btn) => {
+      btn.addEventListener('click', () => btn.classList.toggle('active'));
+    });
+
+    el.viewer.addEventListener('contextmenu', async (event) => {
+      if (!state.markupOpen || !window.lalo?.showTextContextMenu) return;
+      const overlay = event.target.closest('.page-overlay');
+      if (!overlay) return;
+      const pageId = overlay.dataset.pageId;
+      const rect = overlay.getBoundingClientRect();
+      const nx = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+      const ny = clamp((event.clientY - rect.top) / rect.height, 0, 1);
+      const scale = overlay.__scale || 1;
+      const hit = findAnnotationAt(pageId, nx, ny, rect.width, rect.height, scale);
+      if (!hit || hit.type !== 'text') return;
+      event.preventDefault();
+      event.stopPropagation();
+      state.selection = { pageId, id: hit.id };
+      redrawPage(pageId);
+      const res = await window.lalo.showTextContextMenu(hit);
+      if (!res || !res.prop) return;
+      pushHistory(false);
+      hit[res.prop] = res.value;
+      redrawPage(pageId);
+      setDirty(true);
     });
 
     el.viewer.addEventListener('pointerdown', (event) => {

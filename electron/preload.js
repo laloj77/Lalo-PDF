@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('thumb:context-menu', { count }),
   pickExportSelection: (defaultName) =>
     ipcRenderer.invoke('dialog:export-selection', { defaultName }),
+  showTextContextMenu: (current) =>
+    ipcRenderer.invoke('text:context-menu', current),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
   showImageContextMenu: (bytes, defaultName, webpBytes) =>

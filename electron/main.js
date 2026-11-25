@@ -897,6 +897,145 @@ function registerIpc() {
     }
   });
 
+  ipcMain.handle('text:context-menu', async (event, current = {}) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return null;
+    return await new Promise((resolve) => {
+      let resolved = false;
+      let clicked = false;
+      const done = (payload) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(payload);
+      };
+      const colors = [
+        { label: 'Negro', value: '#2c2c2e' },
+        { label: 'Azul', value: '#0a84ff' },
+        { label: 'Verde', value: '#32d74b' },
+        { label: 'Rojo', value: '#ff453a' },
+        { label: 'Amarillo', value: '#ffd60a' },
+      ];
+      const menu = Menu.buildFromTemplate([
+        {
+          label: 'Color',
+          submenu: colors.map((c) => ({
+            label: c.label,
+            type: 'radio',
+            checked: current.color === c.value,
+            click: () => {
+              clicked = true;
+              done({ prop: 'color', value: c.value });
+            },
+          })),
+        },
+        {
+          label: 'Tipo de texto',
+          submenu: [
+            {
+              label: 'Negrita',
+              type: 'checkbox',
+              checked: !!current.bold,
+              click: () => {
+                clicked = true;
+                done({ prop: 'bold', value: !current.bold });
+              },
+            },
+            {
+              label: 'Cursiva',
+              type: 'checkbox',
+              checked: !!current.italic,
+              click: () => {
+                clicked = true;
+                done({ prop: 'italic', value: !current.italic });
+              },
+            },
+            {
+              label: 'Subrayado',
+              type: 'checkbox',
+              checked: !!current.underline,
+              click: () => {
+                clicked = true;
+                done({ prop: 'underline', value: !current.underline });
+              },
+            },
+            {
+              label: 'Tachado',
+              type: 'checkbox',
+              checked: !!current.strike,
+              click: () => {
+                clicked = true;
+                done({ prop: 'strike', value: !current.strike });
+              },
+            },
+          ],
+        },
+        {
+          label: 'Alineación',
+          submenu: [
+            {
+              label: 'Izquierda',
+              type: 'radio',
+              checked: (current.align || 'left') === 'left',
+              click: () => {
+                clicked = true;
+                done({ prop: 'align', value: 'left' });
+              },
+            },
+            {
+              label: 'Centro',
+              type: 'radio',
+              checked: current.align === 'center',
+              click: () => {
+                clicked = true;
+                done({ prop: 'align', value: 'center' });
+              },
+            },
+            {
+              label: 'Derecha',
+              type: 'radio',
+              checked: current.align === 'right',
+              click: () => {
+                clicked = true;
+                done({ prop: 'align', value: 'right' });
+              },
+            },
+          ],
+        },
+        {
+          label: 'Recuadro',
+          submenu: [
+            {
+              label: 'Sin recuadro',
+              type: 'radio',
+              checked: !current.borderColor || current.borderColor === 'none',
+              click: () => {
+                clicked = true;
+                done({ prop: 'borderColor', value: 'none' });
+              },
+            },
+            ...colors.map((c) => ({
+              label: c.label,
+              type: 'radio',
+              checked: current.borderColor === c.value,
+              click: () => {
+                clicked = true;
+                done({ prop: 'borderColor', value: c.value });
+              },
+            })),
+          ],
+        },
+      ]);
+      menu.popup({
+        window: win,
+        callback: () => {
+          setTimeout(() => {
+            if (!clicked) done(null);
+          }, 120);
+        },
+      });
+    });
+  });
+
   // Imprime el documento tal y como lo prepara el renderer en #print-root.
   // `toPdf` genera un PDF en la carpeta temporal: se usa en las pruebas para
   // verificar el resultado sin depender de una impresora física.
