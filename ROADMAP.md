@@ -17,9 +17,9 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Números de página y Marca de agua**~~
   - ~~Numerar desde/hasta con posición personalizable (cabecera/pie, izquierda/centro/derecha).~~
   - ~~Marca de agua de texto (e imagen/logo) con rotación y opacidad personalizable.~~
-- [ ] **Comprimir PDF**
-  - Recomprimir imágenes del documento con calidad/resolución ajustable.
-  - Mostrar comparativa de tamaño "antes → después".
+- [x] ~~**Comprimir PDF**~~
+  - ~~Recomprimir imágenes del documento con calidad/resolución ajustable.~~
+  - ~~Mostrar comparativa de tamaño "antes → después".~~
 
 ---
 
