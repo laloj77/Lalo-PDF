@@ -1822,6 +1822,20 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    if (state.watermark && state.watermark.text) {
+      const wm = state.watermark;
+      ctx.save();
+      ctx.globalAlpha = wm.opacity;
+      ctx.fillStyle = wm.color;
+      ctx.font = `600 ${Math.max(8, wm.size * scale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate((wm.rotation * Math.PI) / 180);
+      ctx.fillText(wm.text, 0, 0);
+      ctx.restore();
+    }
+
     const annotations = state.annotations.get(pageId) || [];
     for (const annotation of annotations) drawAnn(ctx, annotation, width, height, scale);
     if (extra) drawAnn(ctx, extra, width, height, scale);
