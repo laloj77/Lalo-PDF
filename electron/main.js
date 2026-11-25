@@ -909,11 +909,11 @@ function registerIpc() {
         resolve(payload);
       };
       const colors = [
-        { label: 'Negro\t⚫', value: '#2c2c2e' },
-        { label: 'Azul\t🔵', value: '#0a84ff' },
-        { label: 'Verde\t🟢', value: '#32d74b' },
-        { label: 'Rojo\t🔴', value: '#ff453a' },
-        { label: 'Amarillo\t🟡', value: '#ffd60a' },
+        { label: 'Negro     ⚫', value: '#2c2c2e' },
+        { label: 'Azul       🔵', value: '#0a84ff' },
+        { label: 'Verde     🟢', value: '#32d74b' },
+        { label: 'Rojo       🔴', value: '#ff453a' },
+        { label: 'Amarillo  🟡', value: '#ffd60a' },
       ];
       const menu = Menu.buildFromTemplate([
         {
