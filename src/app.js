@@ -1,7 +1,18 @@
 (() => {
   'use strict';
 
-  const { PDFDocument, StandardFonts, degrees, rgb, LineCapStyle } = window.PDFLib;
+  const {
+    PDFDocument,
+    PDFName,
+    PDFArray,
+    PDFDict,
+    PDFString,
+    PDFNumber,
+    StandardFonts,
+    degrees,
+    rgb,
+    LineCapStyle,
+  } = window.PDFLib;
   const pdfjsLib = window.pdfjsLib;
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('vendor/pdf.worker.js', document.baseURI).href;
 
@@ -363,8 +374,9 @@
       for (let index = 0; index < pages.length; index += 1) {
         const page = pages[index];
         const { width, height } = page.getSize();
+        const pageId = uid('pg');
         state.pages.push({
-          id: uid('pg'),
+          id: pageId,
           kind: 'pdf',
           sourceId,
           srcIndex: index,
@@ -372,6 +384,31 @@
           width,
           height,
         });
+        try {
+          const annotsRef = page.node.get(PDFName.of('Annots'));
+          const annotsArr = annotsRef ? doc.context.lookupMaybe(annotsRef, PDFArray) : null;
+          if (annotsArr) {
+            const restored = [];
+            for (let a = 0; a < annotsArr.size(); a += 1) {
+              const dict = doc.context.lookupMaybe(annotsArr.get(a), PDFDict);
+              if (!dict) continue;
+              const raw = dict.get(PDFName.of('LaloData'));
+              const str = raw ? doc.context.lookupMaybe(raw, PDFString) : null;
+              if (!str) continue;
+              try {
+                const parsed = JSON.parse(str.decodeText());
+                if (parsed && parsed.type) {
+                  restored.push({ ...parsed, id: uid('ann') });
+                }
+              } catch {
+                /* ignore malformed annotation */
+              }
+            }
+            if (restored.length) state.annotations.set(pageId, restored);
+          }
+        } catch {
+          /* ignore annotation read errors */
+        }
       }
       return pages.length;
     } catch (error) {
@@ -511,6 +548,27 @@
         cache.set(model.sourceId, sourceDoc);
       }
       const [copied] = await out.copyPages(sourceDoc, [model.srcIndex]);
+      try {
+        const annotsRef = copied.node.get(PDFName.of('Annots'));
+        const annotsArr = annotsRef ? out.context.lookupMaybe(annotsRef, PDFArray) : null;
+        if (annotsArr) {
+          const kept = [];
+          for (let a = 0; a < annotsArr.size(); a += 1) {
+            const ref = annotsArr.get(a);
+            const dict = out.context.lookupMaybe(ref, PDFDict);
+            if (dict && dict.get(PDFName.of('LaloData'))) continue;
+            kept.push(ref);
+          }
+          if (kept.length === 0) {
+            copied.node.delete(PDFName.of('Annots'));
+          } else if (kept.length !== annotsArr.size()) {
+            const nextArr = out.context.obj(kept);
+            copied.node.set(PDFName.of('Annots'), nextArr);
+          }
+        }
+      } catch {
+        /* ignore */
+      }
       copied.setRotation(degrees(model.rotation || 0));
       out.addPage(copied);
     }
@@ -724,12 +782,108 @@
     }
   }
 
-  async function composePdf(models = state.pages) {
+  function hexToRgbArray(hex) {
+    const clean = String(hex || '#000000').replace('#', '');
+    const n = Number.parseInt(clean.length === 3 ? clean.replace(/(.)/g, '$1$1') : clean, 16) || 0;
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+
+  function writeNativeAnnotations(doc, page, model) {
+    const annotations = state.annotations.get(model.id) || [];
+    if (!annotations.length) return;
+    const { width, height } = page.getSize();
+    const rotation = normAngle(page.getRotation().angle);
+    const toPdf = (nx, ny) => mapPoint(nx, ny, width, height, rotation);
+
+    let annotsArr = null;
+    const existingRef = page.node.get(PDFName.of('Annots'));
+    if (existingRef) {
+      annotsArr = doc.context.lookupMaybe(existingRef, PDFArray);
+    }
+    if (!annotsArr) {
+      annotsArr = doc.context.obj([]);
+      page.node.set(PDFName.of('Annots'), annotsArr);
+    }
+
+    const subtypeMap = {
+      highlight: 'Highlight',
+      rect: 'Square',
+      ellipse: 'Circle',
+      line: 'Line',
+      arrow: 'Line',
+      pen: 'Ink',
+      text: 'FreeText',
+    };
+
+    for (const ann of annotations) {
+      if (ann.type === 'signature') continue;
+      const subtype = subtypeMap[ann.type] || 'Square';
+      let x1 = 0;
+      let y1 = 0;
+      let x2 = 0;
+      let y2 = 0;
+      if (ann.type === 'line' || ann.type === 'arrow') {
+        const p1 = toPdf(ann.x1, ann.y1);
+        const p2 = toPdf(ann.x2, ann.y2);
+        x1 = Math.min(p1.x, p2.x);
+        y1 = Math.min(p1.y, p2.y);
+        x2 = Math.max(p1.x, p2.x);
+        y2 = Math.max(p1.y, p2.y);
+      } else if (ann.type === 'pen' && Array.isArray(ann.points) && ann.points.length) {
+        const pts = ann.points.map((p) => toPdf(p.x, p.y));
+        x1 = Math.min(...pts.map((p) => p.x));
+        y1 = Math.min(...pts.map((p) => p.y));
+        x2 = Math.max(...pts.map((p) => p.x));
+        y2 = Math.max(...pts.map((p) => p.y));
+      } else {
+        const p1 = toPdf(ann.x || 0, ann.y || 0);
+        const p2 = toPdf((ann.x || 0) + (ann.w || 0.1), (ann.y || 0) + (ann.h || 0.05));
+        x1 = Math.min(p1.x, p2.x);
+        y1 = Math.min(p1.y, p2.y);
+        x2 = Math.max(p1.x, p2.x);
+        y2 = Math.max(p1.y, p2.y);
+      }
+
+      const [r, g, b] = hexToRgbArray(ann.color);
+      const { __img, ...serializable } = ann;
+      const dict = doc.context.obj({
+        Type: 'Annot',
+        Subtype: subtype,
+        Rect: [x1, y1, x2, y2],
+        C: [r, g, b],
+        F: 4,
+        Contents: PDFString.of(String(ann.text || '')),
+        LaloData: PDFString.of(JSON.stringify(serializable)),
+      });
+      if (ann.type === 'highlight') {
+        dict.set(PDFName.of('CA'), PDFNumber.of(0.35));
+      }
+      const ref = doc.context.register(dict);
+      annotsArr.push(ref);
+    }
+  }
+
+  async function composePdf(models = state.pages, { editableAnnotations = false } = {}) {
     const doc = await buildDocument(models);
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const pages = doc.getPages();
     for (let i = 0; i < pages.length; i += 1) {
-      await flattenAnnotations(doc, pages[i], models[i], font);
+      if (editableAnnotations) {
+        writeNativeAnnotations(doc, pages[i], models[i]);
+        const sigOnly = {
+          ...models[i],
+        };
+        const list = state.annotations.get(models[i].id) || [];
+        const sigs = list.filter((a) => a.type === 'signature');
+        if (sigs.length) {
+          const orig = state.annotations.get(models[i].id);
+          state.annotations.set(models[i].id, sigs);
+          await flattenAnnotations(doc, pages[i], sigOnly, font);
+          state.annotations.set(models[i].id, orig);
+        }
+      } else {
+        await flattenAnnotations(doc, pages[i], models[i], font);
+      }
       if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
         const wm = state.watermark;
         const page = pages[i];
@@ -775,8 +929,8 @@
     return doc;
   }
 
-  async function composeBytes(models = state.pages, { encrypt = false } = {}) {
-    const doc = await composePdf(models);
+  async function composeBytes(models = state.pages, { encrypt = false, editableAnnotations = false } = {}) {
+    const doc = await composePdf(models, { editableAnnotations });
     if (encrypt && state.security) {
       const sec = state.security;
       const ownerPassword =
@@ -848,7 +1002,7 @@
     setBusy(true);
     toast('Guardando…', 1500);
     try {
-      const bytes = await composeBytes(state.pages, { encrypt: true });
+      const bytes = await composeBytes(state.pages, { encrypt: true, editableAnnotations: true });
       const result = await window.lalo.savePdfInPlace(state.filePath, bytes);
       if (!result || result.ok === false) {
         throw new Error((result && result.error) || 'No se pudo escribir el archivo');
@@ -868,7 +1022,7 @@
     }
     if (!window.lalo?.savePdf) {
       try {
-        const bytes = await composeBytes(state.pages, { encrypt: true });
+        const bytes = await composeBytes(state.pages, { encrypt: true, editableAnnotations: true });
         downloadBlob(bytes, state.fileName || 'Documento.pdf', 'application/pdf');
         markSaved();
       } catch (error) {
@@ -878,7 +1032,7 @@
     }
     setBusy(true);
     try {
-      const bytes = await composeBytes(state.pages, { encrypt: true });
+      const bytes = await composeBytes(state.pages, { encrypt: true, editableAnnotations: true });
       const result = await window.lalo.savePdf(state.fileName || 'Documento.pdf', bytes);
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
