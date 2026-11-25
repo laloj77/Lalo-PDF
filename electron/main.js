@@ -254,6 +254,7 @@ function buildMenu() {
         { label: 'Borrador', accelerator: 'CmdOrCtrl+Alt+9', click: () => send('tool-eraser') },
         { label: 'Firma manuscrita…', click: () => send('signature') },
         { label: 'Marca de agua…', click: () => send('watermark') },
+        { label: 'Números de página…', click: () => send('page-numbers') },
         { type: 'separator' },
         { label: 'Buscar en el documento', accelerator: 'CmdOrCtrl+F', click: () => send('search') },
         { label: 'Insertar página en blanco', click: () => send('insert-blank') },

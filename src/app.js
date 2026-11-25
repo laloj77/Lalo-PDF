@@ -63,6 +63,7 @@
     filePath: null,
     security: null,
     watermark: null,
+    pageNumbers: null,
     dirty: false,
     sidebarHidden: false,
     search: { query: '', occurrences: [], index: -1, rects: new Map(), token: 0 },
@@ -963,6 +964,40 @@
             color: hexToRgb(wm.color),
             opacity: wm.opacity,
             rotate: degrees(-wm.rotation),
+          });
+        }
+      }
+      if (state.pageNumbers) {
+        const pn = state.pageNumbers;
+        const pageNum1Based = i + 1;
+        if (pageNum1Based >= pn.from && pageNum1Based <= pn.to) {
+          const displayNum = pn.start + (pageNum1Based - pn.from);
+          const totalDisplay = pn.start + (pn.to - pn.from);
+          const label =
+            pn.format === 'page-n'
+              ? `Página ${displayNum}`
+              : pn.format === 'n-of-total'
+                ? `${displayNum} / ${totalDisplay}`
+                : String(displayNum);
+          const page = pages[i];
+          const { width, height } = page.getSize();
+          const sz = pn.size || 11;
+          const tw = font.widthOfTextAtSize(label, sz);
+          const marginX = 32;
+          const marginY = 24;
+          const x =
+            pn.hpos === 'left'
+              ? marginX
+              : pn.hpos === 'right'
+                ? Math.max(marginX, width - marginX - tw)
+                : Math.max(marginX, (width - tw) / 2);
+          const y = pn.vpos === 'top' ? height - marginY - sz : marginY;
+          page.drawText(label, {
+            x,
+            y,
+            size: sz,
+            font,
+            color: rgb(0.2, 0.2, 0.22),
           });
         }
       }
@@ -4447,6 +4482,9 @@
         case 'watermark':
           openWatermarkModal();
           break;
+        case 'page-numbers':
+          openPageNumbersModal();
+          break;
         case 'protect':
           openProtectModal();
           break;
@@ -4983,6 +5021,67 @@
     else enterPresentation();
   }
 
+  function openPageNumbersModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de añadir números de página');
+      return;
+    }
+    const total = state.pages.length;
+    const pn = state.pageNumbers;
+    $('#pn-from').max = String(total);
+    $('#pn-to').max = String(total);
+    $('#pn-from').value = String(pn?.from || 1);
+    $('#pn-to').value = String(pn?.to || total);
+    $('#pn-start').value = String(pn?.start || 1);
+    $('#pn-vpos').value = pn?.vpos || 'bottom';
+    $('#pn-hpos').value = pn?.hpos || 'center';
+    $('#pn-format').value = pn?.format || 'n';
+    $('#pn-size').value = String(pn?.size || 11);
+    $('#pn-clear').hidden = !pn;
+    $('#pagenum-modal').hidden = false;
+  }
+
+  function bindPageNumbersModal() {
+    const modal = $('#pagenum-modal');
+    const form = $('#pagenum-form');
+    if (!modal || !form) return;
+
+    $('#btn-page-numbers')?.addEventListener('click', openPageNumbersModal);
+    $('#pn-close')?.addEventListener('click', () => { modal.hidden = true; });
+    $('#pn-cancel')?.addEventListener('click', () => { modal.hidden = true; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+    $('#pn-clear')?.addEventListener('click', () => {
+      state.pageNumbers = null;
+      modal.hidden = true;
+      redrawAllOverlays();
+      setDirty(true);
+      toast('Números de página eliminados');
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const total = state.pages.length;
+      const from = clamp(Number.parseInt($('#pn-from').value, 10) || 1, 1, total);
+      const to = clamp(Number.parseInt($('#pn-to').value, 10) || total, from, total);
+      const start = Math.max(1, Number.parseInt($('#pn-start').value, 10) || 1);
+      const size = clamp(Number.parseInt($('#pn-size').value, 10) || 11, 8, 24);
+      state.pageNumbers = {
+        from,
+        to,
+        start,
+        vpos: $('#pn-vpos').value,
+        hpos: $('#pn-hpos').value,
+        format: $('#pn-format').value,
+        size,
+      };
+      modal.hidden = true;
+      redrawAllOverlays();
+      setDirty(true);
+      toast('Números de página aplicados');
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -5099,6 +5198,7 @@
     bindSecurityModals();
     bindSignatureModal();
     bindWatermarkModal();
+    bindPageNumbersModal();
     bindMenu();
     updateStatus();
     updateToolbarState();

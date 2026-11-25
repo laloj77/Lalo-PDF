@@ -294,6 +294,9 @@
               <button id="btn-watermark" class="tool-btn" type="button" title="Marca de agua">
                 <svg viewBox="0 0 24 24"><path d="M12 3.5s5.5 6.2 5.5 10.2a5.5 5.5 0 0 1-11 0C6.5 9.7 12 3.5 12 3.5z" /></svg>
               </button>
+              <button id="btn-page-numbers" class="tool-btn" type="button" title="Números de página">
+                <svg viewBox="0 0 24 24"><path d="M5 7h14M5 17h14M10 4v16M15 4v16" /></svg>
+              </button>
             </div>
             <div id="signature-opacity-group" class="signature-opacity-group" hidden>
               <span class="tb-sep"></span>
@@ -649,6 +652,66 @@
           <button type="button" id="unsaved-save" class="primary-btn">Guardar</button>
         </div>
       </div>
+    </div>
+
+    <div id="pagenum-modal" class="modal-backdrop" hidden>
+      <form id="pagenum-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>Números de página</h2>
+          <button type="button" id="pn-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label for="pn-from">Desde pág.</label>
+            <input id="pn-from" type="number" min="1" value="1" required />
+          </div>
+          <div class="modal-field">
+            <label for="pn-to">Hasta pág.</label>
+            <input id="pn-to" type="number" min="1" value="1" required />
+          </div>
+          <div class="modal-field">
+            <label for="pn-start">Empezar en</label>
+            <input id="pn-start" type="number" min="1" value="1" required />
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label for="pn-vpos">Posición vertical</label>
+            <select id="pn-vpos">
+              <option value="bottom">Pie de página</option>
+              <option value="top">Cabecera</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label for="pn-hpos">Alineación</label>
+            <select id="pn-hpos">
+              <option value="center">Centro</option>
+              <option value="left">Izquierda</option>
+              <option value="right">Derecha</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-row">
+          <div class="modal-field">
+            <label for="pn-format">Formato</label>
+            <select id="pn-format">
+              <option value="n">1, 2, 3…</option>
+              <option value="page-n">Página 1</option>
+              <option value="n-of-total">1 / N</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label for="pn-size">Tamaño (pt)</label>
+            <input id="pn-size" type="number" min="8" max="24" value="11" required />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="pn-clear" class="pill-btn" hidden>Quitar</button>
+          <span class="modal-spacer"></span>
+          <button type="button" id="pn-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" class="primary-btn">Aplicar</button>
+        </div>
+      </form>
     </div>
 
     <div id="presentation-hud" hidden>
