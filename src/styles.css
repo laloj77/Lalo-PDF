@@ -1304,7 +1304,8 @@ body.thumb-dragging * {
 #shortcuts-modal,
 #password-modal,
 #protect-modal,
-#signature-modal {
+#signature-modal,
+#watermark-modal {
   position: fixed;
   inset: 0;
   z-index: 90;
