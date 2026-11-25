@@ -4100,7 +4100,7 @@
     $('#signature-cancel').addEventListener('click', () => { modal.hidden = true; });
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
 
-    $('#signature-save-local').addEventListener('click', () => {
+    $('#signature-save-local').addEventListener('click', async () => {
       const url = getSignatureDataUrl();
       if (!url) {
         toast('Dibuja o escribe una firma primero');
@@ -4110,7 +4110,23 @@
       list.unshift(url);
       saveSignaturesList(list);
       renderSavedSignatures();
-      toast('Firma guardada localmente');
+
+      if (window.lalo?.saveSignature) {
+        try {
+          const base64 = url.split(',')[1];
+          const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          const res = await window.lalo.saveSignature(bytes, 'firma.png');
+          if (res && !res.canceled && !res.error) {
+            toast(`Firma guardada: ${res.name}`);
+            return;
+          }
+          if (res?.error) throw new Error(res.error);
+        } catch (error) {
+          showError('No se pudo guardar la firma', error);
+          return;
+        }
+      }
+      toast('Firma guardada');
     });
 
     $('#signature-place').addEventListener('click', () => {

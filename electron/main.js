@@ -776,6 +776,28 @@ function registerIpc() {
     }
   });
 
+  ipcMain.handle('dialog:save-signature', async (_event, { bytes, defaultName }) => {
+    try {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: 'Guardar firma',
+        defaultPath: defaultName || 'firma.png',
+        filters: [{ name: 'Imagen PNG (*.png)', extensions: ['png'] }],
+        properties: ['showOverwriteConfirmation', 'createDirectory'],
+      });
+      if (result.canceled || !result.filePath) return { canceled: true };
+      const target = /\.png$/i.test(result.filePath)
+        ? result.filePath
+        : `${result.filePath}.png`;
+      const data = toBuffer(bytes);
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await writeFileAtomic(target, data);
+      return { canceled: false, path: target, name: path.basename(target) };
+    } catch (error) {
+      console.error('No se pudo guardar la firma', error);
+      return { canceled: false, error: describe(error) };
+    }
+  });
+
   // Imprime el documento tal y como lo prepara el renderer en #print-root.
   // `toPdf` genera un PDF en la carpeta temporal: se usa en las pruebas para
   // verificar el resultado sin depender de una impresora física.
