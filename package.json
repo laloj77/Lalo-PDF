@@ -1,7 +1,7 @@
 {
   "name": "lalo-pdf-converter",
   "productName": "Lalo PDF",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Lalo PDF",
   "main": "electron/main.js",
   "author": "Lalo",

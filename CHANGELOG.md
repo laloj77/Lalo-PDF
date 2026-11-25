@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.7] - 2026-11-25
+
+### Cambiado
+
+- **Diálogo de cambios sin guardar:** sustituido el cuadro nativo antiguo por un modal moderno integrado en la app (`#unsaved-modal`) adaptado al modo oscuro/claro, con las opciones *Cancelar*, *No guardar*, *Guardar como…* y *Guardar*.
+
 ## [0.2.6] - 2026-11-25
 
 ### Añadido
