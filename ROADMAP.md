@@ -25,8 +25,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🟡 Prioridad 2: Mayor complejidad, alto valor
 
-- [ ] **Anotaciones editables nativas**
-  - Guardar elementos dibujados como anotaciones PDF reales en lugar de aplanarlos directamente en el lienzo, permitiendo su reeditado posterior.
+- [x] ~~**Anotaciones editables nativas**~~
+  - ~~Guardar elementos dibujados como anotaciones PDF reales en lugar de aplanarlos directamente en el lienzo, permitiendo su reeditado posterior.~~
 - [x] ~~**Protección por contraseña y permisos**~~
   - ~~Abrir PDFs protegidos por contraseña.~~
   - ~~Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.~~
