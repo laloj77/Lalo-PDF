@@ -886,31 +886,70 @@
     }
   }
 
-  function extractPageTextLines(textContent) {
+  function extractPageStyledBlocks(textContent, viewportHeight) {
     const items = (textContent?.items || []).filter((item) => item && typeof item.str === 'string');
+    const styles = textContent?.styles || {};
     if (!items.length) return [];
+
     const lines = [];
-    let currentLine = '';
+    let currentRuns = [];
     let lastY = null;
+
+    const flushLine = () => {
+      const joined = currentRuns.map((r) => r.text).join('').trim();
+      if (joined) {
+        lines.push({
+          type: 'text',
+          y: lastY !== null ? viewportHeight - lastY : 0,
+          runs: currentRuns,
+        });
+      }
+      currentRuns = [];
+    };
+
     for (const item of items) {
       const y = Array.isArray(item.transform) ? item.transform[5] : null;
+      const fontHeight = Array.isArray(item.transform)
+        ? Math.hypot(item.transform[2] || 0, item.transform[3] || 0) ||
+          Math.abs(item.transform[0] || 0) ||
+          11
+        : 11;
+      const sizePt = clamp(Math.round(fontHeight), 7, 48);
+      const style = styles[item.fontName] || {};
+      const fontDesc = `${item.fontName || ''} ${style.fontFamily || ''}`.toLowerCase();
+      const bold = /bold|black|heavy|semibold|demibold/.test(fontDesc);
+      const italic = /italic|oblique/.test(fontDesc);
+
       if (lastY !== null && y !== null && Math.abs(y - lastY) > 4) {
-        if (currentLine.trim()) lines.push(currentLine.trim());
-        currentLine = item.str;
-      } else {
-        if (currentLine && item.str && !currentLine.endsWith(' ') && !item.str.startsWith(' ')) {
-          currentLine += ' ';
+        flushLine();
+      } else if (currentRuns.length && item.str) {
+        const prev = currentRuns[currentRuns.length - 1];
+        if (!prev.text.endsWith(' ') && !item.str.startsWith(' ')) {
+          prev.text += ' ';
         }
-        currentLine += item.str;
       }
+
+      if (item.str) {
+        const prev = currentRuns[currentRuns.length - 1];
+        if (
+          prev &&
+          prev.sizePt === sizePt &&
+          prev.bold === bold &&
+          prev.italic === italic
+        ) {
+          prev.text += item.str;
+        } else {
+          currentRuns.push({ text: item.str, sizePt, bold, italic });
+        }
+      }
+
       if (y !== null) lastY = y;
       if (item.hasEOL) {
-        if (currentLine.trim()) lines.push(currentLine.trim());
-        currentLine = '';
+        flushLine();
         lastY = null;
       }
     }
-    if (currentLine.trim()) lines.push(currentLine.trim());
+    flushLine();
     return lines;
   }
 
@@ -931,10 +970,31 @@
       const pages = [];
       try {
         for (let i = 1; i <= pdf.numPages; i += 1) {
-          if (pdf.numPages > 1) toast(`Extrayendo texto ${i} de ${pdf.numPages}…`, 60000);
+          if (pdf.numPages > 1) toast(`Extrayendo contenido ${i} de ${pdf.numPages}…`, 60000);
           const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1 });
           const content = await page.getTextContent();
-          pages.push(extractPageTextLines(content));
+          const blocks = extractPageStyledBlocks(content, viewport.height);
+
+          try {
+            const opList = await page.getOperatorList();
+            const imageRects = extractPageImageRects(opList, viewport);
+            for (const rect of imageRects) {
+              const { bytes: imgBytes } = await renderCropAsJpeg(page, rect, 1);
+              blocks.push({
+                type: 'image',
+                y: rect.top,
+                width: rect.width,
+                height: rect.height,
+                bytes: imgBytes,
+              });
+            }
+          } catch {
+            /* ignorar si no se pueden extraer imágenes de esta página */
+          }
+
+          blocks.sort((a, b) => a.y - b.y);
+          pages.push(blocks);
         }
       } finally {
         await pdf.destroy();

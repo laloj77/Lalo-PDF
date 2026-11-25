@@ -712,19 +712,53 @@ function registerIpc() {
         ? result.filePath
         : `${result.filePath}.docx`;
 
-      const { Document, Packer, Paragraph, TextRun, PageBreak } = require('docx');
+      const { Document, Packer, Paragraph, TextRun, ImageRun, PageBreak } = require('docx');
       const children = [];
-      pages.forEach((lines, pageIdx) => {
+      pages.forEach((blocks, pageIdx) => {
         if (pageIdx > 0) {
           children.push(new Paragraph({ children: [new PageBreak()] }));
         }
-        const pageLines = Array.isArray(lines) && lines.length ? lines : [''];
-        for (const line of pageLines) {
-          children.push(
-            new Paragraph({
-              children: [new TextRun(String(line ?? ''))],
-            }),
-          );
+        const pageBlocks = Array.isArray(blocks) && blocks.length ? blocks : [];
+        if (!pageBlocks.length) {
+          children.push(new Paragraph({ children: [new TextRun('')] }));
+          return;
+        }
+        for (const block of pageBlocks) {
+          if (block && block.type === 'image' && block.bytes) {
+            const imgData = toBuffer(block.bytes);
+            const maxW = 540;
+            const rawW = Math.max(20, Number(block.width) || 200);
+            const rawH = Math.max(20, Number(block.height) || 150);
+            const ratio = rawW > maxW ? maxW / rawW : 1;
+            children.push(
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: imgData,
+                    type: 'jpg',
+                    transformation: {
+                      width: Math.round(rawW * ratio),
+                      height: Math.round(rawH * ratio),
+                    },
+                  }),
+                ],
+              }),
+            );
+          } else if (block && Array.isArray(block.runs)) {
+            children.push(
+              new Paragraph({
+                children: block.runs.map(
+                  (run) =>
+                    new TextRun({
+                      text: String(run.text ?? ''),
+                      size: Math.round((Number(run.sizePt) || 11) * 2),
+                      bold: !!run.bold,
+                      italics: !!run.italic,
+                    }),
+                ),
+              }),
+            );
+          }
         }
       });
 
