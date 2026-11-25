@@ -1937,9 +1937,18 @@
       const size = Math.max(6, (annotation.size || 14) * scale);
       const box = annotationBounds(annotation, width, height, scale);
       const lineHeight = size * LINE_HEIGHT;
+      if (annotation.borderColor && annotation.borderColor !== 'none') {
+        ctx.strokeStyle = annotation.borderColor;
+        ctx.lineWidth = Math.max(1, 1.5 * scale);
+        ctx.strokeRect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
+      }
       ctx.fillStyle = annotation.color;
       ctx.font = `${size}px ${FONT_FAMILY}`;
       ctx.textBaseline = 'top';
+      const align = annotation.align || 'left';
+      ctx.textAlign = align;
+      const textX =
+        align === 'center' ? box.x + box.w / 2 : align === 'right' ? box.x + box.w : box.x;
       ctx.save();
       ctx.beginPath();
       ctx.rect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
@@ -1952,7 +1961,7 @@
       lines.forEach((line, index) => {
         const y = box.y + index * lineHeight;
         if (y > box.y + box.h + lineHeight) return;
-        ctx.fillText(line, box.x, y);
+        ctx.fillText(line, textX, y);
       });
       ctx.restore();
     }
@@ -3034,6 +3043,8 @@
     const inputRect = el.textInput.getBoundingClientRect();
     const text = el.textInput.value.replace(/\s+$/, '');
     const size = Number(el.textSize.value) || state.fontSize;
+    const align = $('#text-align-select')?.value || 'left';
+    const borderColor = $('#text-border-select')?.value || 'none';
     state.fontSize = size;
 
     const x = clamp((inputRect.left - pageRect.left) / pageRect.width, 0, 0.98);
@@ -3057,7 +3068,7 @@
         state.selection = null;
         changed = true;
       } else {
-        Object.assign(existing, { x, y, w, h, text, size });
+        Object.assign(existing, { x, y, w, h, text, size, align, borderColor });
         existing.color = state.textColor;
         changed = true;
       }
@@ -3072,6 +3083,8 @@
         h,
         text,
         size,
+        align,
+        borderColor,
         color: state.textColor,
         width: state.strokeWidth,
       });
