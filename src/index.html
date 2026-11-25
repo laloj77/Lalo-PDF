@@ -280,6 +280,9 @@
               <button id="btn-signature" class="tool-btn" type="button" title="Firma manuscrita">
                 <svg viewBox="0 0 24 24"><path d="M3 17c2.5-4.5 4.5-8 6-8 1.5 0 .5 6 2 6s3.5-5 5-5 1 4 2.5 4c1 0 2-1.5 2.5-2.5" /><line x1="3" y1="20" x2="21" y2="20" /></svg>
               </button>
+              <button id="btn-watermark" class="tool-btn" type="button" title="Marca de agua">
+                <svg viewBox="0 0 24 24"><path d="M12 3.5s5.5 6.2 5.5 10.2a5.5 5.5 0 0 1-11 0C6.5 9.7 12 3.5 12 3.5z" /></svg>
+              </button>
             </div>
             <div id="signature-opacity-group" class="signature-opacity-group" hidden>
               <span class="tb-sep"></span>
@@ -535,6 +538,46 @@
           <button type="button" id="signature-place" class="primary-btn">Colocar en PDF</button>
         </div>
       </div>
+    </div>
+
+    <div id="watermark-modal" class="modal-backdrop" hidden>
+      <form id="watermark-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>Marca de agua</h2>
+          <button type="button" id="wm-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <div class="modal-field">
+          <label for="wm-text">Texto</label>
+          <input id="wm-text" type="text" placeholder="Ej. CONFIDENCIAL, BORRADOR…" maxlength="80" required />
+        </div>
+        <div class="modal-field">
+          <label for="wm-color">Color</label>
+          <select id="wm-color">
+            <option value="#2c2c2e">Gris oscuro</option>
+            <option value="#ff453a">Rojo</option>
+            <option value="#0a84ff">Azul</option>
+            <option value="#32d74b">Verde</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label for="wm-size">Tamaño (<span id="wm-size-val">54</span> pt)</label>
+          <input id="wm-size" type="range" min="16" max="120" value="54" />
+        </div>
+        <div class="modal-field">
+          <label for="wm-rotation">Rotación (<span id="wm-rot-val">-35</span>°)</label>
+          <input id="wm-rotation" type="range" min="-90" max="90" value="-35" />
+        </div>
+        <div class="modal-field">
+          <label for="wm-opacity">Opacidad (<span id="wm-op-val">22</span>%)</label>
+          <input id="wm-opacity" type="range" min="5" max="100" value="22" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="wm-clear" class="pill-btn" hidden>Quitar</button>
+          <span class="modal-spacer"></span>
+          <button type="button" id="wm-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" class="primary-btn">Aplicar</button>
+        </div>
+      </form>
     </div>
 
     <!-- Las páginas que se van a imprimir se dibujan aquí solo mientras dura

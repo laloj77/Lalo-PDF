@@ -51,6 +51,7 @@
     fileName: 'Sin título.pdf',
     filePath: null,
     security: null,
+    watermark: null,
     dirty: false,
     sidebarHidden: false,
     search: { query: '', occurrences: [], index: -1, rects: new Map(), token: 0 },
@@ -430,6 +431,7 @@
       state.anchorIndex = null;
       state.zoomMode = 'fit';
       state.security = null;
+      state.watermark = null;
       state.fileName = /\.pdf$/i.test(files[0].name)
         ? files[0].name
         : `${baseName(files[0].name)}.pdf`;
@@ -728,6 +730,26 @@
     const pages = doc.getPages();
     for (let i = 0; i < pages.length; i += 1) {
       await flattenAnnotations(doc, pages[i], models[i], font);
+      if (state.watermark && state.watermark.text) {
+        const wm = state.watermark;
+        const page = pages[i];
+        const { width, height } = page.getSize();
+        const textWidth = font.widthOfTextAtSize(wm.text, wm.size);
+        const rad = (-wm.rotation * Math.PI) / 180;
+        const cx = width / 2;
+        const cy = height / 2;
+        const x = cx - (textWidth / 2) * Math.cos(rad) + (wm.size / 3) * Math.sin(rad);
+        const y = cy - (textWidth / 2) * Math.sin(rad) - (wm.size / 3) * Math.cos(rad);
+        page.drawText(wm.text, {
+          x,
+          y,
+          size: wm.size,
+          font,
+          color: hexToRgb(wm.color),
+          opacity: wm.opacity,
+          rotate: degrees(-wm.rotation),
+        });
+      }
     }
     return doc;
   }
@@ -3814,6 +3836,9 @@
         case 'signature':
           openSignatureModal();
           break;
+        case 'watermark':
+          openWatermarkModal();
+          break;
         case 'protect':
           openProtectModal();
           break;
@@ -4148,10 +4173,76 @@
     });
   }
 
+  function openWatermarkModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de añadir una marca de agua');
+      return;
+    }
+    const wm = state.watermark;
+    $('#wm-text').value = wm?.text || 'CONFIDENCIAL';
+    $('#wm-color').value = wm?.color || '#2c2c2e';
+    $('#wm-size').value = String(wm?.size || 54);
+    $('#wm-size-val').textContent = $('#wm-size').value;
+    $('#wm-rotation').value = String(wm?.rotation ?? -35);
+    $('#wm-rot-val').textContent = $('#wm-rotation').value;
+    $('#wm-opacity').value = String(Math.round((wm?.opacity ?? 0.22) * 100));
+    $('#wm-op-val').textContent = $('#wm-opacity').value;
+    $('#wm-clear').hidden = !wm;
+    $('#watermark-modal').hidden = false;
+    setTimeout(() => $('#wm-text').select(), 20);
+  }
+
+  function bindWatermarkModal() {
+    const modal = $('#watermark-modal');
+    const form = $('#watermark-form');
+    if (!modal || !form) return;
+
+    $('#wm-size').addEventListener('input', (e) => {
+      $('#wm-size-val').textContent = e.target.value;
+    });
+    $('#wm-rotation').addEventListener('input', (e) => {
+      $('#wm-rot-val').textContent = e.target.value;
+    });
+    $('#wm-opacity').addEventListener('input', (e) => {
+      $('#wm-op-val').textContent = e.target.value;
+    });
+
+    $('#btn-watermark')?.addEventListener('click', openWatermarkModal);
+    $('#wm-close').addEventListener('click', () => { modal.hidden = true; });
+    $('#wm-cancel').addEventListener('click', () => { modal.hidden = true; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+    $('#wm-clear').addEventListener('click', () => {
+      state.watermark = null;
+      modal.hidden = true;
+      redrawAllOverlays();
+      setDirty(true);
+      toast('Marca de agua eliminada');
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = $('#wm-text').value.trim();
+      if (!text) return;
+      state.watermark = {
+        text,
+        color: $('#wm-color').value,
+        size: Number($('#wm-size').value) || 54,
+        rotation: Number($('#wm-rotation').value) || 0,
+        opacity: clamp(Number($('#wm-opacity').value) / 100, 0.05, 1),
+      };
+      modal.hidden = true;
+      redrawAllOverlays();
+      setDirty(true);
+      toast('Marca de agua aplicada');
+    });
+  }
+
   function init() {
     bindUI();
     bindSecurityModals();
     bindSignatureModal();
+    bindWatermarkModal();
     bindMenu();
     updateStatus();
     updateToolbarState();
