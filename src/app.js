@@ -2225,7 +2225,7 @@
         return;
       }
       const base = page.getViewport({ scale: 1 });
-      const scale = 148 / base.width;
+      const scale = 360 / base.width;
       const viewport = page.getViewport({ scale });
       const canvas = document.createElement('canvas');
       canvas.width = Math.max(1, Math.floor(viewport.width * dpr));
