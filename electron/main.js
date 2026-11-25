@@ -197,6 +197,10 @@ function buildMenu() {
           click: () => send('split-pdf'),
         },
         {
+          label: 'Comprimir PDF…',
+          click: () => send('compress-pdf'),
+        },
+        {
           label: 'Protección y permisos…',
           accelerator: 'CmdOrCtrl+Shift+L',
           click: () => send('protect'),

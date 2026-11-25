@@ -1308,13 +1308,41 @@ body.thumb-dragging * {
 #watermark-modal,
 #unsaved-modal,
 #pagenum-modal,
-#split-modal {
+#split-modal,
+#compress-modal {
   position: fixed;
   inset: 0;
   z-index: 90;
   background: rgba(0, 0, 0, 0.28);
   display: grid;
   place-items: center;
+}
+
+.compress-compare {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg-2, rgba(128, 128, 128, 0.08));
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.18));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.compress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.compress-meta {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.compress-saved {
+  color: #1e9e52;
 }
 
 .modal-card-sm {

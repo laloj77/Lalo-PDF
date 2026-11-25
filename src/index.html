@@ -234,6 +234,9 @@
           <button id="btn-split-pdf" class="pill-btn" title="Dividir PDF en varios archivos">
             <span>Dividir</span>
           </button>
+          <button id="btn-compress-pdf" class="pill-btn" title="Comprimir imágenes del PDF">
+            <span>Comprimir</span>
+          </button>
           <button id="btn-save-as" class="pill-btn" title="Guardar como… (Ctrl+Shift+S)">Guardar como…</button>
           <button id="btn-save" class="primary-btn" title="Guardar (Ctrl+S)">Guardar</button>
         </div>
@@ -736,6 +739,46 @@
         <div class="modal-actions">
           <button type="button" id="split-cancel" class="pill-btn">Cancelar</button>
           <button type="submit" class="primary-btn">Dividir</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="compress-modal" class="modal-backdrop" hidden>
+      <form id="compress-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>Comprimir PDF</h2>
+          <button type="button" id="compress-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p class="modal-desc">Recompresión de imágenes del documento para reducir su tamaño.</p>
+        <div class="modal-field">
+          <label for="compress-quality">Calidad JPEG: <strong id="compress-quality-label">75%</strong></label>
+          <input id="compress-quality" type="range" min="15" max="95" step="5" value="75" />
+        </div>
+        <div class="modal-field">
+          <label for="compress-max-dim">Resolución máxima</label>
+          <select id="compress-max-dim">
+            <option value="0">Original (sin reducir resolución)</option>
+            <option value="1600">Alta (1600 px máx.)</option>
+            <option value="1200" selected>Media — Recomendada (1200 px máx.)</option>
+            <option value="800">Baja (800 px máx.)</option>
+          </select>
+        </div>
+        <div id="compress-compare" class="compress-compare">
+          <div class="compress-row">
+            <span>Tamaño actual</span>
+            <strong id="compress-before">—</strong>
+          </div>
+          <div class="compress-row">
+            <span>Después de comprimir</span>
+            <strong id="compress-after">Calculando…</strong>
+          </div>
+          <div class="compress-meta" id="compress-meta"></div>
+        </div>
+        <p id="compress-error" class="modal-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" id="compress-cancel" class="pill-btn">Cancelar</button>
+          <button type="button" id="compress-preview" class="pill-btn">Recalcular</button>
+          <button type="submit" id="compress-apply" class="primary-btn">Aplicar</button>
         </div>
       </form>
     </div>

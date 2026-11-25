@@ -8,6 +8,8 @@
     PDFDict,
     PDFString,
     PDFNumber,
+    PDFRawStream,
+    decodePDFRawStream,
     StandardFonts,
     degrees,
     rgb,
@@ -4427,6 +4429,9 @@
         case 'split-pdf':
           openSplitModal();
           break;
+        case 'compress-pdf':
+          openCompressModal();
+          break;
         case 'print':
           printPdf();
           break;
@@ -5221,6 +5226,297 @@
     });
   }
 
+  function formatBytes(bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) return '—';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }
+
+  function getImageFilterName(dict) {
+    const filter = dict.get(PDFName.of('Filter'));
+    if (filter instanceof PDFName) return filter.asString();
+    if (filter instanceof PDFArray && filter.size() === 1) {
+      const first = filter.get(0);
+      if (first instanceof PDFName) return first.asString();
+    }
+    return null;
+  }
+
+  async function canvasToJpegBytes(canvas, quality) {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob) return null;
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  async function recompressPdfImages(doc, { quality = 0.75, maxDim = 1200 } = {}) {
+    let totalImages = 0;
+    let recompressed = 0;
+
+    for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
+      if (!(obj instanceof PDFRawStream)) continue;
+      const dict = obj.dict;
+      if (!(dict instanceof PDFDict)) continue;
+      if (dict.get(PDFName.of('Subtype')) !== PDFName.of('Image')) continue;
+      const imageMask = dict.get(PDFName.of('ImageMask'));
+      if (imageMask && String(imageMask) === 'true') continue;
+
+      const filterName = getImageFilterName(dict);
+      if (filterName !== '/DCTDecode' && filterName !== '/FlateDecode') continue;
+
+      const hasMask = Boolean(dict.get(PDFName.of('SMask')) || dict.get(PDFName.of('Mask')));
+      totalImages += 1;
+
+      try {
+        let srcCanvas = null;
+        let width = 0;
+        let height = 0;
+
+        if (filterName === '/DCTDecode') {
+          const blob = new Blob([obj.contents], { type: 'image/jpeg' });
+          const bmp = await createImageBitmap(blob);
+          width = bmp.width;
+          height = bmp.height;
+          const allowResize = !hasMask && maxDim > 0 && (width > maxDim || height > maxDim);
+          const scale = allowResize ? maxDim / Math.max(width, height) : 1;
+          const targetW = Math.max(1, Math.round(width * scale));
+          const targetH = Math.max(1, Math.round(height * scale));
+          srcCanvas = document.createElement('canvas');
+          srcCanvas.width = targetW;
+          srcCanvas.height = targetH;
+          const ctx = srcCanvas.getContext('2d');
+          ctx.drawImage(bmp, 0, 0, targetW, targetH);
+          bmp.close();
+          width = targetW;
+          height = targetH;
+        } else {
+          const wObj = dict.get(PDFName.of('Width'));
+          const hObj = dict.get(PDFName.of('Height'));
+          const bpcObj = dict.get(PDFName.of('BitsPerComponent'));
+          const csObj = dict.get(PDFName.of('ColorSpace'));
+          const w = wObj instanceof PDFNumber ? wObj.asNumber() : 0;
+          const h = hObj instanceof PDFNumber ? hObj.asNumber() : 0;
+          const bpc = bpcObj instanceof PDFNumber ? bpcObj.asNumber() : 8;
+          const cs = csObj instanceof PDFName ? csObj.asString() : '';
+          if (!w || !h || bpc !== 8) continue;
+          if (cs !== '/DeviceRGB' && cs !== '/DeviceGray') continue;
+
+          const decoded = decodePDFRawStream(obj).decode();
+          const channels = cs === '/DeviceRGB' ? 3 : 1;
+          if (decoded.length !== w * h * channels) continue;
+
+          const rawCanvas = document.createElement('canvas');
+          rawCanvas.width = w;
+          rawCanvas.height = h;
+          const rawCtx = rawCanvas.getContext('2d');
+          const imgData = rawCtx.createImageData(w, h);
+          const rgba = imgData.data;
+          if (channels === 3) {
+            for (let i = 0, j = 0; i < decoded.length; i += 3, j += 4) {
+              rgba[j] = decoded[i];
+              rgba[j + 1] = decoded[i + 1];
+              rgba[j + 2] = decoded[i + 2];
+              rgba[j + 3] = 255;
+            }
+          } else {
+            for (let i = 0, j = 0; i < decoded.length; i += 1, j += 4) {
+              const v = decoded[i];
+              rgba[j] = v;
+              rgba[j + 1] = v;
+              rgba[j + 2] = v;
+              rgba[j + 3] = 255;
+            }
+          }
+          rawCtx.putImageData(imgData, 0, 0);
+
+          const allowResize = !hasMask && maxDim > 0 && (w > maxDim || h > maxDim);
+          const scale = allowResize ? maxDim / Math.max(w, h) : 1;
+          width = Math.max(1, Math.round(w * scale));
+          height = Math.max(1, Math.round(h * scale));
+          if (width !== w || height !== h) {
+            srcCanvas = document.createElement('canvas');
+            srcCanvas.width = width;
+            srcCanvas.height = height;
+            srcCanvas.getContext('2d').drawImage(rawCanvas, 0, 0, width, height);
+          } else {
+            srcCanvas = rawCanvas;
+          }
+        }
+
+        const jpegBytes = await canvasToJpegBytes(srcCanvas, quality);
+        if (!jpegBytes || jpegBytes.length >= obj.contents.length) continue;
+
+        const newDict = dict.clone(doc.context);
+        newDict.set(PDFName.of('Width'), PDFNumber.of(width));
+        newDict.set(PDFName.of('Height'), PDFNumber.of(height));
+        newDict.set(PDFName.of('ColorSpace'), PDFName.of('DeviceRGB'));
+        newDict.set(PDFName.of('BitsPerComponent'), PDFNumber.of(8));
+        newDict.set(PDFName.of('Filter'), PDFName.of('DCTDecode'));
+        newDict.delete(PDFName.of('DecodeParms'));
+        newDict.delete(PDFName.of('Decode'));
+        newDict.set(PDFName.of('Length'), PDFNumber.of(jpegBytes.length));
+        doc.context.assign(ref, PDFRawStream.of(newDict, jpegBytes));
+        recompressed += 1;
+      } catch {
+        /* skip unsupported image stream */
+      }
+    }
+
+    return { totalImages, recompressed };
+  }
+
+  let compressPreviewToken = 0;
+  let lastCompressResult = null;
+
+  async function runCompressPreview() {
+    const token = ++compressPreviewToken;
+    const quality = Number($('#compress-quality').value) / 100;
+    const maxDim = Number($('#compress-max-dim').value);
+    const beforeEl = $('#compress-before');
+    const afterEl = $('#compress-after');
+    const metaEl = $('#compress-meta');
+    const errEl = $('#compress-error');
+
+    errEl.hidden = true;
+    afterEl.textContent = 'Calculando…';
+    afterEl.classList.remove('compress-saved');
+    metaEl.textContent = '';
+
+    try {
+      const doc = await buildDocument(state.pages);
+      const beforeBytes = state.workingBytes
+        ? state.workingBytes
+        : await doc.save({ useObjectStreams: false });
+      if (token !== compressPreviewToken) return null;
+
+      beforeEl.textContent = formatBytes(beforeBytes.length);
+      const stats = await recompressPdfImages(doc, { quality, maxDim });
+      const afterBytes = await doc.save({ useObjectStreams: true });
+      if (token !== compressPreviewToken) return null;
+
+      const diff = beforeBytes.length - afterBytes.length;
+      const pct = beforeBytes.length > 0 ? (diff / beforeBytes.length) * 100 : 0;
+      if (diff > 0) {
+        afterEl.textContent = `${formatBytes(afterBytes.length)} (-${pct.toFixed(1)}%)`;
+        afterEl.classList.add('compress-saved');
+      } else {
+        afterEl.textContent = `${formatBytes(afterBytes.length)} (sin reducción)`;
+      }
+      metaEl.textContent =
+        stats.totalImages > 0
+          ? `${stats.recompressed} de ${stats.totalImages} imágenes recomprimidas.`
+          : 'No se detectaron imágenes recomprimibles en el documento.';
+
+      lastCompressResult = {
+        quality,
+        maxDim,
+        beforeSize: beforeBytes.length,
+        afterBytes,
+        stats,
+      };
+      return lastCompressResult;
+    } catch (error) {
+      if (token !== compressPreviewToken) return null;
+      errEl.textContent = error.message || 'No se pudo calcular la compresión.';
+      errEl.hidden = false;
+      afterEl.textContent = '—';
+      return null;
+    }
+  }
+
+  function openCompressModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de comprimir');
+      return;
+    }
+    lastCompressResult = null;
+    $('#compress-quality-label').textContent = `${$('#compress-quality').value}%`;
+    $('#compress-modal').hidden = false;
+    runCompressPreview();
+  }
+
+  function bindCompressModal() {
+    $('#btn-compress-pdf')?.addEventListener('click', openCompressModal);
+    const modal = $('#compress-modal');
+    const form = $('#compress-form');
+    if (!modal || !form) return;
+
+    const qualityInput = $('#compress-quality');
+    const qualityLabel = $('#compress-quality-label');
+    const maxDimSelect = $('#compress-max-dim');
+
+    qualityInput?.addEventListener('input', () => {
+      qualityLabel.textContent = `${qualityInput.value}%`;
+    });
+    qualityInput?.addEventListener('change', () => {
+      lastCompressResult = null;
+      runCompressPreview();
+    });
+    maxDimSelect?.addEventListener('change', () => {
+      lastCompressResult = null;
+      runCompressPreview();
+    });
+    $('#compress-preview')?.addEventListener('click', () => {
+      lastCompressResult = null;
+      runCompressPreview();
+    });
+
+    const close = () => {
+      compressPreviewToken += 1;
+      modal.hidden = true;
+    };
+    $('#compress-close')?.addEventListener('click', close);
+    $('#compress-cancel')?.addEventListener('click', close);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const quality = Number(qualityInput.value) / 100;
+      const maxDim = Number(maxDimSelect.value);
+      setBusy(true);
+      try {
+        const res =
+          lastCompressResult &&
+          lastCompressResult.quality === quality &&
+          lastCompressResult.maxDim === maxDim
+            ? lastCompressResult
+            : await runCompressPreview();
+        if (!res || !res.afterBytes) return;
+
+        const sourceId = uid('src');
+        state.sources.set(sourceId, {
+          name: state.fileName || 'compressed.pdf',
+          bytes: res.afterBytes,
+        });
+        state.pages = state.pages.map((page, idx) => ({
+          id: page.id,
+          kind: 'pdf',
+          sourceId,
+          srcIndex: idx,
+          width: page.width,
+          height: page.height,
+          rotation: page.rotation,
+        }));
+        state.history = [];
+        state.future = [];
+        state.dirty = true;
+        window.lalo?.setDirtyState?.(true);
+        close();
+        await refresh();
+        toast(
+          `PDF comprimido: ${formatBytes(res.beforeSize)} → ${formatBytes(res.afterBytes.length)}`,
+          4500,
+        );
+      } catch (error) {
+        showError('No se pudo comprimir el PDF', error);
+      } finally {
+        setBusy(false);
+      }
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -5339,6 +5635,7 @@
     bindWatermarkModal();
     bindPageNumbersModal();
     bindSplitModal();
+    bindCompressModal();
     bindMenu();
     updateStatus();
     updateToolbarState();
