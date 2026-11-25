@@ -4399,6 +4399,9 @@
         case 'fit-width':
           fitWidth();
           break;
+        case 'presentation':
+          togglePresentation();
+          break;
         case 'rotate-right':
           rotatePages(90);
           break;
@@ -4919,7 +4922,98 @@
     });
   }
 
+  let presBackup = null;
+
+  function updatePresentationHud() {
+    const hud = $('#presentation-hud');
+    const lbl = $('#pres-page');
+    if (hud && lbl) {
+      lbl.textContent = `${state.current + 1} / ${state.pages.length}`;
+    }
+  }
+
+  async function enterPresentation() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de iniciar la presentación');
+      return;
+    }
+    if (document.body.classList.contains('presentation-mode')) return;
+    presBackup = {
+      viewMode: state.viewMode,
+      zoomMode: state.zoomMode,
+      markupOpen: state.markupOpen,
+    };
+    state.markupOpen = false;
+    state.viewMode = 'single';
+    state.zoomMode = 'fit';
+    document.body.classList.add('presentation-mode');
+    if ($('#presentation-hud')) $('#presentation-hud').hidden = false;
+    updatePresentationHud();
+    try {
+      await document.documentElement.requestFullscreen?.();
+    } catch {
+      /* ignore if fullscreen blocked */
+    }
+    await refresh({ preserveScroll: false, scrollToCurrent: false });
+  }
+
+  async function exitPresentation() {
+    if (!document.body.classList.contains('presentation-mode')) return;
+    document.body.classList.remove('presentation-mode');
+    if ($('#presentation-hud')) $('#presentation-hud').hidden = true;
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen?.();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (presBackup) {
+      state.viewMode = presBackup.viewMode;
+      state.zoomMode = presBackup.zoomMode;
+      state.markupOpen = presBackup.markupOpen;
+      presBackup = null;
+    }
+    updateToolbarState();
+    await refresh({ preserveScroll: false, scrollToCurrent: false });
+  }
+
+  function togglePresentation() {
+    if (document.body.classList.contains('presentation-mode')) exitPresentation();
+    else enterPresentation();
+  }
+
   function init() {
+    $('#btn-presentation')?.addEventListener('click', togglePresentation);
+    $('#pres-prev')?.addEventListener('click', () => {
+      goToPage(state.current - 1);
+      updatePresentationHud();
+    });
+    $('#pres-next')?.addEventListener('click', () => {
+      goToPage(state.current + 1);
+      updatePresentationHud();
+    });
+    $('#pres-exit')?.addEventListener('click', exitPresentation);
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && document.body.classList.contains('presentation-mode')) {
+        exitPresentation();
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (!document.body.classList.contains('presentation-mode')) return;
+      if (e.key === 'Escape' || e.key === 'F5') {
+        e.preventDefault();
+        exitPresentation();
+      } else if (e.key === ' ' || e.key === 'PageDown' || e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        goToPage(state.current + 1);
+        updatePresentationHud();
+      } else if (e.key === 'PageUp' || e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        goToPage(state.current - 1);
+        updatePresentationHud();
+      }
+    });
     const chkAutosave = $('#chk-autosave');
     if (chkAutosave) {
       try {

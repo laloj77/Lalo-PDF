@@ -235,6 +235,7 @@ function buildMenu() {
         { label: 'Rotar a la derecha', accelerator: 'CmdOrCtrl+R', click: () => send('rotate-right') },
         { label: 'Rotar a la izquierda', accelerator: 'CmdOrCtrl+Shift+R', click: () => send('rotate-left') },
         { type: 'separator' },
+        { label: 'Modo presentación', accelerator: 'F5', click: () => send('presentation') },
         { role: 'togglefullscreen', label: 'Pantalla completa' },
         { role: 'toggleDevTools', label: 'Herramientas de desarrollo' },
       ],

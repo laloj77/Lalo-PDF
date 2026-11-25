@@ -1537,6 +1537,53 @@ select option {
   text-align: center;
 }
 
+body.presentation-mode #toolbar,
+body.presentation-mode #sidebar,
+body.presentation-mode #sidebar-resizer,
+body.presentation-mode #statusbar,
+body.presentation-mode #markup-bar,
+body.presentation-mode #search-panel {
+  display: none !important;
+}
+
+body.presentation-mode #main,
+body.presentation-mode #viewer-wrap {
+  height: 100vh;
+  background: #111113;
+}
+
+#presentation-hud {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(12px);
+  color: #f5f5f7;
+  font-size: 12.5px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.pres-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f5f5f7;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pres-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
 .modal-field input:focus,
 .modal-field select:focus {
   outline: 2px solid var(--accent);
