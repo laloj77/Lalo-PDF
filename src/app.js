@@ -158,9 +158,20 @@
     return 'Vista continua';
   }
 
+  let autosaveTimer = null;
+
   function setDirty(value = true) {
     state.dirty = value;
+    window.lalo?.setDirtyState?.(value);
     updateStatus();
+    if (value && $('#chk-autosave')?.checked && state.filePath && state.pages.length) {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => {
+        if (state.dirty && $('#chk-autosave')?.checked && state.filePath) {
+          save();
+        }
+      }, 1500);
+    }
   }
 
   function updateStatus() {
