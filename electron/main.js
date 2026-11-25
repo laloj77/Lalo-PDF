@@ -920,7 +920,7 @@ function registerIpc() {
           label: 'Color',
           submenu: colors.map((c) => ({
             label: c.label,
-            type: 'radio',
+            type: 'checkbox',
             checked: current.color === c.value,
             click: () => {
               clicked = true;
@@ -972,7 +972,7 @@ function registerIpc() {
               label: 'Tamaño',
               submenu: [8, 9, 10, 12, 14, 18, 24, 32, 48].map((sz) => ({
                 label: String(sz),
-                type: 'radio',
+                type: 'checkbox',
                 checked: (current.size || 14) === sz,
                 click: () => {
                   clicked = true;
@@ -987,7 +987,7 @@ function registerIpc() {
           submenu: [
             {
               label: 'Izquierda',
-              type: 'radio',
+              type: 'checkbox',
               checked: (current.align || 'left') === 'left',
               click: () => {
                 clicked = true;
@@ -996,7 +996,7 @@ function registerIpc() {
             },
             {
               label: 'Centro',
-              type: 'radio',
+              type: 'checkbox',
               checked: current.align === 'center',
               click: () => {
                 clicked = true;
@@ -1005,7 +1005,7 @@ function registerIpc() {
             },
             {
               label: 'Derecha',
-              type: 'radio',
+              type: 'checkbox',
               checked: current.align === 'right',
               click: () => {
                 clicked = true;
@@ -1019,7 +1019,7 @@ function registerIpc() {
           submenu: [
             {
               label: 'Sin borde',
-              type: 'radio',
+              type: 'checkbox',
               checked: !current.borderColor || current.borderColor === 'none',
               click: () => {
                 clicked = true;
@@ -1028,7 +1028,7 @@ function registerIpc() {
             },
             ...colors.map((c) => ({
               label: c.label,
-              type: 'radio',
+              type: 'checkbox',
               checked: current.borderColor === c.value,
               click: () => {
                 clicked = true;
@@ -1043,7 +1043,7 @@ function registerIpc() {
               { w: 4, label: '████████' },
             ].map(({ w, label }) => ({
               label,
-              type: 'radio',
+              type: 'checkbox',
               checked: (current.borderWidth || 2) === w,
               click: () => {
                 clicked = true;
@@ -1053,7 +1053,7 @@ function registerIpc() {
             { type: 'separator' },
             {
               label: 'Esquinas rectas',
-              type: 'radio',
+              type: 'checkbox',
               checked: !(current.borderRadius > 0),
               click: () => {
                 clicked = true;
