@@ -30,8 +30,6 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Protección por contraseña y permisos**~~
   - ~~Abrir PDFs protegidos por contraseña.~~
   - ~~Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.~~
-- [ ] **OCR para documentos escaneados**
-  - Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.
 - [ ] **Formularios (AcroForms)**
   - Rellenar campos de formulario interactivos y aplanarlos al guardar.
 - [x] ~~**Más formatos de exportación**~~
@@ -78,6 +76,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [ ] **Clonado fiel PDF → Word (`.docx`) con motor externo**
   - Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.
+- [ ] **OCR para documentos escaneados**
+  - Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.
 
 ---
 
