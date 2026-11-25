@@ -41,8 +41,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🔵 Prioridad 3: Calidad de vida y experiencia de usuario (UX)
 
-- [ ] **Autoguardado y aviso de cambios sin guardar**
-  - Confirmación al intentar cerrar si hay cambios pendientes.
+- [x] ~~**Autoguardado y aviso de cambios sin guardar**~~
+  - ~~Interruptor de Autoguardado tipo iOS en la barra superior y confirmación al intentar cerrar si hay cambios pendientes (*Guardar*, *Guardar como…*, *No guardar*, *Cancelar*).~~
 - [ ] **Documentos recientes y pestañas / multi-ventana**
   - Menú de archivos recientes y soporte para trabajar con múltiples documentos a la vez.
 - [x] ~~**Copiar texto seleccionado**~~

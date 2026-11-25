@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.6] - 2026-11-25
+
+### Añadido
+
+- **Autoguardado:** interruptor estilo iOS en la barra superior (3.ª posición a la izquierda) que guarda automáticamente tras cada edición y recuerda su estado entre sesiones.
+- **Aviso de cambios sin guardar al cerrar:** diálogo nativo con las opciones *Guardar*, *Guardar como…*, *No guardar* y *Cancelar*.
+
 ## [0.2.5] - 2026-11-25
 
 ### Añadido
