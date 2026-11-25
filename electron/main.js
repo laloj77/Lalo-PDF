@@ -301,27 +301,13 @@ async function createWindow() {
   mainWindow.on('close', (event) => {
     if (hasUnsavedChanges && !forceCloseConfirmed) {
       event.preventDefault();
-      const choice = dialog.showMessageBoxSync(mainWindow, {
-        type: 'warning',
-        buttons: ['Guardar', 'Guardar como…', 'No guardar', 'Cancelar'],
-        defaultId: 0,
-        cancelId: 3,
-        title: 'Cambios sin guardar',
-        message: 'Tienes cambios sin guardar en el documento.',
-        detail: '¿Quieres guardarlos antes de salir?',
-      });
-      if (choice === 0) {
-        send('save-and-quit');
-        return;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        if (!mainWindow.isVisible()) mainWindow.show();
+        mainWindow.focus();
       }
-      if (choice === 1) {
-        send('save-as-and-quit');
-        return;
-      }
-      if (choice === 3) {
-        return;
-      }
-      forceCloseConfirmed = true;
+      send('prompt-unsaved-close');
+      return;
     }
     stopDragWatch();
     if (process.platform === 'darwin') return;

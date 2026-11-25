@@ -4343,6 +4343,9 @@
             if (!state.dirty) window.lalo?.confirmQuit?.();
           });
           break;
+        case 'prompt-unsaved-close':
+          if ($('#unsaved-modal')) $('#unsaved-modal').hidden = false;
+          break;
         case 'export-images':
           exportImages();
           break;
@@ -4923,6 +4926,29 @@
           /* ignore */
         }
         toast(chkAutosave.checked ? 'Autoguardado activado' : 'Autoguardado desactivado');
+      });
+    }
+    const unsavedModal = $('#unsaved-modal');
+    if (unsavedModal) {
+      const closeUnsaved = () => { unsavedModal.hidden = true; };
+      $('#unsaved-close')?.addEventListener('click', closeUnsaved);
+      $('#unsaved-cancel')?.addEventListener('click', closeUnsaved);
+      unsavedModal.addEventListener('click', (e) => {
+        if (e.target === unsavedModal) closeUnsaved();
+      });
+      $('#unsaved-discard')?.addEventListener('click', () => {
+        closeUnsaved();
+        window.lalo?.confirmQuit?.();
+      });
+      $('#unsaved-save')?.addEventListener('click', async () => {
+        closeUnsaved();
+        await save();
+        if (!state.dirty) window.lalo?.confirmQuit?.();
+      });
+      $('#unsaved-save-as')?.addEventListener('click', async () => {
+        closeUnsaved();
+        await saveAs();
+        if (!state.dirty) window.lalo?.confirmQuit?.();
       });
     }
     bindUI();
