@@ -277,6 +277,14 @@
               <button class="tool-btn" data-tool="eraser" title="Borrador">
                 <svg><use href="#i-eraser" /></svg>
               </button>
+              <button id="btn-signature" class="tool-btn" type="button" title="Firma manuscrita">
+                <svg viewBox="0 0 24 24"><path d="M3 17c2.5-4.5 4.5-8 6-8 1.5 0 .5 6 2 6s3.5-5 5-5 1 4 2.5 4c1 0 2-1.5 2.5-2.5" /><line x1="3" y1="20" x2="21" y2="20" /></svg>
+              </button>
+            </div>
+            <div id="signature-opacity-group" class="signature-opacity-group" hidden>
+              <span class="tb-sep"></span>
+              <label for="signature-opacity" class="opacity-label">Opacidad</label>
+              <input id="signature-opacity" type="range" min="15" max="100" value="100" />
             </div>
             <span class="tb-sep"></span>
             <div class="swatches" id="swatches">
@@ -495,6 +503,38 @@
           <button type="button" id="protect-save-as" class="primary-btn">Guardar como…</button>
         </div>
       </form>
+    </div>
+
+    <div id="signature-modal" class="modal-backdrop" hidden>
+      <div class="modal-card">
+        <div class="modal-head">
+          <h2>Firma manuscrita</h2>
+          <button type="button" id="signature-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sig-tabs" role="tablist">
+          <button type="button" class="sig-tab active" data-sig-tab="draw">Dibujar</button>
+          <button type="button" class="sig-tab" data-sig-tab="type">Escribir</button>
+        </div>
+        <div id="sig-panel-draw" class="sig-panel">
+          <canvas id="signature-canvas" width="420" height="150"></canvas>
+          <div class="sig-canvas-bar">
+            <button type="button" id="signature-clear" class="pill-btn">Borrar</button>
+          </div>
+        </div>
+        <div id="sig-panel-type" class="sig-panel" hidden>
+          <input id="signature-text" type="text" placeholder="Escribe tu nombre o firma…" maxlength="60" />
+          <div id="signature-type-preview" class="sig-type-preview">Tu firma</div>
+        </div>
+        <div id="sig-saved-wrap" class="sig-saved-wrap" hidden>
+          <div class="sig-saved-label">Firmas guardadas</div>
+          <div id="sig-saved-list" class="sig-saved-list"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="signature-cancel" class="pill-btn">Cancelar</button>
+          <button type="button" id="signature-save-local" class="pill-btn">Guardar firma</button>
+          <button type="button" id="signature-place" class="primary-btn">Colocar en PDF</button>
+        </div>
+      </div>
     </div>
 
     <!-- Las páginas que se van a imprimir se dibujan aquí solo mientras dura

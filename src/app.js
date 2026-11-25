@@ -202,6 +202,13 @@
       swatch.classList.toggle('active', swatch.dataset.color === color);
     });
     const selected = getSelectedAnnotation();
+    const opGroup = $('#signature-opacity-group');
+    const opInput = $('#signature-opacity');
+    if (opGroup && opInput) {
+      const isSig = selected && selected.type === 'signature';
+      opGroup.hidden = !isSig;
+      if (isSig) opInput.value = String(Math.round((selected.opacity ?? 1) * 100));
+    }
     const thickness = selected && selected.width ? selected.width : state.strokeWidth;
     $$('.thickness-btn').forEach((button) => {
       button.classList.toggle('active', Number(button.dataset.width) === thickness);
@@ -580,7 +587,7 @@
     };
   }
 
-  function flattenAnnotations(page, model, font) {
+  async function flattenAnnotations(doc, page, model, font) {
     const annotations = state.annotations.get(model.id) || [];
     if (!annotations.length) return;
     const { width, height } = page.getSize();
@@ -591,6 +598,26 @@
 
     for (const annotation of annotations) {
       try {
+        if (annotation.type === 'signature' && annotation.dataUrl) {
+          const p1 = toPdf(annotation.x, annotation.y);
+          const p2 = toPdf(annotation.x + annotation.w, annotation.y + annotation.h);
+          const box = {
+            x: Math.min(p1.x, p2.x),
+            y: Math.min(p1.y, p2.y),
+            width: Math.abs(p2.x - p1.x),
+            height: Math.abs(p2.y - p1.y),
+          };
+          const base64 = annotation.dataUrl.split(',')[1];
+          if (base64) {
+            const bin = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+            const png = await doc.embedPng(bin);
+            page.drawImage(png, {
+              ...box,
+              opacity: annotation.opacity ?? 1,
+            });
+          }
+          continue;
+        }
         const color = hexToRgb(annotation.color);
         const thickness = annotation.width || 3;
         if (
@@ -700,7 +727,7 @@
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const pages = doc.getPages();
     for (let i = 0; i < pages.length; i += 1) {
-      flattenAnnotations(pages[i], models[i], font);
+      await flattenAnnotations(doc, pages[i], models[i], font);
     }
     return doc;
   }
@@ -1670,6 +1697,20 @@
           else ctx.lineTo(x * width, y * height);
         });
         ctx.stroke();
+      }
+    } else if (annotation.type === 'signature' && annotation.dataUrl) {
+      let img = annotation.__img;
+      if (!img) {
+        img = new Image();
+        img.src = annotation.dataUrl;
+        img.onload = () => redrawAllOverlays();
+        annotation.__img = img;
+      }
+      if (img.complete && img.naturalWidth) {
+        ctx.save();
+        ctx.globalAlpha = annotation.opacity ?? 1;
+        ctx.drawImage(img, annotation.x * width, annotation.y * height, annotation.w * width, annotation.h * height);
+        ctx.restore();
       }
     } else if (annotation.type === 'text') {
       const size = Math.max(6, (annotation.size || 14) * scale);
@@ -3770,6 +3811,9 @@
         case 'insert-blank':
           insertBlankPage();
           break;
+        case 'signature':
+          openSignatureModal();
+          break;
         case 'protect':
           openProtectModal();
           break;
@@ -3875,9 +3919,223 @@
     }
   }
 
+  const SIG_STORAGE_KEY = 'lalo-pdf-signatures';
+  let sigMode = 'draw';
+  let sigHasInk = false;
+
+  function loadSavedSignatures() {
+    try {
+      const raw = localStorage.getItem(SIG_STORAGE_KEY);
+      const list = JSON.parse(raw || '[]');
+      return Array.isArray(list) ? list : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveSignaturesList(list) {
+    try {
+      localStorage.setItem(SIG_STORAGE_KEY, JSON.stringify(list.slice(0, 12)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function renderSavedSignatures() {
+    const wrap = $('#sig-saved-wrap');
+    const listEl = $('#sig-saved-list');
+    if (!wrap || !listEl) return;
+    const list = loadSavedSignatures();
+    wrap.hidden = !list.length;
+    listEl.innerHTML = '';
+    list.forEach((dataUrl, idx) => {
+      const item = document.createElement('div');
+      item.className = 'sig-saved-item';
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.alt = `Firma ${idx + 1}`;
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'sig-saved-del';
+      del.textContent = '×';
+      del.title = 'Eliminar firma';
+      del.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const next = loadSavedSignatures().filter((_, i) => i !== idx);
+        saveSignaturesList(next);
+        renderSavedSignatures();
+      });
+      item.addEventListener('click', () => {
+        placeSignatureDataUrl(dataUrl);
+        $('#signature-modal').hidden = true;
+      });
+      item.append(img, del);
+      listEl.append(item);
+    });
+  }
+
+  function getSignatureDataUrl() {
+    if (sigMode === 'draw') {
+      const canvas = $('#signature-canvas');
+      if (!canvas || !sigHasInk) return null;
+      return canvas.toDataURL('image/png');
+    }
+    const text = ($('#signature-text')?.value || '').trim();
+    if (!text) return null;
+    const c = document.createElement('canvas');
+    c.width = 420;
+    c.height = 140;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#111111';
+    ctx.font = 'italic 54px "Segoe Script", "Brush Script MT", "Apple Chancery", cursive';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, c.width / 2, c.height / 2, c.width - 24);
+    return c.toDataURL('image/png');
+  }
+
+  function placeSignatureDataUrl(dataUrl) {
+    if (!state.pages.length || !dataUrl) return;
+    const model = state.pages[state.current] || state.pages[0];
+    if (!model) return;
+    pushHistory(false);
+    const ann = {
+      id: uid('ann'),
+      type: 'signature',
+      x: 0.32,
+      y: 0.4,
+      w: 0.34,
+      h: 0.12,
+      dataUrl,
+      opacity: 1,
+    };
+    const list = state.annotations.get(model.id) || [];
+    list.push(ann);
+    state.annotations.set(model.id, list);
+    state.selection = { pageId: model.id, id: ann.id };
+    state.markupOpen = true;
+    state.tool = 'select';
+    updateToolbarState();
+    redrawPage(model.id);
+    setDirty(true);
+  }
+
+  function openSignatureModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de añadir una firma');
+      return;
+    }
+    const canvas = $('#signature-canvas');
+    if (canvas) {
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+      sigHasInk = false;
+    }
+    const input = $('#signature-text');
+    if (input) input.value = '';
+    const prev = $('#signature-type-preview');
+    if (prev) prev.textContent = 'Tu firma';
+    renderSavedSignatures();
+    $('#signature-modal').hidden = false;
+  }
+
+  function bindSignatureModal() {
+    const modal = $('#signature-modal');
+    const canvas = $('#signature-canvas');
+    if (!modal || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    const pt = (e) => {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: ((e.clientX - r.left) / r.width) * canvas.width,
+        y: ((e.clientY - r.top) / r.height) * canvas.height,
+      };
+    };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      drawing = true;
+      sigHasInk = true;
+      canvas.setPointerCapture(e.pointerId);
+      const p = pt(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#111111';
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const p = pt(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    const stop = () => {
+      drawing = false;
+    };
+    canvas.addEventListener('pointerup', stop);
+    canvas.addEventListener('pointercancel', stop);
+
+    $('#signature-clear').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      sigHasInk = false;
+    });
+
+    $$('.sig-tab', modal).forEach((tab) => {
+      tab.addEventListener('click', () => {
+        sigMode = tab.dataset.sigTab;
+        $$('.sig-tab', modal).forEach((t) => t.classList.toggle('active', t === tab));
+        $('#sig-panel-draw').hidden = sigMode !== 'draw';
+        $('#sig-panel-type').hidden = sigMode !== 'type';
+      });
+    });
+
+    $('#signature-text').addEventListener('input', (e) => {
+      $('#signature-type-preview').textContent = e.target.value.trim() || 'Tu firma';
+    });
+
+    $('#btn-signature')?.addEventListener('click', openSignatureModal);
+    $('#signature-close').addEventListener('click', () => { modal.hidden = true; });
+    $('#signature-cancel').addEventListener('click', () => { modal.hidden = true; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+    $('#signature-save-local').addEventListener('click', () => {
+      const url = getSignatureDataUrl();
+      if (!url) {
+        toast('Dibuja o escribe una firma primero');
+        return;
+      }
+      const list = loadSavedSignatures();
+      list.unshift(url);
+      saveSignaturesList(list);
+      renderSavedSignatures();
+      toast('Firma guardada localmente');
+    });
+
+    $('#signature-place').addEventListener('click', () => {
+      const url = getSignatureDataUrl();
+      if (!url) {
+        toast('Dibuja o escribe una firma primero');
+        return;
+      }
+      modal.hidden = true;
+      placeSignatureDataUrl(url);
+    });
+
+    $('#signature-opacity')?.addEventListener('input', (e) => {
+      const sel = getSelectedAnnotation();
+      if (!sel || sel.type !== 'signature') return;
+      sel.opacity = clamp(Number(e.target.value) / 100, 0.15, 1);
+      redrawPage(state.selection.pageId);
+      setDirty(true);
+    });
+  }
+
   function init() {
     bindUI();
     bindSecurityModals();
+    bindSignatureModal();
     bindMenu();
     updateStatus();
     updateToolbarState();
