@@ -1062,7 +1062,7 @@ function registerIpc() {
             },
             {
               label: 'Esquinas redondeadas',
-              type: 'radio',
+              type: 'checkbox',
               checked: current.borderRadius > 0,
               click: () => {
                 clicked = true;
