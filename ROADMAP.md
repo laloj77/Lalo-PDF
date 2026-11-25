@@ -14,8 +14,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Opción de *Dividir en varios PDF* (por rangos o por página).
 - [x] ~~**Firma digital / manuscrita**~~
   - ~~Dibujar o escribir una firma manuscrita una vez, guardarla localmente y colocarla como una forma/objeto (mover, escalar, ajustar opacidad).~~
-- [ ] **Números de página y Marca de agua**
-  - Numerar desde/hasta con posición personalizable (cabecera/pie, izquierda/centro/derecha).
+- [x] ~~**Números de página y Marca de agua**~~
+  - ~~Numerar desde/hasta con posición personalizable (cabecera/pie, izquierda/centro/derecha).~~
   - ~~Marca de agua de texto (e imagen/logo) con rotación y opacidad personalizable.~~
 - [ ] **Comprimir PDF**
   - Recomprimir imágenes del documento con calidad/resolución ajustable.

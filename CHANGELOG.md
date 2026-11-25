@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.3.1] - 2026-11-25
+
+### Añadido
+
+- **Números de página:** rango *Desde/Hasta*, número inicial, posición vertical (*Cabecera* / *Pie de página*), alineación (*Izquierda* / *Centro* / *Derecha*), formato (`1, 2, 3…`, `Página 1`, `1 / N`) y tamaño personalizables con vista previa en vivo.
+
 ## [0.3.0] - 2026-11-25
 
 ### Añadido
