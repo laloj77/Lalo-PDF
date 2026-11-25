@@ -1307,7 +1307,8 @@ body.thumb-dragging * {
 #signature-modal,
 #watermark-modal,
 #unsaved-modal,
-#pagenum-modal {
+#pagenum-modal,
+#split-modal {
   position: fixed;
   inset: 0;
   z-index: 90;

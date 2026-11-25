@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('dialog:export-images', { baseName, images, startFolder }),
   exportWord: (baseName, pages) =>
     ipcRenderer.invoke('dialog:export-word', { baseName, pages }),
+  splitPdf: (files, startFolder) =>
+    ipcRenderer.invoke('dialog:split-pdf', { files, startFolder }),
   saveSignature: (bytes, defaultName) =>
     ipcRenderer.invoke('dialog:save-signature', { bytes, defaultName }),
   showThumbContextMenu: (count) =>

@@ -193,6 +193,10 @@ function buildMenu() {
           click: () => send('export-word'),
         },
         {
+          label: 'Dividir PDF…',
+          click: () => send('split-pdf'),
+        },
+        {
           label: 'Protección y permisos…',
           accelerator: 'CmdOrCtrl+Shift+L',
           click: () => send('protect'),
@@ -703,6 +707,32 @@ function registerIpc() {
       return { canceled: false, folder, written };
     } catch (error) {
       console.error('No se pudieron exportar las imágenes', error);
+      return { canceled: false, error: describe(error) };
+    }
+  });
+
+  ipcMain.handle('dialog:split-pdf', async (_event, { files, startFolder }) => {
+    try {
+      if (!Array.isArray(files) || !files.length) {
+        return { canceled: false, error: 'No hay archivos que guardar.' };
+      }
+      const options = {
+        title: 'Elegir carpeta para los PDFs divididos',
+        properties: ['openDirectory', 'createDirectory'],
+      };
+      if (typeof startFolder === 'string' && startFolder) options.defaultPath = startFolder;
+      const result = await dialog.showOpenDialog(mainWindow, options);
+      if (result.canceled || !result.filePaths[0]) return { canceled: true };
+      const folder = result.filePaths[0];
+      const written = [];
+      for (const f of files) {
+        const target = path.join(folder, safePdfName(f.name));
+        await writeFileAtomic(target, toBuffer(f.bytes));
+        written.push(target);
+      }
+      return { canceled: false, folder, written };
+    } catch (error) {
+      console.error('No se pudo dividir el PDF', error);
       return { canceled: false, error: describe(error) };
     }
   });

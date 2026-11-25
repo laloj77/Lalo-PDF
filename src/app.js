@@ -4424,6 +4424,9 @@
         case 'export-word':
           exportWord();
           break;
+        case 'split-pdf':
+          openSplitModal();
+          break;
         case 'print':
           printPdf();
           break;
@@ -5111,6 +5114,112 @@
     });
   }
 
+  let splitMode = 'each';
+
+  function parseSplitRanges(raw, total) {
+    const parts = String(raw || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!parts.length) return null;
+    const ranges = [];
+    for (const part of parts) {
+      const m = part.match(/^(\d+)(?:\s*-\s*(\d+))?$/);
+      if (!m) return null;
+      const a = Number.parseInt(m[1], 10);
+      const b = m[2] ? Number.parseInt(m[2], 10) : a;
+      if (a < 1 || b > total || a > b) return null;
+      ranges.push([a - 1, b - 1]);
+    }
+    return ranges;
+  }
+
+  function openSplitModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de dividir');
+      return;
+    }
+    splitMode = 'each';
+    const modal = $('#split-modal');
+    $$('[data-split-mode]', modal).forEach((t) =>
+      t.classList.toggle('active', t.dataset.splitMode === 'each'),
+    );
+    $('#split-desc').textContent = `Generará ${state.pages.length} archivo${state.pages.length === 1 ? '' : 's'} PDF (uno por página).`;
+    $('#split-ranges-wrap').hidden = true;
+    $('#split-ranges').value = `1-${state.pages.length}`;
+    $('#split-error').hidden = true;
+    modal.hidden = false;
+  }
+
+  function bindSplitModal() {
+    const modal = $('#split-modal');
+    const form = $('#split-form');
+    if (!modal || !form) return;
+
+    $$('[data-split-mode]', modal).forEach((tab) => {
+      tab.addEventListener('click', () => {
+        splitMode = tab.dataset.splitMode;
+        $$('[data-split-mode]', modal).forEach((t) => t.classList.toggle('active', t === tab));
+        $('#split-ranges-wrap').hidden = splitMode !== 'ranges';
+        $('#split-desc').textContent =
+          splitMode === 'each'
+            ? `Generará ${state.pages.length} archivo${state.pages.length === 1 ? '' : 's'} PDF (uno por página).`
+            : 'Generará un archivo PDF por cada rango indicado.';
+        $('#split-error').hidden = true;
+      });
+    });
+
+    $('#split-close')?.addEventListener('click', () => { modal.hidden = true; });
+    $('#split-cancel')?.addEventListener('click', () => { modal.hidden = true; });
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!window.lalo?.splitPdf) {
+        toast('Dividir PDF solo está disponible en la app de escritorio');
+        return;
+      }
+      const total = state.pages.length;
+      let chunks = [];
+      if (splitMode === 'each') {
+        chunks = state.pages.map((p, idx) => ({
+          label: `p${String(idx + 1).padStart(2, '0')}`,
+          models: [p],
+        }));
+      } else {
+        const ranges = parseSplitRanges($('#split-ranges').value, total);
+        if (!ranges) {
+          $('#split-error').textContent = `Rangos no válidos. Usa números entre 1 y ${total} (ej. 1-3, 4-${total}).`;
+          $('#split-error').hidden = false;
+          return;
+        }
+        chunks = ranges.map(([a, b]) => ({
+          label: a === b ? `p${a + 1}` : `p${a + 1}-${b + 1}`,
+          models: state.pages.slice(a, b + 1),
+        }));
+      }
+
+      modal.hidden = true;
+      setBusy(true);
+      try {
+        const stem = baseName(state.fileName || 'Documento');
+        const files = [];
+        for (const chunk of chunks) {
+          const bytes = await composeBytes(chunk.models);
+          files.push({ name: `${stem}-${chunk.label}.pdf`, bytes });
+        }
+        const res = await window.lalo.splitPdf(files, folderOf(state.filePath));
+        if (!res || res.canceled) return;
+        if (res.error) throw new Error(res.error);
+        toast(`${files.length} PDFs guardados en ${res.folder}`);
+      } catch (error) {
+        showError('No se pudo dividir el PDF', error);
+      } finally {
+        setBusy(false);
+      }
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -5228,6 +5337,7 @@
     bindSignatureModal();
     bindWatermarkModal();
     bindPageNumbersModal();
+    bindSplitModal();
     bindMenu();
     updateStatus();
     updateToolbarState();

@@ -714,6 +714,29 @@
       </form>
     </div>
 
+    <div id="split-modal" class="modal-backdrop" hidden>
+      <form id="split-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>Dividir PDF</h2>
+          <button type="button" id="split-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <div class="sig-tabs" role="tablist">
+          <button type="button" class="sig-tab active" data-split-mode="each">Por página</button>
+          <button type="button" class="sig-tab" data-split-mode="ranges">Por rangos</button>
+        </div>
+        <p id="split-desc" class="modal-desc">Generará un archivo PDF independiente por cada página.</p>
+        <div id="split-ranges-wrap" class="modal-field" hidden>
+          <label for="split-ranges">Rangos (separados por comas)</label>
+          <input id="split-ranges" type="text" placeholder="Ej. 1-3, 4-6, 7" />
+        </div>
+        <p id="split-error" class="modal-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" id="split-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" class="primary-btn">Dividir</button>
+        </div>
+      </form>
+    </div>
+
     <div id="presentation-hud" hidden>
       <button type="button" id="pres-prev" class="pres-btn" title="Anterior (←)">←</button>
       <span id="pres-page">1 / 1</span>
