@@ -11,7 +11,7 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Impresión del documento compuesto usando `webContents.print` y ajuste dinámico de tamaño de hoja (`@page`).~~
 - [ ] **Extraer / Dividir páginas**
   - ~~Seleccionar miniaturas de la barra lateral → *Extraer como PDF…* (y exportar como JPEG/PNG, duplicar, rotar, insertar en blanco o eliminar desde el menú contextual o arrastrando con el botón derecho).~~
-  - Opción de *Dividir en varios PDF* (por rangos o por página).
+  - ~~Opción de *Dividir en varios PDF* (por rangos o por página).~~
 - [x] ~~**Firma digital / manuscrita**~~
   - ~~Dibujar o escribir una firma manuscrita una vez, guardarla localmente y colocarla como una forma/objeto (mover, escalar, ajustar opacidad).~~
 - [x] ~~**Números de página y Marca de agua**~~
