@@ -2111,6 +2111,35 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    if (state.pageNumbers) {
+      const pn = state.pageNumbers;
+      const pageIndex = Number(canvas.dataset.index);
+      const pageNum1Based = pageIndex + 1;
+      if (pageNum1Based >= pn.from && pageNum1Based <= pn.to) {
+        const displayNum = pn.start + (pageNum1Based - pn.from);
+        const totalDisplay = pn.start + (pn.to - pn.from);
+        const label =
+          pn.format === 'page-n'
+            ? `Página ${displayNum}`
+            : pn.format === 'n-of-total'
+              ? `${displayNum} / ${totalDisplay}`
+              : String(displayNum);
+        const sz = Math.max(7, (pn.size || 11) * scale);
+        const marginX = 32 * scale;
+        const marginY = 24 * scale;
+        ctx.save();
+        ctx.fillStyle = '#333338';
+        ctx.font = `${sz}px ${FONT_FAMILY}`;
+        ctx.textBaseline = pn.vpos === 'top' ? 'top' : 'bottom';
+        ctx.textAlign = pn.hpos;
+        const x =
+          pn.hpos === 'left' ? marginX : pn.hpos === 'right' ? width - marginX : width / 2;
+        const y = pn.vpos === 'top' ? marginY : height - marginY;
+        ctx.fillText(label, x, y);
+        ctx.restore();
+      }
+    }
+
     if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
       const wm = state.watermark;
       ctx.save();
