@@ -3625,7 +3625,108 @@
       if (event.target === el.shortcutsModal) el.shortcutsModal.hidden = true;
     });
 
+    let suppressThumbContextMenu = false;
+    el.thumbs.addEventListener('pointerdown', (event) => {
+      if (event.button !== 2) return;
+      const thumb = event.target.closest('.thumb');
+      if (!thumb || !state.pages.length) return;
+      const startX = event.clientX;
+      const startY = event.clientY;
+      let leftWindow = false;
+
+      const onMove = (moveEvent) => {
+        if (
+          moveEvent.clientX <= 0 ||
+          moveEvent.clientY <= 0 ||
+          moveEvent.clientX >= window.innerWidth - 1 ||
+          moveEvent.clientY >= window.innerHeight - 1
+        ) {
+          leftWindow = true;
+        }
+      };
+
+      const onUp = async (upEvent) => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+        const moved = Math.hypot(upEvent.clientX - startX, upEvent.clientY - startY);
+        if (!leftWindow || moved < 10) return;
+
+        suppressThumbContextMenu = true;
+        setTimeout(() => { suppressThumbContextMenu = false; }, 200);
+
+        const index = Number(thumb.dataset.index);
+        const clickedModel = state.pages[index];
+        if (!clickedModel) return;
+        if (!state.selected.has(clickedModel.id)) {
+          state.selected.clear();
+          state.selected.add(clickedModel.id);
+          state.anchorIndex = index;
+          state.current = index;
+          updateThumbSelection();
+          updateStatus();
+        }
+        const selectedModels = state.pages.filter((p) => state.selected.has(p.id));
+        if (!selectedModels.length || !window.lalo?.pickExportSelection) return;
+
+        const defaultName = dragFileName(selectedModels);
+        const picked = await window.lalo.pickExportSelection(defaultName);
+        if (!picked || picked.canceled || picked.error) return;
+        setBusy(true);
+        try {
+          const bytes = await composeBytes(selectedModels);
+          if (picked.ext === 'pdf') {
+            const written = await window.lalo.savePdfInPlace(picked.path, bytes);
+            if (!written || written.ok === false) throw new Error(written?.error || 'Error al guardar');
+            toast(`PDF guardado: ${picked.name}`);
+          } else {
+            const ext = picked.ext === 'png' ? 'png' : 'jpg';
+            const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+            const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+            try {
+              const baseTarget = picked.path.replace(/\.(png|jpe?g)$/i, '');
+              for (let i = 1; i <= pdf.numPages; i += 1) {
+                const page = await pdf.getPage(i);
+                const base = page.getViewport({ scale: 1 });
+                const scale = Math.min(2, 2600 / Math.max(base.width, base.height));
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.ceil(viewport.width);
+                canvas.height = Math.ceil(viewport.height);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
+                const imgBytes = new Uint8Array(await blob.arrayBuffer());
+                const targetPath =
+                  pdf.numPages === 1
+                    ? picked.path
+                    : `${baseTarget}-${String(i).padStart(2, '0')}.${ext}`;
+                await window.lalo.savePdfInPlace(targetPath, imgBytes);
+              }
+              toast(pdf.numPages === 1 ? `Imagen guardada: ${picked.name}` : `${pdf.numPages} imágenes exportadas`);
+            } finally {
+              await pdf.destroy().catch(() => {});
+            }
+          }
+        } catch (error) {
+          showError('No se pudo exportar', error);
+        } finally {
+          setBusy(false);
+        }
+      };
+
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    });
+
     el.thumbs.addEventListener('contextmenu', async (event) => {
+      if (suppressThumbContextMenu) {
+        event.preventDefault();
+        return;
+      }
       const thumb = event.target.closest('.thumb');
       if (!thumb || !state.pages.length || !window.lalo?.showThumbContextMenu) return;
       event.preventDefault();
