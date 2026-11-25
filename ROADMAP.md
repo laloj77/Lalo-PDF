@@ -49,8 +49,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Herramienta de selección de texto sobre la página para copiar al portapapeles.~~
 - [ ] **Índice / Marcadores (Tabla de contenidos)**
   - Vista en la barra lateral para navegar por los marcadores del PDF.
-- [ ] **Modo presentación a pantalla completa**
-  - Pasar páginas a pantalla completa sin elementos de interfaz.
+- [x] ~~**Modo presentación a pantalla completa**~~
+  - ~~Pasar páginas a pantalla completa (`F5` / botón junto a Imprimir) sin elementos de interfaz y con control flotante.~~
 - [x] ~~**Ajustes de miniatura y navegación rápida**~~
   - ~~Redimensionar miniaturas arrastrando el divisor de la barra lateral (renderizadas a `360 px` base para máxima nitidez) y caja `Ir a pág.` para saltar a un número de página específico.~~
 - [ ] **Asociación de archivos en Windows**

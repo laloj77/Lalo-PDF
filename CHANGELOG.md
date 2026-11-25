@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-11-25
+
+### Añadido
+
+- **Modo presentación a pantalla completa (`F5`):** botón junto a *Imprimir* y en *Ver → Modo presentación* para pasar páginas sin interfaz, con control flotante inferior (`←`, `1 / N`, `→`, `Salir`).
+
+### Cambiado
+
+- Botones de acción de la derecha (*Proteger*, *Exportar*, *Guardar como…*, *Guardar*) más compactos en la barra superior.
+
 ## [0.2.8] - 2026-11-25
 
 ### Añadido
