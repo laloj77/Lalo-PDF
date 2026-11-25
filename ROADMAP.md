@@ -65,6 +65,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.~~
 - [x] ~~**Selección y extracción de imágenes del PDF**~~
   - ~~Seleccionar imágenes dentro del PDF, arrastrarlas fuera como JPEG o usar clic derecho para copiar o guardar como JPG, PNG, WebP o PDF.~~
+- [ ] **Crear icono para la app (externo e interno)**
+  - Diseñar y aplicar el icono propio de Lalo PDF tanto para el ejecutable/acceso directo de Windows como para la interfaz interna de la aplicación.
 
 ---
 
