@@ -4966,12 +4966,6 @@
         el.sidebar.style.width = `${clamped}px`;
         el.sidebar.style.flexBasis = `${clamped}px`;
       };
-      try {
-        const saved = localStorage.getItem('lalo-pdf-sidebar-width');
-        if (saved) applySidebarWidth(saved);
-      } catch {
-        /* ignore */
-      }
       resizer.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
         e.preventDefault();
@@ -4985,11 +4979,6 @@
           window.removeEventListener('pointermove', onMove);
           window.removeEventListener('pointerup', onUp);
           window.removeEventListener('pointercancel', onUp);
-          try {
-            localStorage.setItem('lalo-pdf-sidebar-width', String(parseInt(el.sidebar.style.width, 10) || 184));
-          } catch {
-            /* ignore */
-          }
         };
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
