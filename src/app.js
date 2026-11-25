@@ -891,11 +891,13 @@
     }
   }
 
-  async function exportImages() {
+  async function exportImages(format = 'png') {
     if (!state.pages.length) {
       toast('Abre un PDF antes de exportar');
       return;
     }
+    const ext = format === 'jpg' ? 'jpg' : 'png';
+    const mime = ext === 'jpg' ? 'image/jpeg' : 'image/png';
     setBusy(true);
     try {
       // workingBytes ya está compuesto y actualizado; solo hace falta recomponer
@@ -918,9 +920,9 @@
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await page.render({ canvasContext: ctx, viewport }).promise;
-          const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
           if (!blob) throw new Error('No se pudo generar la imagen de la página ' + i);
-          images.push({ ext: 'png', bytes: new Uint8Array(await blob.arrayBuffer()) });
+          images.push({ ext, bytes: new Uint8Array(await blob.arrayBuffer()) });
         }
       } finally {
         await pdf.destroy().catch(() => {});
@@ -3452,7 +3454,8 @@
         if (!option) return;
         el.exportMenu.hidden = true;
         if (option.dataset.export === 'docx') exportWord();
-        else exportImages();
+        else if (option.dataset.export === 'jpg') exportImages('jpg');
+        else exportImages('png');
       });
       document.addEventListener('mousedown', (event) => {
         if (!el.exportMenu.hidden && !event.target.closest('.export-group')) {
