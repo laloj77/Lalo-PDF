@@ -238,6 +238,7 @@
           <div class="sidebar-head">
             <span id="sidebar-title">Páginas</span>
             <div class="sidebar-actions">
+              <input id="thumb-size" type="range" min="80" max="190" value="132" title="Tamaño de miniaturas" aria-label="Tamaño de miniaturas" />
               <button id="btn-add-pages" class="mini-btn" title="Añadir páginas">
                 <svg><use href="#i-plus-square" /></svg>
               </button>
@@ -436,6 +437,9 @@
 
       <footer id="statusbar">
         <span id="status-left">Sin documento</span>
+        <span id="page-jump-wrap" class="page-jump-wrap" hidden>
+          Ir a pág. <input id="page-jump" type="number" min="1" value="1" aria-label="Ir a página" />
+        </span>
         <span id="status-right"></span>
         <span id="status-version"></span>
       </footer>

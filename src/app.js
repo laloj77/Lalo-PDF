@@ -178,6 +178,7 @@
     const total = state.pages.length;
     if (!total) {
       el.statusLeft.textContent = 'Sin documento';
+      if ($('#page-jump-wrap')) $('#page-jump-wrap').hidden = true;
       el.statusRight.textContent = '';
       el.pageCount.textContent = '0 páginas';
       if (document.activeElement !== el.zoomLabel) el.zoomLabel.value = '100 %';
@@ -191,6 +192,13 @@
       `Página ${state.current + 1} de ${total}` +
       (state.dirty ? '  ·  Cambios sin guardar' : '') +
       (state.fileName ? `  ·  ${state.fileName}` : '');
+    const jumpWrap = $('#page-jump-wrap');
+    const jumpInput = $('#page-jump');
+    if (jumpWrap && jumpInput) {
+      jumpWrap.hidden = false;
+      jumpInput.max = String(total);
+      if (document.activeElement !== jumpInput) jumpInput.value = String(state.current + 1);
+    }
     el.statusRight.textContent = `${Math.round(state.currentScale * 100)} %  ·  ${labelForMode()}`;
     el.pageCount.textContent = `${total} página${total === 1 ? '' : 's'}`;
     if (document.activeElement !== el.zoomLabel) {
@@ -4950,6 +4958,44 @@
         await saveAs();
         if (!state.dirty) window.lalo?.confirmQuit?.();
       });
+    }
+    const thumbSize = $('#thumb-size');
+    if (thumbSize) {
+      const applyThumbSize = (val) => {
+        const w = clamp(Number(val) || 132, 80, 190);
+        el.thumbs.style.setProperty('--thumb-w', `${w}px`);
+        thumbSize.value = String(w);
+      };
+      try {
+        const saved = localStorage.getItem('lalo-pdf-thumb-size');
+        if (saved) applyThumbSize(saved);
+      } catch {
+        /* ignore */
+      }
+      thumbSize.addEventListener('input', (e) => {
+        applyThumbSize(e.target.value);
+        try {
+          localStorage.setItem('lalo-pdf-thumb-size', e.target.value);
+        } catch {
+          /* ignore */
+        }
+      });
+    }
+    const pageJump = $('#page-jump');
+    if (pageJump) {
+      const doJump = () => {
+        if (!state.pages.length) return;
+        const n = clamp(Number.parseInt(pageJump.value, 10) || 1, 1, state.pages.length);
+        goToPage(n - 1);
+      };
+      pageJump.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          doJump();
+          pageJump.blur();
+        }
+      });
+      pageJump.addEventListener('change', doJump);
     }
     bindUI();
     bindSecurityModals();
