@@ -72,6 +72,7 @@
     statusRight: $('#status-right'),
     zoomLabel: $('#zoom-label'),
     zoomMenu: $('#zoom-menu'),
+    exportMenu: $('#export-menu'),
     markupBar: $('#markup-bar'),
     emptyState: $('#empty-state'),
     searchPanel: $('#search-panel'),
@@ -3199,7 +3200,28 @@
     el.btnMarkup.addEventListener('click', () => toggleMarkup());
     el.btnSearch.addEventListener('click', openSearch);
     el.btnPrint.addEventListener('click', printPdf);
-    $('#btn-export').addEventListener('click', exportImages);
+    $('#btn-export').addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (!el.exportMenu) {
+        exportImages();
+        return;
+      }
+      el.exportMenu.hidden = !el.exportMenu.hidden;
+    });
+    if (el.exportMenu) {
+      el.exportMenu.addEventListener('click', (event) => {
+        const option = event.target.closest('.export-option');
+        if (!option) return;
+        el.exportMenu.hidden = true;
+        if (option.dataset.export === 'docx') exportWord();
+        else exportImages();
+      });
+      document.addEventListener('mousedown', (event) => {
+        if (!el.exportMenu.hidden && !event.target.closest('.export-group')) {
+          el.exportMenu.hidden = true;
+        }
+      });
+    }
     $('#btn-save-as').addEventListener('click', saveAs);
     $('#btn-save').addEventListener('click', (event) => {
       if (event.shiftKey) saveAs();
@@ -3541,6 +3563,9 @@
           break;
         case 'export-images':
           exportImages();
+          break;
+        case 'export-word':
+          exportWord();
           break;
         case 'print':
           printPdf();

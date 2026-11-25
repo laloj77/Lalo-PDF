@@ -212,9 +212,15 @@
           <button id="btn-protect" class="pill-btn" title="Protección y permisos (Ctrl+Shift+L)">
             <svg><use href="#i-lock" /></svg><span>Proteger</span>
           </button>
-          <button id="btn-export" class="pill-btn" title="Exportar cada página como imagen (Ctrl+Shift+E)">
-            <svg><use href="#i-share" /></svg><span>Exportar</span>
-          </button>
+          <div class="export-group">
+            <button id="btn-export" class="pill-btn" title="Exportar documento">
+              <svg><use href="#i-share" /></svg><span>Exportar</span>
+            </button>
+            <div id="export-menu" class="export-menu" hidden>
+              <button type="button" class="export-option" data-export="png">Imágenes PNG (.png)</button>
+              <button type="button" class="export-option" data-export="docx">Microsoft Word (.docx)</button>
+            </div>
+          </div>
           <button id="btn-save-as" class="pill-btn" title="Guardar como… (Ctrl+Shift+S)">Guardar como…</button>
           <button id="btn-save" class="primary-btn" title="Guardar (Ctrl+S)">Guardar</button>
         </div>

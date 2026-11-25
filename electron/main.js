@@ -187,6 +187,10 @@ function buildMenu() {
           click: () => send('export-images'),
         },
         {
+          label: 'Exportar a Word (.docx)…',
+          click: () => send('export-word'),
+        },
+        {
           label: 'Protección y permisos…',
           accelerator: 'CmdOrCtrl+Shift+L',
           click: () => send('protect'),
@@ -683,6 +687,56 @@ function registerIpc() {
       return { canceled: false, folder, written };
     } catch (error) {
       console.error('No se pudieron exportar las imágenes', error);
+      return { canceled: false, error: describe(error) };
+    }
+  });
+
+  ipcMain.handle('dialog:export-word', async (_event, { baseName, pages }) => {
+    try {
+      if (!Array.isArray(pages) || !pages.length) {
+        return { canceled: false, error: 'No hay páginas que exportar.' };
+      }
+      const safeBase =
+        (baseName || 'Documento')
+          .replace(/[\\/:*?"<>|]+/g, '-')
+          .replace(/\.pdf$/i, '')
+          .trim() || 'Documento';
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: 'Exportar a Microsoft Word',
+        defaultPath: `${safeBase}.docx`,
+        filters: [{ name: 'Documento de Word (*.docx)', extensions: ['docx'] }],
+        properties: ['showOverwriteConfirmation', 'createDirectory'],
+      });
+      if (result.canceled || !result.filePath) return { canceled: true };
+      const target = /\.docx$/i.test(result.filePath)
+        ? result.filePath
+        : `${result.filePath}.docx`;
+
+      const { Document, Packer, Paragraph, TextRun, PageBreak } = require('docx');
+      const children = [];
+      pages.forEach((lines, pageIdx) => {
+        if (pageIdx > 0) {
+          children.push(new Paragraph({ children: [new PageBreak()] }));
+        }
+        const pageLines = Array.isArray(lines) && lines.length ? lines : [''];
+        for (const line of pageLines) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun(String(line ?? ''))],
+            }),
+          );
+        }
+      });
+
+      const doc = new Document({
+        sections: [{ children }],
+      });
+      const buffer = await Packer.toBuffer(doc);
+      await fs.mkdir(path.dirname(target), { recursive: true });
+      await writeFileAtomic(target, buffer);
+      return { canceled: false, path: target, name: path.basename(target) };
+    } catch (error) {
+      console.error('No se pudo exportar a Word', error);
       return { canceled: false, error: describe(error) };
     }
   });

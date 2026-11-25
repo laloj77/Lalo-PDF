@@ -15,6 +15,8 @@ contextBridge.exposeInMainWorld('lalo', {
   cancelDrag: () => ipcRenderer.invoke('drag:disarm'),
   exportImages: (baseName, images, startFolder) =>
     ipcRenderer.invoke('dialog:export-images', { baseName, images, startFolder }),
+  exportWord: (baseName, pages) =>
+    ipcRenderer.invoke('dialog:export-word', { baseName, pages }),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
   showImageContextMenu: (bytes, defaultName, webpBytes) =>
