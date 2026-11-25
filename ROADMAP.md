@@ -67,10 +67,10 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Seleccionar imágenes dentro del PDF, arrastrarlas fuera como JPEG o usar clic derecho para copiar o guardar como JPG, PNG, WebP o PDF.~~
 - [ ] **Crear icono para la app (externo e interno)**
   - Diseñar y aplicar el icono propio de Lalo PDF tanto para el ejecutable/acceso directo de Windows como para la interfaz interna de la aplicación.
-- [ ] **Mejoras en el cuadro de texto**
-  - Tamaños de letra 8 y 9, negrita, cursiva, subrayado y tachado.
-  - Alineación (izquierda, centro, derecha) y color de borde personalizable (sin borde, negro, azul, verde, rojo, amarillo).
-  - Menú contextual con botón derecho sobre el cuadro de texto (Color, Tipo de texto, Alineación, Borde).
+- [x] ~~**Mejoras en el cuadro de texto**~~
+  - ~~Tamaños de letra 8 y 9, negrita, cursiva, subrayado y tachado, con icono `A` y vista previa en tiempo real.~~
+  - ~~Alineación (izquierda, centro, derecha), color de borde, 4 grosores (1–4 px) y esquinas rectas o redondeadas.~~
+  - ~~Menú contextual con botón derecho sobre el cuadro de texto (Color, Tipo de texto y Tamaño, Alineación, Borde).~~
 
 ---
 

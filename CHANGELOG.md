@@ -7,6 +7,17 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.5] - 2026-11-25
+
+### Añadido
+
+- **Anotaciones editables nativas:** guardar elementos dibujados como anotaciones PDF reales (`/Annots`) y restaurarlos como editables al reabrir el PDF.
+- **Mejoras en el cuadro de texto:**
+  - Tamaños `8` y `9`, **negrita**, **cursiva**, **subrayado** y **tachado**.
+  - Alineación (izquierda, centro, derecha) y borde personalizable (color, 4 grosores visuales `1–4 px` y esquinas rectas o redondeadas).
+  - Vista previa en tiempo real dentro del propio cuadro al editar y menú contextual con botón derecho (*Color*, *Tipo de texto / Tamaño*, *Alineación*, *Borde*).
+  - Icono `A` para la herramienta de texto.
+
 ## [0.2.2] - 2026-11-25
 
 ### Añadido
