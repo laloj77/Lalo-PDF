@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('dialog:export-selection', { defaultName }),
   showTextContextMenu: (current) =>
     ipcRenderer.invoke('text:context-menu', current),
+  setDirtyState: (dirty) => ipcRenderer.send('app:dirty', !!dirty),
+  confirmQuit: () => ipcRenderer.send('app:confirm-quit'),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
   showImageContextMenu: (bytes, defaultName, webpBytes) =>

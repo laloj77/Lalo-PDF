@@ -57,6 +57,8 @@ app.on('open-file', (event, filePath) => {
 
 let mainWindow = null;
 let isQuitting = false;
+let hasUnsavedChanges = false;
+let forceCloseConfirmed = false;
 let pendingOpenPath =
   process.argv.slice(1).find((arg) => /\.pdf$/i.test(arg) && !arg.startsWith('-')) || null;
 
@@ -296,7 +298,27 @@ async function createWindow() {
   mainWindow.once('ready-to-show', () => {
     if (!isQuitting && mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
   });
-  mainWindow.on('close', () => {
+  mainWindow.on('close', (event) => {
+    if (hasUnsavedChanges && !forceCloseConfirmed) {
+      event.preventDefault();
+      const choice = dialog.showMessageBoxSync(mainWindow, {
+        type: 'warning',
+        buttons: ['Guardar', 'No guardar', 'Cancelar'],
+        defaultId: 0,
+        cancelId: 2,
+        title: 'Cambios sin guardar',
+        message: 'Tienes cambios sin guardar en el documento.',
+        detail: '¿Quieres guardarlos antes de salir?',
+      });
+      if (choice === 0) {
+        send('save-and-quit');
+        return;
+      }
+      if (choice === 2) {
+        return;
+      }
+      forceCloseConfirmed = true;
+    }
     stopDragWatch();
     if (process.platform === 'darwin') return;
     isQuitting = true;
@@ -1194,6 +1216,20 @@ function registerIpc() {
         },
       });
     });
+  });
+
+  ipcMain.on('app:dirty', (_event, dirty) => {
+    hasUnsavedChanges = !!dirty;
+  });
+
+  ipcMain.on('app:confirm-quit', () => {
+    hasUnsavedChanges = false;
+    forceCloseConfirmed = true;
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.close();
+    } else {
+      app.quit();
+    }
   });
 
   ipcMain.handle('app:info', () => ({

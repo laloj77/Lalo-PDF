@@ -979,6 +979,7 @@
   function markSaved(name) {
     if (name) state.fileName = name;
     state.dirty = false;
+    window.lalo?.setDirtyState?.(false);
     updateStatus();
     toast(`Guardado: ${state.fileName}`);
   }
@@ -4321,6 +4322,11 @@
         case 'save-as':
           saveAs();
           break;
+        case 'save-and-quit':
+          save().then(() => {
+            if (!state.dirty) window.lalo?.confirmQuit?.();
+          });
+          break;
         case 'export-images':
           exportImages();
           break;
@@ -4887,6 +4893,22 @@
   }
 
   function init() {
+    const chkAutosave = $('#chk-autosave');
+    if (chkAutosave) {
+      try {
+        chkAutosave.checked = localStorage.getItem('lalo-pdf-autosave') === '1';
+      } catch {
+        /* ignore */
+      }
+      chkAutosave.addEventListener('change', () => {
+        try {
+          localStorage.setItem('lalo-pdf-autosave', chkAutosave.checked ? '1' : '0');
+        } catch {
+          /* ignore */
+        }
+        toast(chkAutosave.checked ? 'Autoguardado activado' : 'Autoguardado desactivado');
+      });
+    }
     bindUI();
     bindSecurityModals();
     bindSignatureModal();
