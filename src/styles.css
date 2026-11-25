@@ -1584,6 +1584,18 @@ body.presentation-mode #viewer-wrap {
   background: rgba(255, 255, 255, 0.24);
 }
 
+.tb-right {
+  gap: 5px;
+}
+
+.tb-right .pill-btn,
+.tb-right .primary-btn {
+  height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+  gap: 4px;
+}
+
 .modal-field input:focus,
 .modal-field select:focus {
   outline: 2px solid var(--accent);
