@@ -372,7 +372,6 @@
           <div id="text-editor" hidden>
             <div class="te-head" id="text-editor-head" title="Arrastra para mover el cuadro">
               <svg class="te-grip"><use href="#i-grip" /></svg>
-              <span class="te-title">Texto</span>
               <label class="te-size">
                 <select id="text-size-select" aria-label="Tamaño de la letra" title="Tamaño de la letra">
                   <option value="8">8</option>
@@ -397,18 +396,18 @@
               <button type="button" id="te-strike" class="te-fmt-btn" title="Tachado"><s>T</s></button>
               <select id="text-border-select" aria-label="Borde" title="Color del borde">
                 <option value="none">Sin borde</option>
-                <option value="#2c2c2e">Negro ⚫</option>
-                <option value="#0a84ff">Azul 🔵</option>
-                <option value="#32d74b">Verde 🟢</option>
-                <option value="#ff453a">Rojo 🔴</option>
-                <option value="#ffd60a">Amarillo 🟡</option>
+                <option value="#2c2c2e">Negro&#160;&#160;&#160;&#160;&#160;⚫</option>
+                <option value="#0a84ff">Azul&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;🔵</option>
+                <option value="#32d74b">Verde&#160;&#160;&#160;&#160;&#160;🟢</option>
+                <option value="#ff453a">Rojo&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;🔴</option>
+                <option value="#ffd60a">Amarillo&#160;🟡</option>
               </select>
-              <select id="text-border-width" aria-label="Grosor del borde" title="Grosor del borde">
-                <option value="1">1 px</option>
-                <option value="2" selected>2 px</option>
-                <option value="3">3 px</option>
-                <option value="4">4 px</option>
-              </select>
+              <div class="te-bw-group" id="text-border-width-group" title="Grosor del borde">
+                <button type="button" class="te-bw-btn" data-bw="1" title="1 px"><span style="height:1px"></span></button>
+                <button type="button" class="te-bw-btn active" data-bw="2" title="2 px"><span style="height:2px"></span></button>
+                <button type="button" class="te-bw-btn" data-bw="3" title="3 px"><span style="height:3px"></span></button>
+                <button type="button" class="te-bw-btn" data-bw="4" title="4 px"><span style="height:4px"></span></button>
+              </div>
               <select id="text-border-radius" aria-label="Esquinas del borde" title="Estilo de esquinas">
                 <option value="0">Recto</option>
                 <option value="8">Redondeado</option>

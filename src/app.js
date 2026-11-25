@@ -3071,7 +3071,7 @@
     const size = Number(el.textSize.value) || state.fontSize;
     const align = $('#text-align-select')?.value || 'left';
     const borderColor = $('#text-border-select')?.value || 'none';
-    const borderWidth = Number($('#text-border-width')?.value) || 2;
+    const borderWidth = Number($('.te-bw-btn.active')?.dataset.bw) || 2;
     const borderRadius = Number($('#text-border-radius')?.value) || 0;
     const bold = $('#te-bold')?.classList.contains('active') || false;
     const italic = $('#te-italic')?.classList.contains('active') || false;
@@ -4085,7 +4085,7 @@
       if (!el.textInput) return;
       const align = $('#text-align-select')?.value || 'left';
       const borderColor = $('#text-border-select')?.value || 'none';
-      const borderWidth = Number($('#text-border-width')?.value) || 2;
+      const borderWidth = Number($('.te-bw-btn.active')?.dataset.bw) || 2;
       const borderRadius = Number($('#text-border-radius')?.value) || 0;
       const bold = $('#te-bold')?.classList.contains('active');
       const italic = $('#te-italic')?.classList.contains('active');
@@ -4114,9 +4114,14 @@
         syncTextEditorPreview();
       });
     });
+    $$('.te-bw-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $$('.te-bw-btn').forEach((b) => b.classList.toggle('active', b === btn));
+        syncTextEditorPreview();
+      });
+    });
     $('#text-align-select')?.addEventListener('change', syncTextEditorPreview);
     $('#text-border-select')?.addEventListener('change', syncTextEditorPreview);
-    $('#text-border-width')?.addEventListener('change', syncTextEditorPreview);
     $('#text-border-radius')?.addEventListener('change', syncTextEditorPreview);
 
     el.viewer.addEventListener('contextmenu', async (event) => {
