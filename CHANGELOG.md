@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.8] - 2026-11-25
+
+### Añadido
+
+- **Miniaturas redimensionables:** divisor arrastrable entre la barra lateral y el visor principal; las miniaturas se adaptan automáticamente y se renderizan a `360 px` base para mantenerse nítidas.
+- **Navegación rápida:** caja `Ir a pág.` en la barra inferior para saltar directamente a cualquier número de página.
+
 ## [0.2.7] - 2026-11-25
 
 ### Cambiado
