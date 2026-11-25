@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.invoke('dialog:save-signature', { bytes, defaultName }),
   showThumbContextMenu: (count) =>
     ipcRenderer.invoke('thumb:context-menu', { count }),
+  pickExportSelection: (defaultName) =>
+    ipcRenderer.invoke('dialog:export-selection', { defaultName }),
   print: (options) => ipcRenderer.invoke('print:pdf', options || {}),
   showItemInFolder: (filePath) => ipcRenderer.invoke('shell:show-item', filePath),
   showImageContextMenu: (bytes, defaultName, webpBytes) =>

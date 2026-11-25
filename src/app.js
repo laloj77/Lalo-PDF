@@ -3654,67 +3654,81 @@
         deletePages();
         return;
       }
-
-      if (res.action === 'pdf') {
-        setBusy(true);
-        try {
-          const bytes = await composeBytes(selectedModels);
-          const defaultName = dragFileName(selectedModels);
-          const saved = await window.lalo.savePdf(defaultName, bytes);
-          if (saved && !saved.canceled && !saved.error) {
-            toast(`PDF guardado: ${saved.name}`);
-          } else if (saved?.error) {
-            throw new Error(saved.error);
-          }
-        } catch (error) {
-          showError('No se pudo extraer el PDF', error);
-        } finally {
-          setBusy(false);
-        }
+      if (res.action === 'duplicate') {
+        duplicatePages();
+        return;
+      }
+      if (res.action === 'rotate-right') {
+        rotatePages(90);
+        return;
+      }
+      if (res.action === 'rotate-left') {
+        rotatePages(-90);
+        return;
+      }
+      if (res.action === 'insert-blank') {
+        insertBlankPage();
         return;
       }
 
-      if (res.action === 'png' || res.action === 'jpg') {
-        const ext = res.action;
-        const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+      if (res.action === 'export') {
+        const defaultName = dragFileName(selectedModels);
+        const picked = await window.lalo.pickExportSelection(defaultName);
+        if (!picked || picked.canceled) return;
+        if (picked.error) {
+          showError('No se pudo exportar', new Error(picked.error));
+          return;
+        }
         setBusy(true);
         try {
           const bytes = await composeBytes(selectedModels);
-          const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
-          const images = [];
-          try {
-            for (let i = 1; i <= pdf.numPages; i += 1) {
-              const page = await pdf.getPage(i);
-              const base = page.getViewport({ scale: 1 });
-              const scale = Math.min(2, 2600 / Math.max(base.width, base.height));
-              const viewport = page.getViewport({ scale });
-              const canvas = document.createElement('canvas');
-              canvas.width = Math.ceil(viewport.width);
-              canvas.height = Math.ceil(viewport.height);
-              const ctx = canvas.getContext('2d');
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              await page.render({ canvasContext: ctx, viewport }).promise;
-              const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
-              if (!blob) throw new Error('No se pudo generar la imagen');
-              images.push({ ext, bytes: new Uint8Array(await blob.arrayBuffer()) });
+          if (picked.ext === 'pdf') {
+            const written = await window.lalo.savePdfInPlace(picked.path, bytes);
+            if (!written || written.ok === false) {
+              throw new Error(written?.error || 'No se pudo guardar el PDF');
             }
-          } finally {
-            await pdf.destroy().catch(() => {});
-          }
-          const name = baseName(state.fileName);
-          const exported = await window.lalo.exportImages(name, images, folderOf(state.filePath));
-          if (exported && !exported.canceled && !exported.error) {
-            toast(
-              `${images.length} imagen${images.length === 1 ? '' : 'es'} exportada${
-                images.length === 1 ? '' : 's'
-              }`,
-            );
-          } else if (exported?.error) {
-            throw new Error(exported.error);
+            toast(`PDF guardado: ${picked.name}`);
+          } else {
+            const ext = picked.ext === 'png' ? 'png' : 'jpg';
+            const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+            const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+            try {
+              const baseTarget = picked.path.replace(/\.(png|jpe?g)$/i, '');
+              for (let i = 1; i <= pdf.numPages; i += 1) {
+                const page = await pdf.getPage(i);
+                const base = page.getViewport({ scale: 1 });
+                const scale = Math.min(2, 2600 / Math.max(base.width, base.height));
+                const viewport = page.getViewport({ scale });
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.ceil(viewport.width);
+                canvas.height = Math.ceil(viewport.height);
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                const blob = await new Promise((resolve) => canvas.toBlob(resolve, mime, 0.92));
+                if (!blob) throw new Error('No se pudo generar la imagen');
+                const imgBytes = new Uint8Array(await blob.arrayBuffer());
+                const targetPath =
+                  pdf.numPages === 1
+                    ? picked.path
+                    : `${baseTarget}-${String(i).padStart(2, '0')}.${ext}`;
+                const written = await window.lalo.savePdfInPlace(targetPath, imgBytes);
+                if (!written || written.ok === false) {
+                  throw new Error(written?.error || 'No se pudo guardar la imagen');
+                }
+              }
+              toast(
+                pdf.numPages === 1
+                  ? `Imagen guardada: ${picked.name}`
+                  : `${pdf.numPages} imágenes exportadas`,
+              );
+            } finally {
+              await pdf.destroy().catch(() => {});
+            }
           }
         } catch (error) {
-          showError('No se pudieron exportar las páginas', error);
+          showError('No se pudo exportar', error);
         } finally {
           setBusy(false);
         }

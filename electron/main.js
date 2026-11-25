@@ -813,24 +813,39 @@ function registerIpc() {
       const suffix = count > 1 ? ` (${count} páginas)` : '';
       const menu = Menu.buildFromTemplate([
         {
-          label: `Extraer como PDF…${suffix}`,
+          label: `Exportar como…${suffix}`,
           click: () => {
             clicked = true;
-            done({ action: 'pdf' });
+            done({ action: 'export' });
+          },
+        },
+        { type: 'separator' },
+        {
+          label: count > 1 ? `Duplicar ${count} páginas` : 'Duplicar página',
+          click: () => {
+            clicked = true;
+            done({ action: 'duplicate' });
           },
         },
         {
-          label: `Exportar como JPEG…${suffix}`,
+          label: 'Rotar a la derecha (90°)',
           click: () => {
             clicked = true;
-            done({ action: 'jpg' });
+            done({ action: 'rotate-right' });
           },
         },
         {
-          label: `Exportar como PNG…${suffix}`,
+          label: 'Rotar a la izquierda (-90°)',
           click: () => {
             clicked = true;
-            done({ action: 'png' });
+            done({ action: 'rotate-left' });
+          },
+        },
+        {
+          label: 'Insertar página en blanco',
+          click: () => {
+            clicked = true;
+            done({ action: 'insert-blank' });
           },
         },
         { type: 'separator' },
@@ -851,6 +866,35 @@ function registerIpc() {
         },
       });
     });
+  });
+
+  ipcMain.handle('dialog:export-selection', async (_event, { defaultName }) => {
+    try {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: 'Exportar selección como',
+        defaultPath: defaultName || 'paginas.pdf',
+        filters: [
+          { name: 'Documento PDF (*.pdf)', extensions: ['pdf'] },
+          { name: 'Imagen JPEG (*.jpg)', extensions: ['jpg', 'jpeg'] },
+          { name: 'Imagen PNG (*.png)', extensions: ['png'] },
+        ],
+        properties: ['showOverwriteConfirmation', 'createDirectory'],
+      });
+      if (result.canceled || !result.filePath) return { canceled: true };
+      const target = /\.(pdf|jpe?g|png)$/i.test(result.filePath)
+        ? result.filePath
+        : `${result.filePath}.pdf`;
+      const ext = path.extname(target).toLowerCase().replace('.', '');
+      return {
+        canceled: false,
+        path: target,
+        ext: ext === 'jpeg' ? 'jpg' : ext,
+        name: path.basename(target),
+      };
+    } catch (error) {
+      console.error('No se pudo abrir el diálogo de exportación', error);
+      return { canceled: false, error: describe(error) };
+    }
   });
 
   // Imprime el documento tal y como lo prepara el renderer en #print-root.
