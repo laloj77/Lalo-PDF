@@ -1939,8 +1939,15 @@
       const lineHeight = size * LINE_HEIGHT;
       if (annotation.borderColor && annotation.borderColor !== 'none') {
         ctx.strokeStyle = annotation.borderColor;
-        ctx.lineWidth = Math.max(1, 1.5 * scale);
-        ctx.strokeRect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
+        ctx.lineWidth = Math.max(1, (annotation.borderWidth || 2) * scale);
+        const r = Math.min((annotation.borderRadius || 0) * scale, box.w / 2, box.h / 2);
+        if (r > 0 && ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h), r);
+          ctx.stroke();
+        } else {
+          ctx.strokeRect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
+        }
       }
       ctx.fillStyle = annotation.color;
       ctx.font = `${annotation.italic ? 'italic ' : ''}${annotation.bold ? 'bold ' : ''}${size}px ${FONT_FAMILY}`;
@@ -3064,6 +3071,8 @@
     const size = Number(el.textSize.value) || state.fontSize;
     const align = $('#text-align-select')?.value || 'left';
     const borderColor = $('#text-border-select')?.value || 'none';
+    const borderWidth = Number($('#text-border-width')?.value) || 2;
+    const borderRadius = Number($('#text-border-radius')?.value) || 0;
     const bold = $('#te-bold')?.classList.contains('active') || false;
     const italic = $('#te-italic')?.classList.contains('active') || false;
     const underline = $('#te-underline')?.classList.contains('active') || false;
@@ -3100,6 +3109,8 @@
           size,
           align,
           borderColor,
+          borderWidth,
+          borderRadius,
           bold,
           italic,
           underline,
@@ -3121,6 +3132,8 @@
         size,
         align,
         borderColor,
+        borderWidth,
+        borderRadius,
         bold,
         italic,
         underline,

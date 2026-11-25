@@ -909,11 +909,11 @@ function registerIpc() {
         resolve(payload);
       };
       const colors = [
-        { label: 'Negro', value: '#2c2c2e' },
-        { label: 'Azul', value: '#0a84ff' },
-        { label: 'Verde', value: '#32d74b' },
-        { label: 'Rojo', value: '#ff453a' },
-        { label: 'Amarillo', value: '#ffd60a' },
+        { label: 'Negro ⚫', value: '#2c2c2e' },
+        { label: 'Azul 🔵', value: '#0a84ff' },
+        { label: 'Verde 🟢', value: '#32d74b' },
+        { label: 'Rojo 🔴', value: '#ff453a' },
+        { label: 'Amarillo 🟡', value: '#ffd60a' },
       ];
       const menu = Menu.buildFromTemplate([
         {
@@ -1022,6 +1022,35 @@ function registerIpc() {
                 done({ prop: 'borderColor', value: c.value });
               },
             })),
+            { type: 'separator' },
+            ...[1, 2, 3, 4].map((w) => ({
+              label: `Grosor: ${w} px`,
+              type: 'radio',
+              checked: (current.borderWidth || 2) === w,
+              click: () => {
+                clicked = true;
+                done({ prop: 'borderWidth', value: w });
+              },
+            })),
+            { type: 'separator' },
+            {
+              label: 'Esquinas rectas',
+              type: 'radio',
+              checked: !(current.borderRadius > 0),
+              click: () => {
+                clicked = true;
+                done({ prop: 'borderRadius', value: 0 });
+              },
+            },
+            {
+              label: 'Esquinas redondeadas',
+              type: 'radio',
+              checked: current.borderRadius > 0,
+              click: () => {
+                clicked = true;
+                done({ prop: 'borderRadius', value: 8 });
+              },
+            },
           ],
         },
       ]);

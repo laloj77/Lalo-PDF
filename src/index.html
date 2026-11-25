@@ -397,11 +397,21 @@
               <button type="button" id="te-strike" class="te-fmt-btn" title="Tachado"><s>T</s></button>
               <select id="text-border-select" aria-label="Borde" title="Color del borde">
                 <option value="none">Sin borde</option>
-                <option value="#2c2c2e">Negro</option>
-                <option value="#0a84ff">Azul</option>
-                <option value="#32d74b">Verde</option>
-                <option value="#ff453a">Rojo</option>
-                <option value="#ffd60a">Amarillo</option>
+                <option value="#2c2c2e">Negro ⚫</option>
+                <option value="#0a84ff">Azul 🔵</option>
+                <option value="#32d74b">Verde 🟢</option>
+                <option value="#ff453a">Rojo 🔴</option>
+                <option value="#ffd60a">Amarillo 🟡</option>
+              </select>
+              <select id="text-border-width" aria-label="Grosor del borde" title="Grosor del borde">
+                <option value="1">1 px</option>
+                <option value="2" selected>2 px</option>
+                <option value="3">3 px</option>
+                <option value="4">4 px</option>
+              </select>
+              <select id="text-border-radius" aria-label="Esquinas del borde" title="Estilo de esquinas">
+                <option value="0">Recto</option>
+                <option value="8">Redondeado</option>
               </select>
               <span class="te-spacer"></span>
               <button id="text-cancel" class="mini-btn" title="Cancelar (Esc)">
