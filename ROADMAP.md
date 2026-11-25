@@ -34,8 +34,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.
 - [ ] **Formularios (AcroForms)**
   - Rellenar campos de formulario interactivos y aplanarlos al guardar.
-- [ ] **Más formatos de exportación**
-  - Exportar contenido a texto plano (`.txt`), TIFF o Microsoft Word (`.docx`).
+- [x] ~~**Más formatos de exportación**~~
+  - ~~Exportar contenido a texto plano (`.txt`), TIFF o Microsoft Word (`.docx`).~~
 
 ---
 
@@ -65,6 +65,13 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Selector rápido (35 % – 170 % y Ajustar) y escritura directa del porcentaje en la barra de herramientas.~~
 - [x] ~~**Selección y extracción de imágenes del PDF**~~
   - ~~Seleccionar imágenes dentro del PDF, arrastrarlas fuera como JPEG o usar clic derecho para copiar o guardar como JPG, PNG, WebP o PDF.~~
+
+---
+
+## 🟣 Prioridad 4: Al final del proyecto
+
+- [ ] **Clonado fiel PDF → Word (`.docx`) con motor externo**
+  - Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.
 
 ---
 
