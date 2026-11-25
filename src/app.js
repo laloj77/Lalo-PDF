@@ -5152,6 +5152,7 @@
   }
 
   function bindSplitModal() {
+    $('#btn-split-pdf')?.addEventListener('click', openSplitModal);
     const modal = $('#split-modal');
     const form = $('#split-form');
     if (!modal || !form) return;
