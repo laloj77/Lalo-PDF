@@ -4081,9 +4081,43 @@
       }
     });
 
+    const syncTextEditorPreview = () => {
+      if (!el.textInput) return;
+      const align = $('#text-align-select')?.value || 'left';
+      const borderColor = $('#text-border-select')?.value || 'none';
+      const borderWidth = Number($('#text-border-width')?.value) || 2;
+      const borderRadius = Number($('#text-border-radius')?.value) || 0;
+      const bold = $('#te-bold')?.classList.contains('active');
+      const italic = $('#te-italic')?.classList.contains('active');
+      const underline = $('#te-underline')?.classList.contains('active');
+      const strike = $('#te-strike')?.classList.contains('active');
+
+      el.textInput.style.textAlign = align;
+      el.textInput.style.fontWeight = bold ? 'bold' : 'normal';
+      el.textInput.style.fontStyle = italic ? 'italic' : 'normal';
+      const deco = [];
+      if (underline) deco.push('underline');
+      if (strike) deco.push('line-through');
+      el.textInput.style.textDecoration = deco.length ? deco.join(' ') : 'none';
+      if (borderColor && borderColor !== 'none') {
+        el.textInput.style.border = `${borderWidth}px solid ${borderColor}`;
+        el.textInput.style.borderRadius = `${borderRadius}px`;
+      } else {
+        el.textInput.style.border = '';
+        el.textInput.style.borderRadius = '';
+      }
+    };
+
     $$('.te-fmt-btn').forEach((btn) => {
-      btn.addEventListener('click', () => btn.classList.toggle('active'));
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        syncTextEditorPreview();
+      });
     });
+    $('#text-align-select')?.addEventListener('change', syncTextEditorPreview);
+    $('#text-border-select')?.addEventListener('change', syncTextEditorPreview);
+    $('#text-border-width')?.addEventListener('change', syncTextEditorPreview);
+    $('#text-border-radius')?.addEventListener('change', syncTextEditorPreview);
 
     el.viewer.addEventListener('contextmenu', async (event) => {
       if (!state.markupOpen || !window.lalo?.showTextContextMenu) return;
