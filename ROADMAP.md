@@ -12,8 +12,8 @@ Este documento contiene la lista completa de características planificadas, prio
 - [ ] **Extraer / Dividir páginas**
   - Seleccionar miniaturas de la barra lateral → *Extraer como PDF…*
   - Opción de *Dividir en varios PDF* (por rangos o por página).
-- [ ] **Firma digital / manuscrita**
-  - Dibujar o escribir una firma manuscrita una vez, guardarla localmente y colocarla como una forma/objeto (mover, escalar, ajustar opacidad).
+- [x] ~~**Firma digital / manuscrita**~~
+  - ~~Dibujar o escribir una firma manuscrita una vez, guardarla localmente y colocarla como una forma/objeto (mover, escalar, ajustar opacidad).~~
 - [ ] **Números de página y Marca de agua**
   - Numerar desde/hasta con posición personalizable (cabecera/pie, izquierda/centro/derecha).
   - Marca de agua de texto con rotación y opacidad personalizable.
