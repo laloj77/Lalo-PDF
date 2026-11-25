@@ -758,14 +758,36 @@
           const boxWidth =
             (annotation.w ? annotation.w : textFallbackWidth(annotation) / displayWidth) *
             displayWidth;
+          if (annotation.borderColor && annotation.borderColor !== 'none' && annotation.w && annotation.h) {
+            const p1 = toPdf(annotation.x, annotation.y);
+            const p2 = toPdf(annotation.x + annotation.w, annotation.y + annotation.h);
+            page.drawRectangle({
+              x: Math.min(p1.x, p2.x),
+              y: Math.min(p1.y, p2.y),
+              width: Math.abs(p2.x - p1.x),
+              height: Math.abs(p2.y - p1.y),
+              borderColor: hexToRgb(annotation.borderColor),
+              borderWidth: 1.5,
+              opacity: 0,
+              borderOpacity: 1,
+            });
+          }
           const lines = wrapLines((value) => font.widthOfTextAtSize(value, size), annotation.text, boxWidth);
+          const align = annotation.align || 'left';
           lines.forEach((line, index) => {
             const baseline = clamp(
               annotation.y + (size + index * size * LINE_HEIGHT) / displayHeight,
               0,
               1,
             );
-            const anchor = toPdf(annotation.x, baseline);
+            const lineW = font.widthOfTextAtSize(pdfSafe(line), size);
+            let nx = annotation.x;
+            if (align === 'center') {
+              nx = annotation.x + Math.max(0, (boxWidth - lineW) / 2) / displayWidth;
+            } else if (align === 'right') {
+              nx = annotation.x + Math.max(0, boxWidth - lineW) / displayWidth;
+            }
+            const anchor = toPdf(nx, baseline);
             page.drawText(pdfSafe(line), {
               x: anchor.x,
               y: anchor.y,
