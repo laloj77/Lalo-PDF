@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.1] - 2026-11-25
+
+### Añadido
+
+- **Menú desplegable en Exportar:** al pulsar **Exportar** se despliegan las opciones **Imágenes PNG (`.png`)** y **Microsoft Word (`.docx`)** (también disponible desde *Archivo → Exportar a Word (.docx)…*).
+- **Exportación a Microsoft Word (`.docx`):** extracción de texto con formato (tamaño, negrita y cursiva) e imágenes incrustadas de cada página usando `docx`.
+
 ## [0.2.0] - 2026-11-24
 
 ### Añadido
