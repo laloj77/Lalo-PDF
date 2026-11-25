@@ -10,7 +10,7 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~*Estado:* Implementado (v0.1.0).~~
   - ~~Impresión del documento compuesto usando `webContents.print` y ajuste dinámico de tamaño de hoja (`@page`).~~
 - [ ] **Extraer / Dividir páginas**
-  - Seleccionar miniaturas de la barra lateral → *Extraer como PDF…*
+  - ~~Seleccionar miniaturas de la barra lateral → *Extraer como PDF…* (y exportar como JPEG/PNG, duplicar, rotar, insertar en blanco o eliminar desde el menú contextual o arrastrando con el botón derecho).~~
   - Opción de *Dividir en varios PDF* (por rangos o por página).
 - [x] ~~**Firma digital / manuscrita**~~
   - ~~Dibujar o escribir una firma manuscrita una vez, guardarla localmente y colocarla como una forma/objeto (mover, escalar, ajustar opacidad).~~
@@ -35,7 +35,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [ ] **Formularios (AcroForms)**
   - Rellenar campos de formulario interactivos y aplanarlos al guardar.
 - [x] ~~**Más formatos de exportación**~~
-  - ~~Exportar contenido a texto plano (`.txt`), TIFF o Microsoft Word (`.docx`).~~
+  - ~~Exportar contenido a texto plano (`.txt`), TIFF, JPEG (`.jpg`), PNG (`.png`) o Microsoft Word (`.docx`).~~
 
 ---
 

@@ -7,6 +7,19 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.2.2] - 2026-11-25
+
+### Añadido
+
+- **Firma manuscrita:** dibujar o escribir una firma, guardarla localmente (`localStorage` + diálogo para elegir dónde guardar el `.png`), colocarla sobre el PDF, moverla, redimensionarla y ajustar su opacidad.
+- **Marca de agua:** soporte de texto e imagen/logo con tamaño, rotación y opacidad personalizables y vista previa en tiempo real al mover los sliders.
+- **Menú contextual en miniaturas:** clic derecho sobre una o varias miniaturas para *Exportar como…* (PDF, JPEG o PNG), *Duplicar*, *Rotar*, *Insertar página en blanco* o *Eliminar*. Arrastrar con el botón derecho fuera de la ventana abre directamente el diálogo de exportación.
+- **Exportar a JPEG (`.jpg`):** añadido al menú desplegable del botón **Exportar**.
+
+### Corregido
+
+- Contraste de los desplegables nativos (`select option`) en modo oscuro en Windows.
+
 ## [0.2.1] - 2026-11-25
 
 ### Añadido
