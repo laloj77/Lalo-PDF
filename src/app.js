@@ -5249,7 +5249,10 @@
     return new Uint8Array(await blob.arrayBuffer());
   }
 
-  async function recompressPdfImages(doc, { quality = 0.75, maxDim = 1200 } = {}) {
+  async function recompressPdfImages(
+    doc,
+    { quality = 0.75, maxDim = 1200, grayscale = false } = {},
+  ) {
     let totalImages = 0;
     let recompressed = 0;
 
@@ -5285,6 +5288,7 @@
           srcCanvas.width = targetW;
           srcCanvas.height = targetH;
           const ctx = srcCanvas.getContext('2d');
+          if (grayscale) ctx.filter = 'grayscale(100%)';
           ctx.drawImage(bmp, 0, 0, targetW, targetH);
           bmp.close();
           width = targetW;
@@ -5333,18 +5337,20 @@
           const scale = allowResize ? maxDim / Math.max(w, h) : 1;
           width = Math.max(1, Math.round(w * scale));
           height = Math.max(1, Math.round(h * scale));
-          if (width !== w || height !== h) {
+          if (width !== w || height !== h || grayscale) {
             srcCanvas = document.createElement('canvas');
             srcCanvas.width = width;
             srcCanvas.height = height;
-            srcCanvas.getContext('2d').drawImage(rawCanvas, 0, 0, width, height);
+            const sctx = srcCanvas.getContext('2d');
+            if (grayscale) sctx.filter = 'grayscale(100%)';
+            sctx.drawImage(rawCanvas, 0, 0, width, height);
           } else {
             srcCanvas = rawCanvas;
           }
         }
 
         const jpegBytes = await canvasToJpegBytes(srcCanvas, quality);
-        if (!jpegBytes || jpegBytes.length >= obj.contents.length) continue;
+        if (!jpegBytes || (!grayscale && jpegBytes.length >= obj.contents.length)) continue;
 
         const newDict = dict.clone(doc.context);
         newDict.set(PDFName.of('Width'), PDFNumber.of(width));
@@ -5365,13 +5371,48 @@
     return { totalImages, recompressed };
   }
 
+  function stripPdfMetadata(doc) {
+    try {
+      doc.setTitle('');
+      doc.setAuthor('');
+      doc.setSubject('');
+      doc.setKeywords([]);
+      doc.setProducer('');
+      doc.setCreator('');
+      doc.catalog.delete(PDFName.of('Metadata'));
+      doc.catalog.delete(PDFName.of('PieceInfo'));
+      doc.catalog.delete(PDFName.of('MarkInfo'));
+      doc.catalog.delete(PDFName.of('StructTreeRoot'));
+      for (const page of doc.getPages()) {
+        page.node.delete(PDFName.of('Thumb'));
+        page.node.delete(PDFName.of('PieceInfo'));
+        page.node.delete(PDFName.of('Metadata'));
+      }
+      if (doc.context?.trailerInfo?.Info) {
+        delete doc.context.trailerInfo.Info;
+      }
+    } catch {
+      /* ignore metadata cleanup errors */
+    }
+  }
+
+  function getCompressOptions() {
+    return {
+      quality: Number($('#compress-quality').value) / 100,
+      maxDim: Number($('#compress-max-dim').value),
+      stripMetadata: Boolean($('#compress-opt-metadata')?.checked),
+      flattenForms: Boolean($('#compress-opt-flatten')?.checked),
+      optimizeStructure: Boolean($('#compress-opt-structure')?.checked),
+      grayscale: Boolean($('#compress-opt-grayscale')?.checked),
+    };
+  }
+
   let compressPreviewToken = 0;
   let lastCompressResult = null;
 
   async function runCompressPreview() {
     const token = ++compressPreviewToken;
-    const quality = Number($('#compress-quality').value) / 100;
-    const maxDim = Number($('#compress-max-dim').value);
+    const opts = getCompressOptions();
     const beforeEl = $('#compress-before');
     const afterEl = $('#compress-after');
     const metaEl = $('#compress-meta');
@@ -5390,8 +5431,18 @@
       if (token !== compressPreviewToken) return null;
 
       beforeEl.textContent = formatBytes(beforeBytes.length);
-      const stats = await recompressPdfImages(doc, { quality, maxDim });
-      const afterBytes = await doc.save({ useObjectStreams: true });
+      if (opts.flattenForms) {
+        try {
+          doc.getForm().flatten();
+        } catch {
+          /* ignore if no form fields */
+        }
+      }
+      const stats = await recompressPdfImages(doc, opts);
+      if (opts.stripMetadata) {
+        stripPdfMetadata(doc);
+      }
+      const afterBytes = await doc.save({ useObjectStreams: opts.optimizeStructure });
       if (token !== compressPreviewToken) return null;
 
       const diff = beforeBytes.length - afterBytes.length;
@@ -5408,8 +5459,7 @@
           : 'No se detectaron imágenes recomprimibles en el documento.';
 
       lastCompressResult = {
-        quality,
-        maxDim,
+        key: JSON.stringify(opts),
         beforeSize: beforeBytes.length,
         afterBytes,
         stats,
@@ -5431,6 +5481,9 @@
     }
     lastCompressResult = null;
     $('#compress-quality-label').textContent = `${$('#compress-quality').value}%`;
+    const pop = $('#compress-help-popover');
+    if (pop) pop.hidden = true;
+    $$('.help-dot.active', $('#compress-modal')).forEach((b) => b.classList.remove('active'));
     $('#compress-modal').hidden = false;
     runCompressPreview();
   }
@@ -5444,25 +5497,61 @@
     const qualityInput = $('#compress-quality');
     const qualityLabel = $('#compress-quality-label');
     const maxDimSelect = $('#compress-max-dim');
+    const helpPopover = $('#compress-help-popover');
+
+    const hideHelp = () => {
+      if (helpPopover) helpPopover.hidden = true;
+      $$('.help-dot.active', modal).forEach((b) => b.classList.remove('active'));
+    };
+
+    $$('.help-dot', modal).forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!helpPopover) return;
+        const wasActive = btn.classList.contains('active');
+        hideHelp();
+        if (wasActive) return;
+
+        btn.classList.add('active');
+        helpPopover.textContent = btn.dataset.help || '';
+        helpPopover.hidden = false;
+        const formRect = form.getBoundingClientRect();
+        const btnRect = btn.getBoundingClientRect();
+        const popRect = helpPopover.getBoundingClientRect();
+        const top = Math.max(8, btnRect.top - formRect.top - popRect.height - 8);
+        const left = Math.max(12, Math.min(formRect.width - popRect.width - 12, btnRect.right - formRect.left - popRect.width));
+        helpPopover.style.top = `${top}px`;
+        helpPopover.style.left = `${left}px`;
+      });
+    });
+
+    form.addEventListener('click', (e) => {
+      if (!e.target.closest('.help-dot') && !e.target.closest('#compress-help-popover')) {
+        hideHelp();
+      }
+    });
 
     qualityInput?.addEventListener('input', () => {
       qualityLabel.textContent = `${qualityInput.value}%`;
     });
-    qualityInput?.addEventListener('change', () => {
+    const triggerPreview = () => {
       lastCompressResult = null;
       runCompressPreview();
-    });
-    maxDimSelect?.addEventListener('change', () => {
-      lastCompressResult = null;
-      runCompressPreview();
-    });
-    $('#compress-preview')?.addEventListener('click', () => {
-      lastCompressResult = null;
-      runCompressPreview();
-    });
+    };
+    qualityInput?.addEventListener('change', triggerPreview);
+    maxDimSelect?.addEventListener('change', triggerPreview);
+    [
+      '#compress-opt-metadata',
+      '#compress-opt-flatten',
+      '#compress-opt-structure',
+      '#compress-opt-grayscale',
+    ].forEach((sel) => $(sel)?.addEventListener('change', triggerPreview));
+    $('#compress-preview')?.addEventListener('click', triggerPreview);
 
     const close = () => {
       compressPreviewToken += 1;
+      hideHelp();
       modal.hidden = true;
     };
     $('#compress-close')?.addEventListener('click', close);
@@ -5473,14 +5562,12 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const quality = Number(qualityInput.value) / 100;
-      const maxDim = Number(maxDimSelect.value);
+      const opts = getCompressOptions();
+      const key = JSON.stringify(opts);
       setBusy(true);
       try {
         const res =
-          lastCompressResult &&
-          lastCompressResult.quality === quality &&
-          lastCompressResult.maxDim === maxDim
+          lastCompressResult && lastCompressResult.key === key
             ? lastCompressResult
             : await runCompressPreview();
         if (!res || !res.afterBytes) return;

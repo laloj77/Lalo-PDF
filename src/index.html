@@ -763,6 +763,37 @@
             <option value="800">Baja (800 px máx.)</option>
           </select>
         </div>
+        <div class="compress-options">
+          <div class="compress-opt-row">
+            <label class="compress-check">
+              <input type="checkbox" id="compress-opt-metadata" checked />
+              <span>Eliminar metadatos y datos privados</span>
+            </label>
+            <button type="button" class="help-dot" aria-label="Ayuda sobre metadatos" data-help="Borra metadatos XMP, miniaturas incrustadas en el PDF, información del autor/editor o piezas privadas de otras apps (como Adobe Illustrator/InDesign).">?</button>
+          </div>
+          <div class="compress-opt-row">
+            <label class="compress-check">
+              <input type="checkbox" id="compress-opt-flatten" />
+              <span>Aplanar anotaciones y formularios</span>
+            </label>
+            <button type="button" class="help-dot" aria-label="Ayuda sobre aplanar" data-help="Si el PDF tiene muchos campos de formulario o anotaciones complejas, convertirlos a contenido estático de página puede ahorrar algo de espacio.">?</button>
+          </div>
+          <div class="compress-opt-row">
+            <label class="compress-check">
+              <input type="checkbox" id="compress-opt-structure" checked />
+              <span>Optimizar estructura y flujos</span>
+            </label>
+            <button type="button" class="help-dot" aria-label="Ayuda sobre optimización de estructura" data-help="Agrupa y comprime la estructura interna del PDF (objetos y flujos). Nota: el re-subsetting completo de fuentes incrustadas no es posible en JS puro y requeriría herramientas externas como Ghostscript o qpdf.">?</button>
+          </div>
+          <div class="compress-opt-row">
+            <label class="compress-check">
+              <input type="checkbox" id="compress-opt-grayscale" />
+              <span>Convertir imágenes a escala de grises</span>
+            </label>
+            <button type="button" class="help-dot" aria-label="Ayuda sobre escala de grises" data-help="Si el documento es en blanco y negro (facturas, escaneos), pasar las imágenes a escala de grises reduce aún más el tamaño.">?</button>
+          </div>
+        </div>
+        <div id="compress-help-popover" class="help-popover" hidden></div>
         <div id="compress-compare" class="compress-compare">
           <div class="compress-row">
             <span>Tamaño actual</span>
