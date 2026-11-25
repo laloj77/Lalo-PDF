@@ -909,11 +909,11 @@ function registerIpc() {
         resolve(payload);
       };
       const colors = [
-        { label: 'Negro ⚫', value: '#2c2c2e' },
-        { label: 'Azul 🔵', value: '#0a84ff' },
-        { label: 'Verde 🟢', value: '#32d74b' },
-        { label: 'Rojo 🔴', value: '#ff453a' },
-        { label: 'Amarillo 🟡', value: '#ffd60a' },
+        { label: 'Negro\t⚫', value: '#2c2c2e' },
+        { label: 'Azul\t🔵', value: '#0a84ff' },
+        { label: 'Verde\t🟢', value: '#32d74b' },
+        { label: 'Rojo\t🔴', value: '#ff453a' },
+        { label: 'Amarillo\t🟡', value: '#ffd60a' },
       ];
       const menu = Menu.buildFromTemplate([
         {
@@ -966,6 +966,19 @@ function registerIpc() {
                 clicked = true;
                 done({ prop: 'strike', value: !current.strike });
               },
+            },
+            { type: 'separator' },
+            {
+              label: 'Tamaño',
+              submenu: [8, 9, 10, 12, 14, 18, 24, 32, 48].map((sz) => ({
+                label: String(sz),
+                type: 'radio',
+                checked: (current.size || 14) === sz,
+                click: () => {
+                  clicked = true;
+                  done({ prop: 'size', value: sz });
+                },
+              })),
             },
           ],
         },
@@ -1026,7 +1039,7 @@ function registerIpc() {
             ...[
               { w: 1, label: '────────' },
               { w: 2, label: '━━━━━━━━' },
-              { w: 3, label: '▬▬▬▬▬▬▬▬' },
+              { w: 3, label: '▄▄▄▄▄▄▄▄' },
               { w: 4, label: '████████' },
             ].map(({ w, label }) => ({
               label,

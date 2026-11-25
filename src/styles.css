@@ -1359,6 +1359,10 @@ select option {
   text-align-last: center;
 }
 
+#text-border-select {
+  font-family: Consolas, 'Courier New', monospace;
+}
+
 #text-align-select,
 #text-border-select,
 #text-border-width,
