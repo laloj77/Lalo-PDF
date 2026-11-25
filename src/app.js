@@ -730,25 +730,46 @@
     const pages = doc.getPages();
     for (let i = 0; i < pages.length; i += 1) {
       await flattenAnnotations(doc, pages[i], models[i], font);
-      if (state.watermark && state.watermark.text) {
+      if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
         const wm = state.watermark;
         const page = pages[i];
         const { width, height } = page.getSize();
-        const textWidth = font.widthOfTextAtSize(wm.text, wm.size);
         const rad = (-wm.rotation * Math.PI) / 180;
         const cx = width / 2;
         const cy = height / 2;
-        const x = cx - (textWidth / 2) * Math.cos(rad) + (wm.size / 3) * Math.sin(rad);
-        const y = cy - (textWidth / 2) * Math.sin(rad) - (wm.size / 3) * Math.cos(rad);
-        page.drawText(wm.text, {
-          x,
-          y,
-          size: wm.size,
-          font,
-          color: hexToRgb(wm.color),
-          opacity: wm.opacity,
-          rotate: degrees(-wm.rotation),
-        });
+        if (wm.kind === 'image' && wm.dataUrl) {
+          const base64 = wm.dataUrl.split(',')[1];
+          if (base64) {
+            const bin = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+            const img =
+              wm.imageType === 'png' ? await doc.embedPng(bin) : await doc.embedJpg(bin);
+            const targetW = Math.max(24, (width * (wm.size || 54)) / 120);
+            const targetH = targetW * (img.height / img.width);
+            const x = cx - (targetW / 2) * Math.cos(rad) + (targetH / 2) * Math.sin(rad);
+            const y = cy - (targetW / 2) * Math.sin(rad) - (targetH / 2) * Math.cos(rad);
+            page.drawImage(img, {
+              x,
+              y,
+              width: targetW,
+              height: targetH,
+              opacity: wm.opacity,
+              rotate: degrees(-wm.rotation),
+            });
+          }
+        } else if (wm.text) {
+          const textWidth = font.widthOfTextAtSize(wm.text, wm.size);
+          const x = cx - (textWidth / 2) * Math.cos(rad) + (wm.size / 3) * Math.sin(rad);
+          const y = cy - (textWidth / 2) * Math.sin(rad) - (wm.size / 3) * Math.cos(rad);
+          page.drawText(wm.text, {
+            x,
+            y,
+            size: wm.size,
+            font,
+            color: hexToRgb(wm.color),
+            opacity: wm.opacity,
+            rotate: degrees(-wm.rotation),
+          });
+        }
       }
     }
     return doc;
@@ -1822,17 +1843,32 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    if (state.watermark && state.watermark.text) {
+    if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
       const wm = state.watermark;
       ctx.save();
       ctx.globalAlpha = wm.opacity;
-      ctx.fillStyle = wm.color;
-      ctx.font = `600 ${Math.max(8, wm.size * scale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
       ctx.translate(width / 2, height / 2);
       ctx.rotate((wm.rotation * Math.PI) / 180);
-      ctx.fillText(wm.text, 0, 0);
+      if (wm.kind === 'image' && wm.dataUrl) {
+        let img = wm.__img;
+        if (!img || img.src !== wm.dataUrl) {
+          img = new Image();
+          img.src = wm.dataUrl;
+          img.onload = () => redrawAllOverlays();
+          wm.__img = img;
+        }
+        if (img.complete && img.naturalWidth) {
+          const targetW = Math.max(24, (width * (wm.size || 54)) / 120);
+          const targetH = targetW * (img.naturalHeight / img.naturalWidth);
+          ctx.drawImage(img, -targetW / 2, -targetH / 2, targetW, targetH);
+        }
+      } else if (wm.text) {
+        ctx.fillStyle = wm.color;
+        ctx.font = `600 ${Math.max(8, wm.size * scale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(wm.text, 0, 0);
+      }
       ctx.restore();
     }
 
@@ -4187,12 +4223,55 @@
     });
   }
 
+  let wmMode = 'text';
+  let wmImageData = null;
+  let wmImageType = 'png';
+  let wmBackup = null;
+
+  function syncWatermarkFromModal() {
+    if (wmMode === 'image') {
+      if (!wmImageData) return;
+      state.watermark = {
+        kind: 'image',
+        dataUrl: wmImageData,
+        imageType: wmImageType,
+        size: Number($('#wm-size').value) || 54,
+        rotation: Number($('#wm-rotation').value) || 0,
+        opacity: clamp(Number($('#wm-opacity').value) / 100, 0.05, 1),
+      };
+    } else {
+      const text = $('#wm-text').value.trim();
+      if (!text) {
+        state.watermark = null;
+      } else {
+        state.watermark = {
+          kind: 'text',
+          text,
+          color: $('#wm-color').value,
+          size: Number($('#wm-size').value) || 54,
+          rotation: Number($('#wm-rotation').value) || 0,
+          opacity: clamp(Number($('#wm-opacity').value) / 100, 0.05, 1),
+        };
+      }
+    }
+    redrawAllOverlays();
+  }
+
   function openWatermarkModal() {
     if (!state.pages.length) {
       toast('Abre un PDF antes de añadir una marca de agua');
       return;
     }
     const wm = state.watermark;
+    wmBackup = wm ? { ...wm } : null;
+    wmMode = wm?.kind === 'image' ? 'image' : 'text';
+    wmImageData = wm?.kind === 'image' ? wm.dataUrl : null;
+    wmImageType = wm?.imageType || 'png';
+
+    $$('[data-wm-tab]').forEach((t) => t.classList.toggle('active', t.dataset.wmTab === wmMode));
+    $('#wm-panel-text').hidden = wmMode !== 'text';
+    $('#wm-panel-image').hidden = wmMode !== 'image';
+
     $('#wm-text').value = wm?.text || 'CONFIDENCIAL';
     $('#wm-color').value = wm?.color || '#2c2c2e';
     $('#wm-size').value = String(wm?.size || 54);
@@ -4203,7 +4282,8 @@
     $('#wm-op-val').textContent = $('#wm-opacity').value;
     $('#wm-clear').hidden = !wm;
     $('#watermark-modal').hidden = false;
-    setTimeout(() => $('#wm-text').select(), 20);
+    syncWatermarkFromModal();
+    if (wmMode === 'text') setTimeout(() => $('#wm-text').select(), 20);
   }
 
   function bindWatermarkModal() {
@@ -4211,20 +4291,53 @@
     const form = $('#watermark-form');
     if (!modal || !form) return;
 
+    const cancelModal = () => {
+      state.watermark = wmBackup;
+      modal.hidden = true;
+      redrawAllOverlays();
+    };
+
+    $$('[data-wm-tab]', modal).forEach((tab) => {
+      tab.addEventListener('click', () => {
+        wmMode = tab.dataset.wmTab;
+        $$('[data-wm-tab]', modal).forEach((t) => t.classList.toggle('active', t === tab));
+        $('#wm-panel-text').hidden = wmMode !== 'text';
+        $('#wm-panel-image').hidden = wmMode !== 'image';
+        syncWatermarkFromModal();
+      });
+    });
+
+    $('#wm-image-file').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      wmImageType = /\.png$/i.test(file.name) ? 'png' : 'jpg';
+      const reader = new FileReader();
+      reader.onload = () => {
+        wmImageData = String(reader.result || '');
+        syncWatermarkFromModal();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    $('#wm-text').addEventListener('input', syncWatermarkFromModal);
+    $('#wm-color').addEventListener('change', syncWatermarkFromModal);
     $('#wm-size').addEventListener('input', (e) => {
       $('#wm-size-val').textContent = e.target.value;
+      syncWatermarkFromModal();
     });
     $('#wm-rotation').addEventListener('input', (e) => {
       $('#wm-rot-val').textContent = e.target.value;
+      syncWatermarkFromModal();
     });
     $('#wm-opacity').addEventListener('input', (e) => {
       $('#wm-op-val').textContent = e.target.value;
+      syncWatermarkFromModal();
     });
 
     $('#btn-watermark')?.addEventListener('click', openWatermarkModal);
-    $('#wm-close').addEventListener('click', () => { modal.hidden = true; });
-    $('#wm-cancel').addEventListener('click', () => { modal.hidden = true; });
-    modal.addEventListener('click', (e) => { if (e.target === modal) modal.hidden = true; });
+    $('#wm-close').addEventListener('click', cancelModal);
+    $('#wm-cancel').addEventListener('click', cancelModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) cancelModal(); });
 
     $('#wm-clear').addEventListener('click', () => {
       state.watermark = null;
@@ -4236,17 +4349,16 @@
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const text = $('#wm-text').value.trim();
-      if (!text) return;
-      state.watermark = {
-        text,
-        color: $('#wm-color').value,
-        size: Number($('#wm-size').value) || 54,
-        rotation: Number($('#wm-rotation').value) || 0,
-        opacity: clamp(Number($('#wm-opacity').value) / 100, 0.05, 1),
-      };
+      if (wmMode === 'image' && !wmImageData) {
+        toast('Selecciona una imagen primero');
+        return;
+      }
+      if (wmMode === 'text' && !$('#wm-text').value.trim()) {
+        toast('Escribe un texto para la marca de agua');
+        return;
+      }
+      syncWatermarkFromModal();
       modal.hidden = true;
-      redrawAllOverlays();
       setDirty(true);
       toast('Marca de agua aplicada');
     });

@@ -546,18 +546,30 @@
           <h2>Marca de agua</h2>
           <button type="button" id="wm-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
         </div>
-        <div class="modal-field">
-          <label for="wm-text">Texto</label>
-          <input id="wm-text" type="text" placeholder="Ej. CONFIDENCIAL, BORRADOR…" maxlength="80" required />
+        <div class="sig-tabs" role="tablist">
+          <button type="button" class="sig-tab active" data-wm-tab="text">Texto</button>
+          <button type="button" class="sig-tab" data-wm-tab="image">Imagen / Logo</button>
         </div>
-        <div class="modal-field">
-          <label for="wm-color">Color</label>
-          <select id="wm-color">
-            <option value="#2c2c2e">Gris oscuro</option>
-            <option value="#ff453a">Rojo</option>
-            <option value="#0a84ff">Azul</option>
-            <option value="#32d74b">Verde</option>
-          </select>
+        <div id="wm-panel-text">
+          <div class="modal-field">
+            <label for="wm-text">Texto</label>
+            <input id="wm-text" type="text" placeholder="Ej. CONFIDENCIAL, BORRADOR…" maxlength="80" />
+          </div>
+          <div class="modal-field">
+            <label for="wm-color">Color</label>
+            <select id="wm-color">
+              <option value="#2c2c2e">Gris oscuro</option>
+              <option value="#ff453a">Rojo</option>
+              <option value="#0a84ff">Azul</option>
+              <option value="#32d74b">Verde</option>
+            </select>
+          </div>
+        </div>
+        <div id="wm-panel-image" hidden>
+          <div class="modal-field">
+            <label for="wm-image-file">Seleccionar imagen (PNG o JPG)</label>
+            <input id="wm-image-file" type="file" accept="image/png,image/jpeg" />
+          </div>
         </div>
         <div class="modal-field">
           <label for="wm-size">Tamaño (<span id="wm-size-val">54</span> pt)</label>
