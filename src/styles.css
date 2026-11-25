@@ -1495,16 +1495,25 @@ select option {
   background: rgba(255, 69, 58, 0.14);
 }
 
-#thumb-size {
-  width: 56px;
-  accent-color: var(--accent);
-  cursor: pointer;
+#sidebar-resizer {
+  width: 5px;
+  flex: 0 0 5px;
+  cursor: col-resize;
+  background: transparent;
+  transition: background-color 0.15s;
+}
+
+#sidebar-resizer:hover,
+#sidebar-resizer.dragging {
+  background: var(--accent);
 }
 
 #thumbs .thumb-frame,
 #thumbs .thumb canvas,
 #thumbs .thumb img {
-  max-width: var(--thumb-w, 132px);
+  width: 100%;
+  max-width: 100%;
+  height: auto;
 }
 
 .page-jump-wrap {

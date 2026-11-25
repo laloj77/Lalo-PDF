@@ -4959,26 +4959,41 @@
         if (!state.dirty) window.lalo?.confirmQuit?.();
       });
     }
-    const thumbSize = $('#thumb-size');
-    if (thumbSize) {
-      const applyThumbSize = (val) => {
-        const w = clamp(Number(val) || 132, 80, 190);
-        el.thumbs.style.setProperty('--thumb-w', `${w}px`);
-        thumbSize.value = String(w);
+    const resizer = $('#sidebar-resizer');
+    if (resizer && el.sidebar) {
+      const applySidebarWidth = (w) => {
+        const clamped = clamp(Number(w) || 184, 130, 380);
+        el.sidebar.style.width = `${clamped}px`;
+        el.sidebar.style.flexBasis = `${clamped}px`;
       };
       try {
-        const saved = localStorage.getItem('lalo-pdf-thumb-size');
-        if (saved) applyThumbSize(saved);
+        const saved = localStorage.getItem('lalo-pdf-sidebar-width');
+        if (saved) applySidebarWidth(saved);
       } catch {
         /* ignore */
       }
-      thumbSize.addEventListener('input', (e) => {
-        applyThumbSize(e.target.value);
-        try {
-          localStorage.setItem('lalo-pdf-thumb-size', e.target.value);
-        } catch {
-          /* ignore */
-        }
+      resizer.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        resizer.classList.add('dragging');
+        resizer.setPointerCapture(e.pointerId);
+        const onMove = (me) => {
+          applySidebarWidth(me.clientX);
+        };
+        const onUp = () => {
+          resizer.classList.remove('dragging');
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          window.removeEventListener('pointercancel', onUp);
+          try {
+            localStorage.setItem('lalo-pdf-sidebar-width', String(parseInt(el.sidebar.style.width, 10) || 184));
+          } catch {
+            /* ignore */
+          }
+        };
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
       });
     }
     const pageJump = $('#page-jump');
