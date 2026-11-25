@@ -628,6 +628,22 @@
       </form>
     </div>
 
+    <div id="unsaved-modal" class="modal-backdrop" hidden>
+      <div class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>Cambios sin guardar</h2>
+          <button type="button" id="unsaved-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p class="modal-desc">Tienes cambios pendientes en este documento. ¿Quieres guardarlos antes de salir?</p>
+        <div class="modal-actions unsaved-actions">
+          <button type="button" id="unsaved-cancel" class="pill-btn">Cancelar</button>
+          <button type="button" id="unsaved-discard" class="pill-btn danger-btn">No guardar</button>
+          <button type="button" id="unsaved-save-as" class="pill-btn">Guardar como…</button>
+          <button type="button" id="unsaved-save" class="primary-btn">Guardar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Las páginas que se van a imprimir se dibujan aquí solo mientras dura
          la impresión. En pantalla está oculto y en @media print es lo único
          que se muestra. -->
