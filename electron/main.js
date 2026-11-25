@@ -1023,8 +1023,13 @@ function registerIpc() {
               },
             })),
             { type: 'separator' },
-            ...[1, 2, 3, 4].map((w) => ({
-              label: `Grosor: ${w} px`,
+            ...[
+              { w: 1, label: '────────' },
+              { w: 2, label: '━━━━━━━━' },
+              { w: 3, label: '▬▬▬▬▬▬▬▬' },
+              { w: 4, label: '████████' },
+            ].map(({ w, label }) => ({
+              label,
               type: 'radio',
               checked: (current.borderWidth || 2) === w,
               click: () => {

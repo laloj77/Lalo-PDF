@@ -1414,7 +1414,7 @@ select option {
 .te-bw-btn span {
   display: block;
   width: 100%;
-  background: var(--ink);
+  background: #f5f5f7;
   border-radius: 2px;
 }
 
