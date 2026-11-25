@@ -1002,10 +1002,10 @@ function registerIpc() {
           ],
         },
         {
-          label: 'Recuadro',
+          label: 'Borde',
           submenu: [
             {
-              label: 'Sin recuadro',
+              label: 'Sin borde',
               type: 'radio',
               checked: !current.borderColor || current.borderColor === 'none',
               click: () => {
