@@ -886,6 +886,71 @@
     }
   }
 
+  function extractPageTextLines(textContent) {
+    const items = (textContent?.items || []).filter((item) => item && typeof item.str === 'string');
+    if (!items.length) return [];
+    const lines = [];
+    let currentLine = '';
+    let lastY = null;
+    for (const item of items) {
+      const y = Array.isArray(item.transform) ? item.transform[5] : null;
+      if (lastY !== null && y !== null && Math.abs(y - lastY) > 4) {
+        if (currentLine.trim()) lines.push(currentLine.trim());
+        currentLine = item.str;
+      } else {
+        if (currentLine && item.str && !currentLine.endsWith(' ') && !item.str.startsWith(' ')) {
+          currentLine += ' ';
+        }
+        currentLine += item.str;
+      }
+      if (y !== null) lastY = y;
+      if (item.hasEOL) {
+        if (currentLine.trim()) lines.push(currentLine.trim());
+        currentLine = '';
+        lastY = null;
+      }
+    }
+    if (currentLine.trim()) lines.push(currentLine.trim());
+    return lines;
+  }
+
+  async function exportWord() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de exportar');
+      return;
+    }
+    if (!window.lalo?.exportWord) {
+      toast('La exportación a Word solo está disponible en la app de escritorio');
+      return;
+    }
+    setBusy(true);
+    try {
+      const bytes =
+        state.workingBytes && !hasAnnotations() ? state.workingBytes : await composeBytes();
+      const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+      const pages = [];
+      try {
+        for (let i = 1; i <= pdf.numPages; i += 1) {
+          if (pdf.numPages > 1) toast(`Extrayendo texto ${i} de ${pdf.numPages}…`, 60000);
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          pages.push(extractPageTextLines(content));
+        }
+      } finally {
+        await pdf.destroy();
+      }
+      const name = (state.fileName || 'Documento').replace(/\.pdf$/i, '');
+      const result = await window.lalo.exportWord(name, pages);
+      if (!result || result.canceled) return;
+      if (result.error) throw new Error(result.error);
+      toast(`Word guardado: ${result.name}`);
+    } catch (error) {
+      showError('No se pudo exportar a Word', error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   // Imprime el documento tal como se ve: se compone el PDF (incluidos los
   // reordenamientos y las anotaciones), se dibuja cada página en un canvas y
   // se deja el resultado en #print-root, que es lo único que muestra @media
