@@ -6296,11 +6296,15 @@
     for (const { key, el: container } of containers) {
       if (!container) continue;
       const items = Array.from(container.children).filter(
-        (c) => !c.classList.contains('rail-sep') && getItemId(c),
+        (c) => !c.classList.contains('rail-sep') && !c.classList.contains('tb-sep') && getItemId(c),
       );
 
       const seps = Array.from(container.children)
-        .map((c, idx) => (c.classList.contains('rail-sep') ? { node: c, idx } : null))
+        .map((c, idx) =>
+          c.classList.contains('rail-sep') || c.classList.contains('tb-sep')
+            ? { node: c, idx }
+            : null,
+        )
         .filter(Boolean);
 
       if (Array.isArray(saved[key])) {
