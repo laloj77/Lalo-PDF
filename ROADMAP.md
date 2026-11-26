@@ -41,8 +41,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [x] ~~**Autoguardado y aviso de cambios sin guardar**~~
   - ~~Interruptor de Autoguardado tipo iOS en la barra superior y confirmación al intentar cerrar si hay cambios pendientes (*Guardar*, *Guardar como…*, *No guardar*, *Cancelar*).~~
-- [ ] **Documentos recientes y pestañas / multi-ventana**
-  - Menú de archivos recientes y soporte para trabajar con múltiples documentos a la vez.
+- [x] ~~**Documentos recientes y pestañas / multi-ventana**~~
+  - ~~Menú de archivos recientes y soporte para trabajar con múltiples documentos a la vez.~~
 - [x] ~~**Copiar texto seleccionado**~~
   - ~~Herramienta de selección de texto sobre la página para copiar al portapapeles.~~
 - [x] ~~**Índice / Marcadores (Tabla de contenidos)**~~

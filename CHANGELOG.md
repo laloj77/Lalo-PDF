@@ -7,6 +7,17 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.5.7] - 2026-11-26
+
+### Añadido
+
+- **Pestañas multi-documento:** barra de pestañas debajo de la barra de herramientas con botón **`+`** (`Ctrl+T`), cierre (`Ctrl+W`), indicador `•` de cambios sin guardar y reordenación fluida arrastrando y soltando.
+- **Documentos recientes:** lista en la pantalla de inicio con los últimos 8 PDFs abiertos para reabrirlos con un clic y botón **Limpiar**.
+
+### Cambiado
+
+- **Pantalla de inicio:** sustituido el icono genérico por el icono real de la app (`src/icon.png`).
+
 ## [0.5.5] - 2026-11-26
 
 ### Añadido
