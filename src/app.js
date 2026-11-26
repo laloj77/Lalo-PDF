@@ -6299,6 +6299,10 @@
         (c) => !c.classList.contains('rail-sep') && getItemId(c),
       );
 
+      const seps = Array.from(container.children)
+        .map((c, idx) => (c.classList.contains('rail-sep') ? { node: c, idx } : null))
+        .filter(Boolean);
+
       if (Array.isArray(saved[key])) {
         const byId = new Map(items.map((n) => [getItemId(n), n]));
         for (const id of saved[key]) {
@@ -6307,6 +6311,11 @@
         }
         for (const n of items) {
           if (!saved[key].includes(getItemId(n))) container.appendChild(n);
+        }
+        for (const { node, idx } of seps) {
+          const ref = container.children[idx];
+          if (ref) container.insertBefore(node, ref);
+          else container.appendChild(node);
         }
       }
 
