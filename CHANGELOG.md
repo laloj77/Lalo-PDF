@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.2] - 2026-11-26
+
+### Añadido
+
+- **Barra vertical derecha (`#right-rail`):** reubicados los iconos de herramientas (*Vistas*, *Rotar*, *Anotar*, *Buscar*, *Imprimir*, *Presentación*, *Proteger* y *Exportar*) en una barra vertical a la derecha para evitar solapamientos en ventanas estrechas, dejando la barra superior despejada para los botones de texto con separadores verticales.
+- **Reordenación deslizante de barras:** arrastrar y soltar para reordenar botones en la barra superior y en la barra vertical derecha con animación fluida (FLIP) y persistencia en `localStorage`.
+
 ## [0.6.0] - 2026-11-26
 
 ### Añadido
