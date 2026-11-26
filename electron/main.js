@@ -547,7 +547,7 @@ function registerIpc() {
   ipcMain.handle('file:read-by-path', async (_event, { filePath } = {}) => {
     try {
       if (!filePath) return { ok: false };
-      const buf = await fs.promises.readFile(filePath);
+      const buf = await fs.readFile(filePath);
       return { ok: true, name: path.basename(filePath), bytes: new Uint8Array(buf) };
     } catch (error) {
       return { ok: false, error: error.message };
