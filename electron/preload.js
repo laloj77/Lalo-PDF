@@ -59,4 +59,6 @@ contextBridge.exposeInMainWorld('lalo', {
     ipcRenderer.on('drag:native', listener);
     return () => ipcRenderer.removeListener('drag:native', listener);
   },
+  openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
+  checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
 });

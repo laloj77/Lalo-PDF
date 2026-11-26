@@ -6542,11 +6542,65 @@
     updateStatus();
     updateToolbarState();
     const versionEl = $('#status-version');
+    const updateDot = $('#btn-check-update');
+    const REPO_URL = 'https://github.com/laloj77/Lalo-PDF';
+
+    versionEl?.addEventListener('click', () => {
+      if (window.lalo?.openExternal) window.lalo.openExternal(REPO_URL);
+      else window.open(REPO_URL, '_blank');
+    });
+
+    const isNewerVersion = (latest, current) => {
+      const a = String(latest || '').replace(/^v/i, '').split('.').map(Number);
+      const b = String(current || '').replace(/^v/i, '').split('.').map(Number);
+      for (let i = 0; i < 3; i += 1) {
+        if ((a[i] || 0) > (b[i] || 0)) return true;
+        if ((a[i] || 0) < (b[i] || 0)) return false;
+      }
+      return false;
+    };
+
+    let currentAppVersion = null;
+    const checkLatestVersion = async (manual = false) => {
+      if (!updateDot || !currentAppVersion) return;
+      try {
+        const res = await fetch('https://api.github.com/repos/laloj77/Lalo-PDF/releases/latest', {
+          cache: 'no-store',
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const latest = data?.tag_name || '';
+        updateDot.classList.remove('up-to-date', 'update-available');
+        if (latest && isNewerVersion(latest, currentAppVersion)) {
+          updateDot.classList.add('update-available');
+          updateDot.title = `Nueva versión ${latest} disponible (clic para actualizar)`;
+          if (manual) {
+            const upd = await window.lalo?.checkForUpdates?.();
+            if (!upd?.packaged) {
+              toast(`Nueva versión ${latest} disponible en GitHub`, 4000);
+            }
+          }
+        } else {
+          updateDot.classList.add('up-to-date');
+          updateDot.title = `Versión al día (v${currentAppVersion})`;
+          if (manual) toast(`Tienes la última versión (v${currentAppVersion})`);
+        }
+      } catch {
+        if (manual) toast('No se pudo comprobar actualizaciones');
+      }
+    };
+
+    updateDot?.addEventListener('click', () => checkLatestVersion(true));
+
     if (versionEl && window.lalo?.appInfo) {
       window.lalo
         .appInfo()
         .then((info) => {
-          if (info?.version) versionEl.textContent = `v${info.version}`;
+          if (info?.version) {
+            currentAppVersion = info.version;
+            versionEl.textContent = `v${info.version}`;
+            checkLatestVersion(false);
+          }
         })
         .catch(() => {});
     }

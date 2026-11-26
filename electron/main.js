@@ -1276,6 +1276,24 @@ function registerIpc() {
     electron: process.versions.electron,
     platform: process.platform,
   }));
+
+  ipcMain.handle('app:open-external', async (_event, url) => {
+    if (typeof url === 'string' && url.startsWith('https://github.com/laloj77/Lalo-PDF')) {
+      await shell.openExternal(url);
+      return true;
+    }
+    return false;
+  });
+
+  ipcMain.handle('app:check-updates', async () => {
+    if (!app.isPackaged) return { ok: false, packaged: false };
+    try {
+      await autoUpdater.checkForUpdates();
+      return { ok: true, packaged: true };
+    } catch (error) {
+      return { ok: false, packaged: true, error: error.message };
+    }
+  });
 }
 
 function setupAutoUpdater() {
