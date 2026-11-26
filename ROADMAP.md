@@ -80,8 +80,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.
 - [x] ~~**OCR para documentos escaneados**~~
   - ~~Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.~~
-- [ ] **Actualizador automático desde GitHub Releases**
-  - Comprobar si hay una nueva versión publicada en GitHub Releases (`electron-updater` / `latest.yml`), descargarla e instalarla automáticamente desde la app.
+- [x] ~~**Actualizador automático desde GitHub Releases**~~
+  - ~~Comprobar si hay una nueva versión publicada en GitHub Releases (`electron-updater` / `latest.yml`), descargarla e instalarla automáticamente desde la app.~~
 
 ---
 

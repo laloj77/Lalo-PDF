@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.4] - 2026-11-26
+
+### Añadido
+
+- **Actualizador automático desde GitHub Releases (`electron-updater`):** al abrir la app instalada comprueba si hay una nueva versión; si aceptas, la descarga, cierra la app, la instala silenciosamente y la vuelve a abrir conservando tu configuración.
+- **Indicador de actualización y botón de versión:** en la esquina inferior derecha, icono de actualización en **verde** (al día) o **rojo** (actualización disponible) y botón `vX.Y.Z` que abre el proyecto en GitHub.
+
 ## [0.6.2] - 2026-11-26
 
 ### Añadido
