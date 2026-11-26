@@ -1309,7 +1309,8 @@ body.thumb-dragging * {
 #unsaved-modal,
 #pagenum-modal,
 #split-modal,
-#compress-modal {
+#compress-modal,
+#ocr-modal {
   position: fixed;
   inset: 0;
   z-index: 90;

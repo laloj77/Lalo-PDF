@@ -27,7 +27,8 @@
     "@cantoo/pdf-lib": "^2.11.1",
     "docx": "^9.16.0",
     "pdf-lib": "1.17.1",
-    "pdfjs-dist": "3.11.174"
+    "pdfjs-dist": "3.11.174",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "electron": "33.2.1",

@@ -6122,6 +6122,138 @@
     renderTabBar();
   }
 
+  function openOcrModal() {
+    if (!state.pages.length || !state.pdf) {
+      toast('Abre un PDF antes de ejecutar OCR');
+      return;
+    }
+    if (!window.Tesseract) {
+      toast('Motor OCR no disponible');
+      return;
+    }
+    $('#ocr-progress').hidden = true;
+    $('#ocr-error').hidden = true;
+    $('#ocr-modal').hidden = false;
+  }
+
+  function bindOcrModal() {
+    $('#btn-ocr')?.addEventListener('click', openOcrModal);
+    const modal = $('#ocr-modal');
+    const form = $('#ocr-form');
+    if (!modal || !form) return;
+
+    const close = () => {
+      modal.hidden = true;
+    };
+    $('#ocr-close')?.addEventListener('click', close);
+    $('#ocr-cancel')?.addEventListener('click', close);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!state.pages.length || !state.pdf || !window.Tesseract) return;
+      const lang = $('#ocr-lang').value || 'spa';
+      const scope = $('#ocr-scope').value || 'all';
+      const progressEl = $('#ocr-progress');
+      const errEl = $('#ocr-error');
+      const applyBtn = $('#ocr-apply');
+
+      errEl.hidden = true;
+      progressEl.hidden = false;
+      progressEl.textContent = 'Inicializando motor OCR…';
+      applyBtn.disabled = true;
+      setBusy(true);
+
+      let worker = null;
+      try {
+        worker = await window.Tesseract.createWorker(lang);
+        const doc = await buildDocument(state.pages);
+        const font = await doc.embedFont(StandardFonts.Helvetica);
+        const docPages = doc.getPages();
+        const indices =
+          scope === 'current'
+            ? [clamp(state.current, 0, state.pages.length - 1)]
+            : state.pages.map((_, idx) => idx);
+
+        let totalWords = 0;
+        for (let k = 0; k < indices.length; k += 1) {
+          const idx = indices[k];
+          progressEl.textContent = `Procesando página ${idx + 1} (${k + 1}/${indices.length})…`;
+          const pdfjsPage = await state.pdf.getPage(idx + 1);
+          const scale = 2.0;
+          const viewport = pdfjsPage.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(viewport.width));
+          canvas.height = Math.max(1, Math.round(viewport.height));
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await pdfjsPage.render({ canvasContext: ctx, viewport }).promise;
+
+          const { data } = await worker.recognize(canvas);
+          const words = Array.isArray(data?.words) ? data.words : [];
+          const outPage = docPages[idx];
+          const { width: pw, height: ph } = outPage.getSize();
+          const sx = pw / canvas.width;
+          const sy = ph / canvas.height;
+
+          for (const w of words) {
+            const text = String(w.text || '').trim();
+            if (!text || !w.bbox) continue;
+            const x = w.bbox.x0 * sx;
+            const boxH = Math.max(4, (w.bbox.y1 - w.bbox.y0) * sy);
+            const y = ph - w.bbox.y1 * sy;
+            try {
+              outPage.drawText(text, {
+                x,
+                y,
+                size: boxH * 0.85,
+                font,
+                color: rgb(0, 0, 0),
+                opacity: 0,
+              });
+              totalWords += 1;
+            } catch {
+              /* skip unsupported glyphs */
+            }
+          }
+        }
+
+        const ocrBytes = await doc.save({ useObjectStreams: false });
+        const sourceId = uid('src');
+        state.sources.set(sourceId, {
+          name: state.fileName || 'ocr.pdf',
+          bytes: ocrBytes,
+        });
+        state.pages = state.pages.map((page, idx) => ({
+          id: page.id,
+          kind: 'pdf',
+          sourceId,
+          srcIndex: idx,
+          width: page.width,
+          height: page.height,
+          rotation: page.rotation,
+        }));
+        state.history = [];
+        state.future = [];
+        state.dirty = true;
+        window.lalo?.setDirtyState?.(true);
+        close();
+        await refresh();
+        toast(`OCR completado: ${totalWords} palabras reconocidas`, 4500);
+      } catch (error) {
+        errEl.textContent = error.message || 'No se pudo completar el OCR.';
+        errEl.hidden = false;
+      } finally {
+        if (worker) await worker.terminate().catch(() => {});
+        applyBtn.disabled = false;
+        setBusy(false);
+      }
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -6243,6 +6375,7 @@
     bindCompressModal();
     bindSidebarTabs();
     bindTabsAndRecent();
+    bindOcrModal();
     bindMenu();
     updateStatus();
     updateToolbarState();

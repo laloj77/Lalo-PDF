@@ -238,6 +238,9 @@
           <button id="btn-compress-pdf" class="pill-btn" title="Comprimir imágenes del PDF">
             <span>Comprimir</span>
           </button>
+          <button id="btn-ocr" class="pill-btn" title="Reconocimiento de texto (OCR)">
+            <span>OCR</span>
+          </button>
           <button id="btn-save-as" class="pill-btn" title="Guardar como… (Ctrl+Shift+S)">Guardar como…</button>
           <button id="btn-save" class="primary-btn" title="Guardar (Ctrl+S)">Guardar</button>
         </div>
@@ -832,6 +835,37 @@
       </form>
     </div>
 
+    <div id="ocr-modal" class="modal-backdrop" hidden>
+      <form id="ocr-form" class="modal-card modal-card-sm">
+        <div class="modal-head">
+          <h2>OCR (Reconocimiento de texto)</h2>
+          <button type="button" id="ocr-close" class="mini-btn"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p class="modal-desc">Añade una capa de texto invisible sobre páginas escaneadas para poder seleccionar, copiar y buscar.</p>
+        <div class="modal-field">
+          <label for="ocr-lang">Idioma del documento</label>
+          <select id="ocr-lang">
+            <option value="spa" selected>Español</option>
+            <option value="eng">Inglés</option>
+            <option value="spa+eng">Español + Inglés</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label for="ocr-scope">Páginas a procesar</label>
+          <select id="ocr-scope">
+            <option value="all" selected>Todas las páginas</option>
+            <option value="current">Solo la página actual</option>
+          </select>
+        </div>
+        <p id="ocr-progress" class="modal-desc" hidden></p>
+        <p id="ocr-error" class="modal-error" hidden></p>
+        <div class="modal-actions">
+          <button type="button" id="ocr-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" id="ocr-apply" class="primary-btn">Ejecutar OCR</button>
+        </div>
+      </form>
+    </div>
+
     <div id="presentation-hud" hidden>
       <button type="button" id="pres-prev" class="pres-btn" title="Anterior (←)">←</button>
       <span id="pres-page">1 / 1</span>
@@ -846,6 +880,7 @@
 
     <script src="vendor/pdf.js"></script>
     <script src="vendor/pdf-lib.min.js"></script>
+    <script src="vendor/tesseract.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
