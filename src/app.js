@@ -1443,7 +1443,7 @@
       return;
     }
 
-    setBusy(true);
+    if (!silent) setBusy(true);
     const token = ++state.renderToken;
     const thumbToken = ++state.thumbToken;
     const oldTop = el.viewer.scrollTop;
