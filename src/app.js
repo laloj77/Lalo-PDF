@@ -1422,7 +1422,7 @@
     return refreshQueue;
   }
 
-  async function doRefresh({ preserveScroll = true, scrollToCurrent = false } = {}) {
+  async function doRefresh({ preserveScroll = true, scrollToCurrent = false, silent = false } = {}) {
     if (!state.pages.length) {
       if (state.pdf) {
         state.pdf.destroy();
@@ -3323,7 +3323,7 @@
     if (animated.length) {
       await new Promise((r) => setTimeout(r, 240));
     }
-    refresh({ preserveScroll: true });
+    refresh({ preserveScroll: true, silent: true });
   }
 
   function deletePages() {
