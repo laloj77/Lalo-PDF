@@ -6354,8 +6354,27 @@
           const fromIdx = children.indexOf(draggingNode);
           const toIdx = children.indexOf(item);
           if (fromIdx < 0 || toIdx < 0) return;
+
+          const siblings = children.filter((c) => c !== draggingNode);
+          const firstRects = new Map(siblings.map((c) => [c, c.getBoundingClientRect()]));
+
           if (fromIdx < toIdx) item.after(draggingNode);
           else item.before(draggingNode);
+
+          for (const sib of siblings) {
+            const first = firstRects.get(sib);
+            const last = sib.getBoundingClientRect();
+            const dx = first.left - last.left;
+            const dy = first.top - last.top;
+            if (dx || dy) {
+              sib.style.transition = 'none';
+              sib.style.transform = `translate(${dx}px, ${dy}px)`;
+              requestAnimationFrame(() => {
+                sib.style.transition = 'transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                sib.style.transform = '';
+              });
+            }
+          }
         });
         item.addEventListener('drop', (e) => {
           if (draggingNode && draggingNode.parentElement === container) {
