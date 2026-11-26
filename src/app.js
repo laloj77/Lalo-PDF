@@ -310,7 +310,10 @@
 
   async function undo() {
     const entry = state.history.pop();
-    if (!entry) return;
+    if (!entry) {
+      toast('Nada que deshacer');
+      return;
+    }
     state.future.push({ ...snapshot(entry.structural), structural: entry.structural });
     await restoreSnapshot(entry);
     setDirty(true);
@@ -318,7 +321,10 @@
 
   async function redo() {
     const entry = state.future.pop();
-    if (!entry) return;
+    if (!entry) {
+      toast('Nada que rehacer');
+      return;
+    }
     state.history.push({ ...snapshot(entry.structural), structural: entry.structural });
     await restoreSnapshot(entry);
     setDirty(true);
