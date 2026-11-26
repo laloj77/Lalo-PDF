@@ -61,4 +61,5 @@ contextBridge.exposeInMainWorld('lalo', {
   },
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
   checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  getLatestVersion: () => ipcRenderer.invoke('app:get-latest-version'),
 });

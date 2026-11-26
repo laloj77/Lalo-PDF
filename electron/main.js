@@ -1294,6 +1294,22 @@ function registerIpc() {
       return { ok: false, packaged: true, error: error.message };
     }
   });
+
+  ipcMain.handle('app:get-latest-version', async () => {
+    try {
+      const res = await fetch('https://github.com/laloj77/Lalo-PDF/releases/latest', {
+        redirect: 'follow',
+        headers: { 'User-Agent': 'Lalo-PDF' },
+      });
+      const tag = String(res.url || '').split('/').pop() || '';
+      if (/^v?\d+\.\d+\.\d+/.test(tag)) {
+        return { ok: true, version: tag };
+      }
+      return { ok: false };
+    } catch (error) {
+      return { ok: false, error: error.message };
+    }
+  });
 }
 
 function setupAutoUpdater() {

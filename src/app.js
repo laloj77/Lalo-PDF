@@ -6564,14 +6564,14 @@
     const checkLatestVersion = async (manual = false) => {
       if (!updateDot || !currentAppVersion) return;
       try {
-        const res = await fetch('https://api.github.com/repos/laloj77/Lalo-PDF/releases/latest', {
-          cache: 'no-store',
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        const latest = data?.tag_name || '';
+        let latest = '';
+        if (window.lalo?.getLatestVersion) {
+          const r = await window.lalo.getLatestVersion();
+          if (r?.ok && r.version) latest = r.version;
+        }
+        if (!latest) throw new Error('No version');
         updateDot.classList.remove('up-to-date', 'update-available');
-        if (latest && isNewerVersion(latest, currentAppVersion)) {
+        if (isNewerVersion(latest, currentAppVersion)) {
           updateDot.classList.add('update-available');
           updateDot.title = `Nueva versión ${latest} disponible (clic para actualizar)`;
           if (manual) {
