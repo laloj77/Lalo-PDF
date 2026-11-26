@@ -2347,3 +2347,14 @@ body.busy * {
   white-space: nowrap;
   max-width: 150px;
 }
+
+#btn-new-tab {
+  font-size: 18px;
+  font-weight: 500;
+  width: 26px;
+  height: 26px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
