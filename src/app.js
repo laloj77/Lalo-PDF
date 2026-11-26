@@ -3299,7 +3299,7 @@
 
   /* ----------------------------------------------------------- page actions */
 
-  function rotatePages(delta) {
+  async function rotatePages(delta) {
     if (!state.pages.length) return;
     const ids = state.selected.size
       ? state.selected
@@ -3309,6 +3309,20 @@
       if (ids.has(page.id)) page.rotation = normAngle((page.rotation || 0) + delta);
     }
     state.dirty = true;
+
+    const animated = [];
+    for (const pageEl of $$('.page', el.viewer)) {
+      const idx = Number(pageEl.dataset.index);
+      const model = state.pages[idx];
+      if (model && ids.has(model.id)) {
+        pageEl.style.transition = 'transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        pageEl.style.transform = `rotate(${delta}deg)`;
+        animated.push(pageEl);
+      }
+    }
+    if (animated.length) {
+      await new Promise((r) => setTimeout(r, 240));
+    }
     refresh({ preserveScroll: true });
   }
 
