@@ -1431,6 +1431,8 @@
       state.thumbToken += 1;
       el.viewer.innerHTML = '';
       el.thumbs.innerHTML = '';
+      const ol = $('#outline-list');
+      if (ol) ol.innerHTML = '';
       updateStatus();
       updateToolbarState();
       return;
@@ -1468,6 +1470,7 @@
       if (token !== state.renderToken) return;
       await renderThumbs(thumbToken);
       if (token !== state.renderToken) return;
+      renderOutline(pdf).catch(() => {});
 
       updateStatus();
       updateToolbarState();
@@ -5669,6 +5672,107 @@
     });
   }
 
+  async function resolveOutlineDest(pdf, dest) {
+    try {
+      let resolved = dest;
+      if (typeof dest === 'string') {
+        resolved = await pdf.getDestination(dest);
+      }
+      if (!Array.isArray(resolved) || !resolved.length) return null;
+      const ref = resolved[0];
+      if (typeof ref === 'number') return ref;
+      return await pdf.getPageIndex(ref);
+    } catch {
+      return null;
+    }
+  }
+
+  function buildOutlineNodes(pdf, items, container) {
+    for (const item of items) {
+      const wrap = document.createElement('div');
+      wrap.className = 'outline-item';
+
+      const row = document.createElement('div');
+      row.className = 'outline-row';
+
+      const hasChildren = Array.isArray(item.items) && item.items.length > 0;
+      let childrenEl = null;
+
+      if (hasChildren) {
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'outline-toggle';
+        toggle.textContent = '▾';
+        toggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!childrenEl) return;
+          childrenEl.hidden = !childrenEl.hidden;
+          toggle.textContent = childrenEl.hidden ? '▸' : '▾';
+        });
+        row.appendChild(toggle);
+      } else {
+        const spacer = document.createElement('span');
+        spacer.className = 'outline-spacer';
+        row.appendChild(spacer);
+      }
+
+      const title = document.createElement('span');
+      title.className = 'outline-title';
+      title.textContent = item.title || '(Sin título)';
+      title.title = item.title || '';
+      row.appendChild(title);
+
+      row.addEventListener('click', async () => {
+        if (!item.dest) return;
+        const pageIdx = await resolveOutlineDest(pdf, item.dest);
+        if (pageIdx !== null && pageIdx >= 0 && pageIdx < state.pages.length) {
+          goToPage(pageIdx);
+        }
+      });
+
+      wrap.appendChild(row);
+
+      if (hasChildren) {
+        childrenEl = document.createElement('div');
+        childrenEl.className = 'outline-children';
+        buildOutlineNodes(pdf, item.items, childrenEl);
+        wrap.appendChild(childrenEl);
+      }
+
+      container.appendChild(wrap);
+    }
+  }
+
+  async function renderOutline(pdf) {
+    const list = $('#outline-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const outline = await pdf.getOutline();
+    if (!outline || !outline.length) {
+      const empty = document.createElement('div');
+      empty.className = 'outline-empty';
+      empty.textContent = 'Este documento no contiene marcadores.';
+      list.appendChild(empty);
+      return;
+    }
+    buildOutlineNodes(pdf, outline, list);
+  }
+
+  function bindSidebarTabs() {
+    const tabs = $$('[data-sidebar-tab]');
+    const thumbs = $('#thumbs');
+    const outline = $('#outline-list');
+    if (!tabs.length || !thumbs || !outline) return;
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.sidebarTab;
+        tabs.forEach((t) => t.classList.toggle('active', t === tab));
+        thumbs.hidden = target !== 'thumbs';
+        outline.hidden = target !== 'outline';
+      });
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -5788,6 +5892,7 @@
     bindPageNumbersModal();
     bindSplitModal();
     bindCompressModal();
+    bindSidebarTabs();
     bindMenu();
     updateStatus();
     updateToolbarState();

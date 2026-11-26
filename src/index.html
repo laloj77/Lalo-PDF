@@ -246,7 +246,10 @@
       <div id="main">
         <aside id="sidebar">
           <div class="sidebar-head">
-            <span id="sidebar-title">Páginas</span>
+            <div class="sidebar-tabs" role="tablist">
+              <button type="button" id="tab-thumbs" class="sidebar-tab active" data-sidebar-tab="thumbs">Páginas</button>
+              <button type="button" id="tab-outline" class="sidebar-tab" data-sidebar-tab="outline">Índice</button>
+            </div>
             <div class="sidebar-actions">
               <button id="btn-add-pages" class="mini-btn" title="Añadir páginas">
                 <svg><use href="#i-plus-square" /></svg>
@@ -257,6 +260,7 @@
             </div>
           </div>
           <div id="thumbs" tabindex="0"></div>
+          <div id="outline-list" role="tree" hidden></div>
           <div class="sidebar-foot">
             <span id="page-count">0 páginas</span>
           </div>
