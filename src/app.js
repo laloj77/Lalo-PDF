@@ -5747,7 +5747,28 @@
     const list = $('#outline-list');
     if (!list) return;
     list.innerHTML = '';
-    const outline = await pdf.getOutline();
+    let outlinePdf = pdf;
+    let outline = await pdf.getOutline();
+    if ((!outline || !outline.length) && state.pages.length) {
+      const firstPdfPage = state.pages.find((p) => p.kind === 'pdf');
+      const source = firstPdfPage ? state.sources.get(firstPdfPage.sourceId) : null;
+      if (source?.bytes) {
+        try {
+          const loadOpts = { data: source.bytes.slice() };
+          if (source.password !== undefined) loadOpts.password = source.password;
+          const srcPdf = await pdfjsLib.getDocument(loadOpts).promise;
+          const srcOutline = await srcPdf.getOutline();
+          if (srcOutline && srcOutline.length) {
+            outlinePdf = srcPdf;
+            outline = srcOutline;
+          } else {
+            srcPdf.destroy();
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    }
     if (!outline || !outline.length) {
       const empty = document.createElement('div');
       empty.className = 'outline-empty';
@@ -5755,7 +5776,7 @@
       list.appendChild(empty);
       return;
     }
-    buildOutlineNodes(pdf, outline, list);
+    buildOutlineNodes(outlinePdf, outline, list);
   }
 
   function bindSidebarTabs() {
