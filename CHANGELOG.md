@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.5.2] - 2026-11-26
+
+### Añadido
+
+- **Nuevo icono propio de la app (`pdf`):** diseñado y aplicado en `build/icon.ico`, `build/icon.png` y `src/icon.png` para el ejecutable, instalador, accesos directos e interfaz de ventana en Windows.
+- **Versión portable separada en GitHub Releases:** `Lalo-PDF-0.5.2-Portable-x64.exe` se publica de forma independiente junto al instalador NSIS (`Lalo-PDF-0.5.2-x64.exe`).
+
 ## [0.5.1] - 2026-11-26
 
 ### Añadido
