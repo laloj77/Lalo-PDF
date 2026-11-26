@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 contextBridge.exposeInMainWorld('lalo', {
   platform: process.platform,
   openPdfs: () => ipcRenderer.invoke('dialog:open-pdfs'),
+  readFileByPath: (filePath) => ipcRenderer.invoke('file:read-by-path', { filePath }),
   openImages: () => ipcRenderer.invoke('dialog:open-images'),
   savePdf: (defaultName, bytes) => ipcRenderer.invoke('dialog:save-pdf', { defaultName, bytes }),
   savePdfInPlace: (filePath, bytes) => ipcRenderer.invoke('file:write-pdf', { filePath, bytes }),

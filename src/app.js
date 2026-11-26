@@ -5891,6 +5891,7 @@
 
   const docTabs = [];
   let activeTabId = null;
+  let draggingTabId = null;
 
   function snapshotActiveTab() {
     return {
@@ -6073,27 +6074,32 @@
       btn.addEventListener('click', () => switchTab(tab.id));
       btn.draggable = true;
       btn.addEventListener('dragstart', (e) => {
+        draggingTabId = tab.id;
         btn.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', tab.id);
       });
       btn.addEventListener('dragend', () => {
+        draggingTabId = null;
         btn.classList.remove('dragging');
       });
       btn.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-      });
-      btn.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const fromId = e.dataTransfer.getData('text/plain');
-        if (!fromId || fromId === tab.id) return;
-        const fromIdx = docTabs.findIndex((t) => t.id === fromId);
+        if (!draggingTabId || draggingTabId === tab.id) return;
+        const fromIdx = docTabs.findIndex((t) => t.id === draggingTabId);
         const toIdx = docTabs.findIndex((t) => t.id === tab.id);
         if (fromIdx < 0 || toIdx < 0) return;
         const [moved] = docTabs.splice(fromIdx, 1);
         docTabs.splice(toIdx, 0, moved);
-        renderTabBar();
+        const draggingEl = list.querySelector('.doc-tab.dragging');
+        if (draggingEl) {
+          if (fromIdx < toIdx) btn.after(draggingEl);
+          else btn.before(draggingEl);
+        }
+      });
+      btn.addEventListener('drop', (e) => {
+        e.preventDefault();
       });
       list.appendChild(btn);
     }
