@@ -666,9 +666,9 @@ body.thumb-dragging * {
   text-size-adjust: none;
   forced-color-adjust: none;
   transform-origin: 0 0;
-  user-select: text;
-  -webkit-user-select: text;
-  cursor: text;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
 }
 
 #viewer.markup-open .page .textLayer,
@@ -686,6 +686,8 @@ body.thumb-dragging * {
   white-space: pre;
   cursor: text;
   transform-origin: 0% 0%;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .page .textLayer ::selection {
