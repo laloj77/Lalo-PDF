@@ -2437,44 +2437,64 @@ body.presentation-mode #right-rail {
   flex: 0 0 auto;
 }
 
-.update-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.status-version-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.update-icon-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   border: none;
   padding: 0;
-  margin-right: 6px;
-  background: var(--ink-2, #8e8e93);
+  background: transparent;
+  color: var(--ink-2, #8e8e93);
   cursor: pointer;
+  display: grid;
+  place-items: center;
   flex: 0 0 auto;
-  transition: transform 0.15s, background-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.15s, color 0.2s, background-color 0.15s;
 }
 
-.update-dot:hover {
-  transform: scale(1.25);
+.update-icon-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.update-dot.up-to-date {
-  background: #28cd41;
-  box-shadow: 0 0 6px rgba(40, 205, 65, 0.45);
+.update-icon-btn:hover {
+  background: rgba(128, 128, 128, 0.18);
+  transform: scale(1.08);
 }
 
-.update-dot.update-available {
-  background: #ff3b30;
-  box-shadow: 0 0 8px rgba(255, 59, 48, 0.65);
+.update-icon-btn.up-to-date {
+  color: #28cd41;
+}
+
+.update-icon-btn.update-available {
+  color: #ff3b30;
 }
 
 .status-version-btn {
-  border: none;
-  background: transparent;
-  color: inherit;
+  border: 1px solid rgba(128, 128, 128, 0.22);
+  background: rgba(128, 128, 128, 0.16);
+  color: var(--ink-1);
   font: inherit;
-  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 6px;
+  transition: background-color 0.15s;
 }
 
 .status-version-btn:hover {
-  text-decoration: underline;
-  color: var(--ink-1);
+  background: rgba(128, 128, 128, 0.28);
 }
