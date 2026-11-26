@@ -187,8 +187,11 @@
       if (document.activeElement !== el.zoomLabel) el.zoomLabel.value = '100 %';
       el.emptyState.hidden = false;
       document.title = 'Lalo PDF';
+      if (typeof renderRecentFiles === 'function') renderRecentFiles();
+      if (typeof renderTabBar === 'function') renderTabBar();
       return;
     }
+    if (typeof renderTabBar === 'function') renderTabBar();
     state.current = clamp(state.current, 0, total - 1);
     el.emptyState.hidden = true;
     el.statusLeft.textContent =
@@ -495,6 +498,7 @@
         ? files[0].name
         : `${baseName(files[0].name)}.pdf`;
       state.filePath = files.length === 1 && files[0].path ? files[0].path : null;
+      if (state.filePath) addRecentFile(state.filePath, state.fileName);
       for (const file of files) {
         if (isPdf(file)) await appendSourceFile(file);
         else if (isImage(file)) await appendImageFile(file);
@@ -1116,6 +1120,7 @@
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
       state.filePath = result.path || state.filePath;
+      if (state.filePath) addRecentFile(state.filePath, state.fileName);
       markSaved(result.name || state.fileName);
     } catch (error) {
       showError('No se pudo guardar', error);
@@ -5794,6 +5799,299 @@
     });
   }
 
+  const RECENT_FILES_KEY = 'lalo-pdf-recent';
+  const MAX_RECENT_FILES = 8;
+
+  function loadRecentFiles() {
+    try {
+      const raw = localStorage.getItem(RECENT_FILES_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((x) => x && x.path) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveRecentFiles(list) {
+    try {
+      localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(list.slice(0, MAX_RECENT_FILES)));
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function addRecentFile(filePath, fileName) {
+    if (!filePath) return;
+    const name = fileName || String(filePath).split(/[\\/]/).pop() || 'Documento.pdf';
+    const next = [
+      { path: filePath, name, openedAt: Date.now() },
+      ...loadRecentFiles().filter((item) => item.path !== filePath),
+    ].slice(0, MAX_RECENT_FILES);
+    saveRecentFiles(next);
+    renderRecentFiles();
+  }
+
+  function renderRecentFiles() {
+    const box = $('#recent-files');
+    if (!box) return;
+    const list = loadRecentFiles();
+    if (!list.length) {
+      box.hidden = true;
+      box.innerHTML = '';
+      return;
+    }
+    box.hidden = false;
+    box.innerHTML = `
+      <div class="recent-files-head">
+        <span>Documentos recientes</span>
+        <button type="button" class="recent-clear-btn" id="recent-clear">Limpiar</button>
+      </div>
+      <div class="recent-list"></div>
+    `;
+    const listEl = $('.recent-list', box);
+    for (const item of list) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'recent-item';
+      btn.title = item.path;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'recent-name';
+      nameSpan.textContent = item.name || 'Documento.pdf';
+      const pathSpan = document.createElement('span');
+      pathSpan.className = 'recent-path';
+      pathSpan.textContent = folderOf(item.path);
+      btn.append(nameSpan, pathSpan);
+      btn.addEventListener('click', async () => {
+        if (!window.lalo?.readFileByPath) {
+          toast('No disponible en esta plataforma');
+          return;
+        }
+        try {
+          const res = await window.lalo.readFileByPath(item.path);
+          if (!res || !res.ok || !res.bytes) {
+            toast('No se pudo abrir el archivo (puede haberse movido o eliminado)');
+            return;
+          }
+          await openFiles(
+            [{ name: res.name || item.name, path: item.path, bytes: new Uint8Array(res.bytes) }],
+            { replace: !state.pages.length },
+          );
+          addRecentFile(item.path, res.name || item.name);
+        } catch (err) {
+          showError('No se pudo abrir el archivo reciente', err);
+        }
+      });
+      listEl.appendChild(btn);
+    }
+    $('#recent-clear', box)?.addEventListener('click', () => {
+      saveRecentFiles([]);
+      renderRecentFiles();
+    });
+  }
+
+  const docTabs = [];
+  let activeTabId = null;
+
+  function snapshotActiveTab() {
+    return {
+      id: activeTabId || uid('tab'),
+      sources: new Map(state.sources),
+      pages: [...state.pages],
+      selected: new Set(state.selected),
+      anchorIndex: state.anchorIndex,
+      current: state.current,
+      viewMode: state.viewMode,
+      zoomMode: state.zoomMode,
+      scale: state.scale,
+      annotations: new Map(state.annotations),
+      selection: state.selection,
+      history: [...state.history],
+      future: [...state.future],
+      fileName: state.fileName,
+      filePath: state.filePath,
+      security: state.security,
+      watermark: state.watermark,
+      pageNumbers: state.pageNumbers,
+      dirty: state.dirty,
+    };
+  }
+
+  function ensureActiveTab() {
+    if (!activeTabId) {
+      const tab = snapshotActiveTab();
+      activeTabId = tab.id;
+      docTabs.push(tab);
+    } else {
+      const idx = docTabs.findIndex((t) => t.id === activeTabId);
+      const snap = snapshotActiveTab();
+      if (idx >= 0) docTabs[idx] = snap;
+      else docTabs.push(snap);
+    }
+  }
+
+  async function applyTabState(tab) {
+    activeTabId = tab.id;
+    state.sources = new Map(tab.sources);
+    state.pages = [...tab.pages];
+    state.selected = new Set(tab.selected);
+    state.anchorIndex = tab.anchorIndex;
+    state.current = tab.current;
+    state.viewMode = tab.viewMode;
+    state.zoomMode = tab.zoomMode;
+    state.scale = tab.scale;
+    state.annotations = new Map(tab.annotations);
+    state.selection = tab.selection;
+    state.history = [...tab.history];
+    state.future = [...tab.future];
+    state.fileName = tab.fileName;
+    state.filePath = tab.filePath;
+    state.security = tab.security;
+    state.watermark = tab.watermark;
+    state.pageNumbers = tab.pageNumbers;
+    state.dirty = tab.dirty;
+    window.lalo?.setDirtyState?.(state.dirty);
+    renderTabBar();
+    await refresh({ preserveScroll: false, scrollToCurrent: true });
+  }
+
+  async function createNewTab() {
+    ensureActiveTab();
+    const blank = {
+      id: uid('tab'),
+      sources: new Map(),
+      pages: [],
+      selected: new Set(),
+      anchorIndex: null,
+      current: 0,
+      viewMode: 'continuous',
+      zoomMode: 'fit',
+      scale: 1,
+      annotations: new Map(),
+      selection: null,
+      history: [],
+      future: [],
+      fileName: 'Sin título.pdf',
+      filePath: null,
+      security: null,
+      watermark: null,
+      pageNumbers: null,
+      dirty: false,
+    };
+    docTabs.push(blank);
+    await applyTabState(blank);
+  }
+
+  async function switchTab(tabId) {
+    if (tabId === activeTabId) return;
+    ensureActiveTab();
+    const target = docTabs.find((t) => t.id === tabId);
+    if (!target) return;
+    await applyTabState(target);
+  }
+
+  async function closeTab(tabId) {
+    ensureActiveTab();
+    const idx = docTabs.findIndex((t) => t.id === tabId);
+    if (idx < 0) return;
+    if (docTabs.length === 1) {
+      docTabs[0] = {
+        id: docTabs[0].id,
+        sources: new Map(),
+        pages: [],
+        selected: new Set(),
+        anchorIndex: null,
+        current: 0,
+        viewMode: 'continuous',
+        zoomMode: 'fit',
+        scale: 1,
+        annotations: new Map(),
+        selection: null,
+        history: [],
+        future: [],
+        fileName: 'Sin título.pdf',
+        filePath: null,
+        security: null,
+        watermark: null,
+        pageNumbers: null,
+        dirty: false,
+      };
+      await applyTabState(docTabs[0]);
+      return;
+    }
+    docTabs.splice(idx, 1);
+    if (tabId === activeTabId) {
+      const next = docTabs[Math.min(idx, docTabs.length - 1)];
+      await applyTabState(next);
+    } else {
+      renderTabBar();
+    }
+  }
+
+  function renderTabBar() {
+    const bar = $('#tab-bar');
+    const list = $('#tabs-list');
+    if (!bar || !list) return;
+    ensureActiveTab();
+    const show = docTabs.length > 1 || state.pages.length > 0;
+    bar.hidden = !show;
+    if (!show) return;
+
+    list.innerHTML = '';
+    for (const tab of docTabs) {
+      const isActive = tab.id === activeTabId;
+      const name = isActive ? state.fileName : tab.fileName;
+      const dirty = isActive ? state.dirty : tab.dirty;
+
+      const btn = document.createElement('div');
+      btn.className = `doc-tab${isActive ? ' active' : ''}`;
+      btn.role = 'tab';
+      btn.title = name || 'Sin título.pdf';
+
+      const title = document.createElement('span');
+      title.className = 'doc-tab-title';
+      title.textContent = name || 'Sin título.pdf';
+      btn.appendChild(title);
+
+      if (dirty) {
+        const dot = document.createElement('span');
+        dot.className = 'doc-tab-dirty';
+        dot.textContent = '•';
+        btn.appendChild(dot);
+      }
+
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.className = 'doc-tab-close';
+      closeBtn.textContent = '×';
+      closeBtn.title = 'Cerrar pestaña (Ctrl+W)';
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTab(tab.id);
+      });
+      btn.appendChild(closeBtn);
+
+      btn.addEventListener('click', () => switchTab(tab.id));
+      list.appendChild(btn);
+    }
+  }
+
+  function bindTabsAndRecent() {
+    $('#btn-new-tab')?.addEventListener('click', createNewTab);
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey) {
+        if (e.key.toLowerCase() === 't') {
+          e.preventDefault();
+          createNewTab();
+        } else if (e.key.toLowerCase() === 'w' && docTabs.length > 1) {
+          e.preventDefault();
+          closeTab(activeTabId);
+        }
+      }
+    });
+    renderRecentFiles();
+    renderTabBar();
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -5914,6 +6212,7 @@
     bindSplitModal();
     bindCompressModal();
     bindSidebarTabs();
+    bindTabsAndRecent();
     bindMenu();
     updateStatus();
     updateToolbarState();

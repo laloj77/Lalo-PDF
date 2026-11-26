@@ -243,6 +243,11 @@
         </div>
       </header>
 
+      <div id="tab-bar" hidden>
+        <div id="tabs-list" role="tablist"></div>
+        <button type="button" id="btn-new-tab" class="mini-btn" title="Nueva pestaña (Ctrl+T)">+</button>
+      </div>
+
       <div id="main">
         <aside id="sidebar">
           <div class="sidebar-head">
@@ -372,6 +377,7 @@
                 <button id="empty-add" class="pill-btn">Añadir imágenes…</button>
               </div>
               <span class="empty-hint">También puedes arrastrar PDFs e imágenes a esta ventana</span>
+              <div id="recent-files" class="recent-files" hidden></div>
             </div>
           </div>
 
