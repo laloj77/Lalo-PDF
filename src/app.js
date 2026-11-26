@@ -6223,7 +6223,7 @@
                 size: boxH * 0.85,
                 font,
                 color: rgb(0, 0, 0),
-                opacity: 0,
+                opacity: 0.01,
               });
               totalWords += 1;
             } catch {
