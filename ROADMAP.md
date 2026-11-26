@@ -51,8 +51,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Pasar páginas a pantalla completa (`F5` / botón junto a Imprimir) sin elementos de interfaz y con control flotante.~~
 - [x] ~~**Ajustes de miniatura y navegación rápida**~~
   - ~~Redimensionar miniaturas arrastrando el divisor de la barra lateral (renderizadas a `360 px` base para máxima nitidez) y caja `Ir a pág.` para saltar a un número de página específico.~~
-- [ ] **Asociación de archivos en Windows**
-  - Configurar "Abrir con Lalo PDF" automáticamente en el instalador de Windows.
+- [x] ~~**Asociación de archivos en Windows**~~
+  - ~~Configurar "Abrir con Lalo PDF" automáticamente en el instalador de Windows.~~
 - [ ] **Redacción real (Sanitización)**
   - Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).
 - [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~

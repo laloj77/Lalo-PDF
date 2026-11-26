@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.5.1] - 2026-11-26
+
+### Añadido
+
+- **Asociación de archivos `.pdf` en Windows:** configuración de `fileAssociations` en el instalador NSIS para registrar *Abrir con Lalo PDF* y permitir establecerlo como visor PDF predeterminado en Windows.
+
 ## [0.5.0] - 2026-11-26
 
 ### Cambiado
