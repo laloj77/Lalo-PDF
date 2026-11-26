@@ -7,6 +7,34 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-11-25
+
+### Añadido
+
+- **Comprimir PDF:** botón **Comprimir** en la barra superior y *Archivo → Comprimir PDF…* con control de **Calidad JPEG** (`15%–95%`), **Resolución máxima** (`Original`, `1600 px`, `1200 px`, `800 px`) y comparativa en vivo **antes → después** con porcentaje de ahorro.
+- **Opciones avanzadas de compresión** con casillas y botones `?` explicativos:
+  - Eliminar metadatos y datos privados (XMP, miniaturas incrustadas, `PieceInfo`, autor/editor).
+  - Aplanar anotaciones y formularios.
+  - Optimizar estructura y flujos (`useObjectStreams`).
+  - Convertir imágenes a escala de grises.
+  - Rasterizar páginas (compresión extrema).
+
+## [0.3.3] - 2026-11-25
+
+### Cambiado
+
+- Botón **Exportar** convertido a formato solo icono y reubicado a la derecha de **Proteger** en la barra superior.
+
+## [0.3.2] - 2026-11-25
+
+### Añadido
+
+- **Dividir PDF:** botón **Dividir** en la barra superior y *Archivo → Dividir PDF…* para dividir el documento en varios archivos por página o por rangos (`1-3, 4-6`).
+
+### Cambiado
+
+- Botón **Proteger** convertido a formato solo icono y reubicado a la derecha de **Presentación**.
+
 ## [0.3.1] - 2026-11-25
 
 ### Añadido
