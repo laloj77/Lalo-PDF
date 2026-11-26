@@ -6192,8 +6192,19 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           await pdfjsPage.render({ canvasContext: ctx, viewport }).promise;
 
-          const { data } = await worker.recognize(canvas);
-          const words = Array.isArray(data?.words) ? data.words : [];
+          const { data } = await worker.recognize(canvas, {}, { blocks: true });
+          const words = [];
+          if (Array.isArray(data?.words) && data.words.length) {
+            words.push(...data.words);
+          } else if (Array.isArray(data?.blocks)) {
+            for (const block of data.blocks) {
+              for (const para of block.paragraphs || []) {
+                for (const line of para.lines || []) {
+                  for (const w of line.words || []) words.push(w);
+                }
+              }
+            }
+          }
           const outPage = docPages[idx];
           const { width: pw, height: ph } = outPage.getSize();
           const sx = pw / canvas.width;
