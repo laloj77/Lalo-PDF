@@ -26,6 +26,7 @@
   "dependencies": {
     "@cantoo/pdf-lib": "^2.11.1",
     "docx": "^9.16.0",
+    "electron-updater": "^6.8.11",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "3.11.174",
     "tesseract.js": "^7.0.0"
@@ -49,6 +50,13 @@
     ],
     "asar": true,
     "npmRebuild": false,
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "laloj77",
+        "repo": "Lalo-PDF"
+      }
+    ],
     "win": {
       "target": [
         {

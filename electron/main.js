@@ -16,6 +16,7 @@ const {
 const path = require('node:path');
 const fs = require('node:fs/promises');
 const fsSync = require('node:fs');
+const { autoUpdater } = require('electron-updater');
 
 const APP_SCHEME = 'lalo';
 const SRC_DIR = path.join(__dirname, '..', 'src');
@@ -1277,12 +1278,49 @@ function registerIpc() {
   }));
 }
 
+function setupAutoUpdater() {
+  if (!app.isPackaged) return;
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('update-available', async (info) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    const { response } = await dialog.showMessageBox(mainWindow, {
+      type: 'info',
+      buttons: ['Actualizar ahora', 'Más tarde'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Actualización disponible',
+      message: `Nueva versión v${info.version} disponible`,
+      detail:
+        'Al pulsar "Actualizar ahora", se descargará la nueva versión, se cerrará la app y se instalará automáticamente manteniendo tu configuración.',
+    });
+    if (response === 0) {
+      autoUpdater.downloadUpdate().catch(() => {});
+    }
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    forceCloseConfirmed = true;
+    autoUpdater.quitAndInstall(true, true);
+  });
+
+  autoUpdater.on('error', () => {
+    /* ignore background update check errors */
+  });
+
+  setTimeout(() => {
+    autoUpdater.checkForUpdates().catch(() => {});
+  }, 4000).unref();
+}
+
 app.whenReady().then(async () => {
   fs.rm(dragDir(), { recursive: true, force: true }).catch(() => {});
   registerProtocol();
   registerIpc();
   buildMenu();
   await createWindow();
+  setupAutoUpdater();
 
   nativeTheme.on('updated', () => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
