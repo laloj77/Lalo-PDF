@@ -6214,13 +6214,19 @@
             const text = String(w.text || '').trim();
             if (!text || !w.bbox) continue;
             const x = w.bbox.x0 * sx;
+            const boxW = Math.max(2, (w.bbox.x1 - w.bbox.x0) * sx);
             const boxH = Math.max(4, (w.bbox.y1 - w.bbox.y0) * sy);
             const y = ph - w.bbox.y1 * sy;
             try {
+              let fontSize = boxH * 0.85;
+              const measured = font.widthOfTextAtSize(text, fontSize);
+              if (measured > 0) {
+                fontSize = Math.min(boxH * 1.15, fontSize * (boxW / measured));
+              }
               outPage.drawText(text, {
                 x,
                 y,
-                size: boxH * 0.85,
+                size: Math.max(3, fontSize),
                 font,
                 color: rgb(0, 0, 0),
                 opacity: 0.01,
