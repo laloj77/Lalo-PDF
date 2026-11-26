@@ -6071,6 +6071,30 @@
       btn.appendChild(closeBtn);
 
       btn.addEventListener('click', () => switchTab(tab.id));
+      btn.draggable = true;
+      btn.addEventListener('dragstart', (e) => {
+        btn.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', tab.id);
+      });
+      btn.addEventListener('dragend', () => {
+        btn.classList.remove('dragging');
+      });
+      btn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      btn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const fromId = e.dataTransfer.getData('text/plain');
+        if (!fromId || fromId === tab.id) return;
+        const fromIdx = docTabs.findIndex((t) => t.id === fromId);
+        const toIdx = docTabs.findIndex((t) => t.id === tab.id);
+        if (fromIdx < 0 || toIdx < 0) return;
+        const [moved] = docTabs.splice(fromIdx, 1);
+        docTabs.splice(toIdx, 0, moved);
+        renderTabBar();
+      });
       list.appendChild(btn);
     }
   }
