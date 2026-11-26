@@ -6221,7 +6221,7 @@
               let fontSize = boxH * 0.9;
               const measured = font.widthOfTextAtSize(text, fontSize);
               if (measured > 0) {
-                fontSize = Math.min(boxH * 1.25, fontSize * ((boxW * 1.08) / measured));
+                fontSize = Math.min(boxH * 1.8, fontSize * ((boxW * 1.08) / measured));
               }
               outPage.drawText(text, {
                 x,
