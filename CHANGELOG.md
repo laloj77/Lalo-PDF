@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-11-26
+
+### Cambiado
+
+- **Lanzamiento del ejecutable e instalador de Windows (`v0.5.0`):** compilación y publicación del instalador NSIS y versión portable de 64 bits (`Lalo-PDF-0.5.0-x64.exe`) con todas las funcionalidades acumuladas hasta `v0.4.0`.
+
 ## [0.4.0] - 2026-11-25
 
 ### Añadido
