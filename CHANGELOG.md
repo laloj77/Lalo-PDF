@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.5] - 2026-11-26
+
+### Cambiado
+
+- **Rotación fluida de páginas:** animación CSS suave (`240 ms`) al rotar páginas antes de refrescar el visor y sin mostrar el cursor de espera (`silent: true`).
+
 ## [0.6.4] - 2026-11-26
 
 ### Añadido
