@@ -76,10 +76,17 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [ ] **Clonado fiel PDF → Word (`.docx`) con motor externo**
   - Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.
-- [ ] **OCR para documentos escaneados**
-  - Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.
+- [x] ~~**OCR para documentos escaneados**~~
+  - ~~Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.~~
 - [ ] **Actualizador automático desde GitHub Releases**
   - Comprobar si hay una nueva versión publicada en GitHub Releases (`electron-updater` / `latest.yml`), descargarla e instalarla automáticamente desde la app.
+
+---
+
+## ⭐ Prioridad 5: Lista de deseos para v2
+
+- [ ] **Revisar OCR**
+  - Afinar la precisión visual y la selección de texto tras aplicar OCR en documentos escaneados.
 
 ---
 

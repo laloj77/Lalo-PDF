@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.0] - 2026-11-26
+
+### Añadido
+
+- **OCR para documentos escaneados (`tesseract.js`):** botón **OCR** en la barra superior para reconocer texto en Español, Inglés o ambos (en todas las páginas o en la página actual) e insertar una capa de texto invisible que permite buscar con `Ctrl+F`, seleccionar y copiar texto.
+
+### Corregido
+
+- **Selección de texto sobre páginas escaneadas:** ajustado `z-index` de `.page-image-hit` por debajo de `.textLayer`, escalado proporcional de palabras OCR y control de `selectionchange` para evitar saltos de selección a toda la hoja.
+
 ## [0.5.7] - 2026-11-26
 
 ### Añadido
