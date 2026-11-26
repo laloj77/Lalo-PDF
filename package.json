@@ -74,6 +74,16 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Lalo PDF"
     },
+    "fileAssociations": [
+      {
+        "ext": "pdf",
+        "name": "Documento PDF",
+        "description": "Documento PDF",
+        "mimeType": "application/pdf",
+        "role": "Editor",
+        "icon": "build/icon.ico"
+      }
+    ],
     "mac": {
       "category": "public.app-category.productivity",
       "target": [
