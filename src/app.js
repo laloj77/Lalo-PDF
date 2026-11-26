@@ -1847,6 +1847,12 @@
           viewport,
           textDivs: [],
         }).promise;
+        const endOfContent = document.createElement('div');
+        endOfContent.className = 'endOfContent';
+        textLayer.appendChild(endOfContent);
+        textLayer.onmousedown = () => endOfContent.classList.add('active');
+        textLayer.onmouseup = () => endOfContent.classList.remove('active');
+        textLayer.onmouseleave = () => endOfContent.classList.remove('active');
         imageLayer.innerHTML = '';
         try {
           const opList = await page.getOperatorList();

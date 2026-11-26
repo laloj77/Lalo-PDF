@@ -683,6 +683,7 @@ body.thumb-dragging * {
 .page .textLayer br {
   color: transparent;
   position: absolute;
+  z-index: 1;
   white-space: pre;
   cursor: text;
   transform-origin: 0% 0%;
@@ -699,9 +700,14 @@ body.thumb-dragging * {
   display: block;
   position: absolute;
   inset: 100% 0 0;
-  z-index: -1;
+  z-index: 0;
   cursor: default;
   user-select: none;
+  -webkit-user-select: none;
+}
+
+.page .textLayer .endOfContent.active {
+  top: 0;
 }
 
 .page .page-image-hit {
