@@ -704,7 +704,7 @@ body.thumb-dragging * {
 
 .page .page-image-hit {
   position: absolute;
-  z-index: 4;
+  z-index: 2;
   border-radius: 2px;
   cursor: grab;
   transition: outline-color 0.12s, background-color 0.12s;
