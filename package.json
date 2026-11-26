@@ -74,6 +74,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "Lalo PDF"
     },
+    "portable": {
+      "artifactName": "Lalo-PDF-${version}-Portable-${arch}.${ext}"
+    },
     "fileAssociations": [
       {
         "ext": "pdf",
