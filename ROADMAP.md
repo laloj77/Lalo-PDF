@@ -45,8 +45,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Menú de archivos recientes y soporte para trabajar con múltiples documentos a la vez.
 - [x] ~~**Copiar texto seleccionado**~~
   - ~~Herramienta de selección de texto sobre la página para copiar al portapapeles.~~
-- [ ] **Índice / Marcadores (Tabla de contenidos)**
-  - Vista en la barra lateral para navegar por los marcadores del PDF.
+- [x] ~~**Índice / Marcadores (Tabla de contenidos)**~~
+  - ~~Vista en la barra lateral para navegar por los marcadores del PDF.~~
 - [x] ~~**Modo presentación a pantalla completa**~~
   - ~~Pasar páginas a pantalla completa (`F5` / botón junto a Imprimir) sin elementos de interfaz y con control flotante.~~
 - [x] ~~**Ajustes de miniatura y navegación rápida**~~

@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.5.5] - 2026-11-26
+
+### Añadido
+
+- **Índice / Marcadores (Tabla de contenidos):** pestañas **Páginas | Índice** en la barra lateral izquierda para navegar por los marcadores jerárquicos del PDF (con desplegables y salto directo de página) y documento de ejemplo `docs/ejemplo-indice.pdf`.
+
+### Cambiado
+
+- **Instalador NSIS (`perMachine: true`):** solicitud automática de permisos de administrador (UAC) al instalar en `C:\Program Files\Lalo PDF`.
+
 ## [0.5.2] - 2026-11-26
 
 ### Añadido
