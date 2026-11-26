@@ -6218,10 +6218,10 @@
             const boxH = Math.max(4, (w.bbox.y1 - w.bbox.y0) * sy);
             const y = ph - w.bbox.y1 * sy;
             try {
-              let fontSize = boxH * 0.85;
+              let fontSize = boxH * 0.9;
               const measured = font.widthOfTextAtSize(text, fontSize);
               if (measured > 0) {
-                fontSize = Math.min(boxH * 1.15, fontSize * (boxW / measured));
+                fontSize = Math.min(boxH * 1.25, fontSize * ((boxW * 1.08) / measured));
               }
               outPage.drawText(text, {
                 x,
