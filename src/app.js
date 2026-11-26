@@ -1847,12 +1847,6 @@
           viewport,
           textDivs: [],
         }).promise;
-        const endOfContent = document.createElement('div');
-        endOfContent.className = 'endOfContent';
-        textLayer.appendChild(endOfContent);
-        textLayer.onmousedown = () => endOfContent.classList.add('active');
-        textLayer.onmouseup = () => endOfContent.classList.remove('active');
-        textLayer.onmouseleave = () => endOfContent.classList.remove('active');
         imageLayer.innerHTML = '';
         try {
           const opList = await page.getOperatorList();
@@ -6400,6 +6394,36 @@
     bindTabsAndRecent();
     bindOcrModal();
     bindMenu();
+    let lastValidFocus = null;
+    let fixingSelection = false;
+    const isInsideTextSpan = (node) => {
+      const elem = node && (node.nodeType === 3 ? node.parentElement : node);
+      return Boolean(elem && elem.closest && elem.closest('.textLayer span'));
+    };
+    document.addEventListener('selectionchange', () => {
+      if (fixingSelection) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        lastValidFocus =
+          sel && sel.focusNode && isInsideTextSpan(sel.focusNode)
+            ? { node: sel.focusNode, offset: sel.focusOffset }
+            : null;
+        return;
+      }
+      if (!isInsideTextSpan(sel.anchorNode)) return;
+      if (isInsideTextSpan(sel.focusNode)) {
+        lastValidFocus = { node: sel.focusNode, offset: sel.focusOffset };
+      } else if (lastValidFocus && lastValidFocus.node.isConnected) {
+        fixingSelection = true;
+        try {
+          sel.extend(lastValidFocus.node, lastValidFocus.offset);
+        } catch {
+          /* ignore */
+        } finally {
+          fixingSelection = false;
+        }
+      }
+    });
     updateStatus();
     updateToolbarState();
     const versionEl = $('#status-version');

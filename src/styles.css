@@ -666,6 +666,7 @@ body.thumb-dragging * {
   text-size-adjust: none;
   forced-color-adjust: none;
   transform-origin: 0 0;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
@@ -679,12 +680,18 @@ body.thumb-dragging * {
   cursor: default;
 }
 
+#viewer.markup-open .page .textLayer span,
+#viewer.tool-active .page .textLayer span {
+  pointer-events: none;
+}
+
 .page .textLayer span,
 .page .textLayer br {
   color: transparent;
   position: absolute;
   z-index: 1;
   white-space: pre;
+  pointer-events: auto;
   cursor: text;
   transform-origin: 0% 0%;
   user-select: text;
