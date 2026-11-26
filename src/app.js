@@ -6271,6 +6271,88 @@
     });
   }
 
+  function bindReorderableToolbars() {
+    const ORDER_KEY = 'lalo-pdf-toolbar-order';
+    let saved = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}') || {};
+    } catch {
+      saved = {};
+    }
+
+    const containers = [
+      { key: 'tb-left', el: $('#toolbar .tb-left') },
+      { key: 'tb-center', el: $('#toolbar .tb-center') },
+      { key: 'tb-right', el: $('#toolbar .tb-right') },
+      { key: 'right-rail', el: $('#right-rail') },
+    ];
+
+    const getItemId = (node) => {
+      if (node.id) return node.id;
+      const childWithId = node.querySelector('[id]');
+      return childWithId ? `wrap:${childWithId.id}` : null;
+    };
+
+    for (const { key, el: container } of containers) {
+      if (!container) continue;
+      const items = Array.from(container.children).filter(
+        (c) => !c.classList.contains('rail-sep') && getItemId(c),
+      );
+
+      if (Array.isArray(saved[key])) {
+        const byId = new Map(items.map((n) => [getItemId(n), n]));
+        for (const id of saved[key]) {
+          const node = byId.get(id);
+          if (node) container.appendChild(node);
+        }
+        for (const n of items) {
+          if (!saved[key].includes(getItemId(n))) container.appendChild(n);
+        }
+      }
+
+      let draggingNode = null;
+      for (const item of items) {
+        item.draggable = true;
+        item.addEventListener('dragstart', (e) => {
+          draggingNode = item;
+          item.classList.add('tb-dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', getItemId(item) || '');
+        });
+        item.addEventListener('dragend', () => {
+          item.classList.remove('tb-dragging');
+          draggingNode = null;
+          saved[key] = Array.from(container.children)
+            .map((c) => getItemId(c))
+            .filter(Boolean);
+          try {
+            localStorage.setItem(ORDER_KEY, JSON.stringify(saved));
+          } catch {
+            /* ignore */
+          }
+        });
+        item.addEventListener('dragover', (e) => {
+          if (!draggingNode || draggingNode === item || draggingNode.parentElement !== container) {
+            return;
+          }
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const children = Array.from(container.children);
+          const fromIdx = children.indexOf(draggingNode);
+          const toIdx = children.indexOf(item);
+          if (fromIdx < 0 || toIdx < 0) return;
+          if (fromIdx < toIdx) item.after(draggingNode);
+          else item.before(draggingNode);
+        });
+        item.addEventListener('drop', (e) => {
+          if (draggingNode && draggingNode.parentElement === container) {
+            e.preventDefault();
+          }
+        });
+      }
+    }
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -6424,6 +6506,7 @@
         }
       }
     });
+    bindReorderableToolbars();
     updateStatus();
     updateToolbarState();
     const versionEl = $('#status-version');

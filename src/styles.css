@@ -2421,3 +2421,11 @@ body.busy * {
 body.presentation-mode #right-rail {
   display: none !important;
 }
+
+#toolbar [draggable='true'] {
+  -webkit-app-region: no-drag;
+}
+
+.tb-dragging {
+  opacity: 0.45;
+}
