@@ -290,6 +290,7 @@ async function createWindow() {
     show: false,
     backgroundColor: nativeTheme.shouldUseDarkColors ? TITLEBAR_DARK : '#f2f2f4',
     title: 'Lalo PDF',
+    icon: path.join(__dirname, '../src/icon.png'),
     ...(process.platform === 'win32'
       ? {
           titleBarStyle: 'hidden',
