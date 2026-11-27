@@ -4642,10 +4642,10 @@
                 }
               }
               if (state.pages.length > 0) {
-                await newBlankTab();
+                await createNewTab();
               }
               await openFiles([payload]);
-            })();
+            })().catch((err) => showError('No se pudo abrir el archivo', err));
           }
           break;
         case 'add-pdf':
