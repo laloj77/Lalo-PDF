@@ -818,19 +818,19 @@
             <canvas id="crop-preview" width="180" height="240" style="max-width: 100%; max-height: 210px; border-radius: 4px; background: #fff;"></canvas>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <label class="modal-field crop-field">
               <span>Superior (mm)</span>
               <input id="crop-top" type="number" min="0" max="150" step="1" value="0" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <label class="modal-field crop-field">
               <span>Inferior (mm)</span>
               <input id="crop-bottom" type="number" min="0" max="150" step="1" value="0" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <label class="modal-field crop-field">
               <span>Izquierdo (mm)</span>
               <input id="crop-left" type="number" min="0" max="150" step="1" value="0" />
             </label>
-            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <label class="modal-field crop-field">
               <span>Derecho (mm)</span>
               <input id="crop-right" type="number" min="0" max="150" step="1" value="0" />
             </label>
@@ -839,7 +839,7 @@
             <input id="crop-normalize-a4" type="checkbox" />
             <span>Normalizar tamaño a A4 (210 × 297 mm)</span>
           </label>
-          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+          <label class="modal-field crop-field">
             <span>Aplicar a</span>
             <select id="crop-scope">
               <option value="all">Todas las páginas</option>
@@ -848,7 +848,7 @@
             </select>
           </label>
         </div>
-        <div class="modal-foot">
+        <div class="modal-foot crop-foot">
           <button id="crop-cancel" class="pill-btn" type="button">Cancelar</button>
           <button id="crop-apply" class="pill-btn primary" type="button">Aplicar</button>
         </div>
