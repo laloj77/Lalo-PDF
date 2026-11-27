@@ -207,9 +207,6 @@
           <button id="btn-crop-pages" class="pill-btn" title="Recortar márgenes o ajustar a A4">
             <span>Recortar</span>
           </button>
-          <button id="btn-compare" class="pill-btn" title="Comparar con otro PDF">
-            <span>Comparar</span>
-          </button>
           <button id="btn-ocr" class="pill-btn" title="Reconocimiento de texto (OCR)">
             <span>OCR</span>
           </button>
@@ -806,41 +803,6 @@
           <button type="submit" class="primary-btn">Dividir</button>
         </div>
       </form>
-    </div>
-
-    <div id="compare-modal" hidden>
-      <div class="compare-head">
-        <div class="compare-title">
-          <h2>Comparar PDFs</h2>
-          <span id="compare-summary" class="compare-summary"></span>
-        </div>
-        <div id="compare-mode" class="segmented">
-          <button type="button" data-mode="side" class="active">Lado a lado</button>
-          <button type="button" data-mode="overlay">Superpuesto</button>
-        </div>
-        <div class="compare-nav">
-          <button id="compare-prev" class="mini-btn" type="button" title="Página anterior"><svg><use href="#i-chevron-left" /></svg></button>
-          <span id="compare-page-label"></span>
-          <button id="compare-next" class="mini-btn" type="button" title="Página siguiente"><svg><use href="#i-chevron-right" /></svg></button>
-        </div>
-        <button id="compare-close" class="mini-btn" type="button" title="Cerrar (Esc)"><svg><use href="#i-close" /></svg></button>
-      </div>
-      <div id="compare-chips" class="compare-chips"></div>
-      <div class="compare-main">
-        <div class="compare-canvases">
-          <div id="compare-side" class="compare-side">
-            <figure><figcaption id="compare-name-left"></figcaption><canvas id="compare-canvas-left"></canvas></figure>
-            <figure><figcaption id="compare-name-right"></figcaption><canvas id="compare-canvas-right"></canvas></figure>
-          </div>
-          <div id="compare-overlay-wrap" class="compare-overlay-wrap" hidden>
-            <figure><figcaption><span class="lg-del">■ Solo en A</span> <span class="lg-ins">■ Solo en B</span></figcaption><canvas id="compare-canvas-overlay"></canvas></figure>
-          </div>
-        </div>
-        <aside class="compare-aside">
-          <div id="compare-info" class="compare-info"></div>
-          <div id="compare-text" class="compare-text"></div>
-        </aside>
-      </div>
     </div>
 
     <div id="crop-modal" class="modal-backdrop" hidden>
