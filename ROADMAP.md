@@ -91,6 +91,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Afinar la precisión visual y la selección de texto tras aplicar OCR en documentos escaneados.
 - [ ] **Optimizar tamaño en disco y ligereza**
   - Reducir el peso de la aplicación y del instalador/portable para que ocupe menos espacio y sea más rápida de mover.
+- [ ] **Edición directa de texto existente en el PDF**
+  - Permitir hacer doble clic sobre texto original del PDF para editarlo en el sitio (estilo Sejda, reescribiendo el *content stream* o reemplazando el bloque).
 
 ---
 
