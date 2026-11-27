@@ -2648,9 +2648,9 @@ body.theme-transitioning * {
 }
 
 .app-brand-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   object-fit: cover;
   flex-shrink: 0;
 }
