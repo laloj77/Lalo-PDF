@@ -85,16 +85,19 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ---
 
-## ⭐ Prioridad 5: Lista de deseos para v2
-
-- [ ] **Revisar OCR**
-  - Afinar la precisión visual y la selección de texto tras aplicar OCR en documentos escaneados.
 - [ ] **Optimizar rendimiento y memoria**
   - Evitar copias innecesarias de bytes del PDF en memoria, liberar canvases/miniaturas fuera de pantalla en documentos largos y acelerar el renderizado al cambiar de página o hacer zoom.
 - [ ] **Modularizar `src/app.js`**
   - Dividir `src/app.js` (+7.600 líneas) en módulos por responsabilidad (visor, anotaciones, herramientas PDF, modales, pestañas/historial) para facilitar el mantenimiento y evitar colisiones de nombres.
 - [ ] **Optimizar tamaño en disco y ligereza**
   - Reducir el peso de la aplicación y del instalador/portable revisando dependencias y recursos empaquetados (`tesseract.js`, `vendor-win/python`, `asar`).
+
+---
+
+## ⭐ Prioridad 5: Lista de deseos para v2
+
+- [ ] **Revisar OCR**
+  - Afinar la precisión visual y la selección de texto tras aplicar OCR en documentos escaneados.
 - [ ] **Edición directa de texto en PDF (documentos normales)**
   - Hacer doble clic sobre una línea de texto para editarla encima (fondo liso/blanco), reemplazando el bloque visualmente.
 - [ ] **Edición directa de texto en PDF (avanzado, estilo Sejda)**
