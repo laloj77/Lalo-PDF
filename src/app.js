@@ -6558,8 +6558,6 @@
         }
       }
     });
-    $('#btn-undo')?.addEventListener('click', undo);
-    $('#btn-redo')?.addEventListener('click', redo);
     bindReorderableToolbars();
     updateStatus();
     updateToolbarState();
