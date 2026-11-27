@@ -586,10 +586,33 @@
     }
   }
 
+  function resolveFormFontSize(daSize, boxHeightPt) {
+    const h = Number(boxHeightPt) || 20;
+    const fallback = Math.max(8, Math.min(12, h * 0.58));
+    if (!daSize || daSize <= 0 || daSize > 13 || daSize >= h * 0.68) {
+      return Number(fallback.toFixed(1));
+    }
+    return daSize;
+  }
+
   function applyFormValuesToDoc(doc) {
     if (!state.formValues || state.formValues.size === 0) return;
     try {
       const form = doc.getForm();
+      for (const field of form.getFields()) {
+        try {
+          if (typeof field.setFontSize === 'function') {
+            const da = field.acroField?.getDefaultAppearance?.() || '';
+            const m = /([\d.]+)\s+Tf/.exec(da);
+            const daSize = m ? parseFloat(m[1]) : 0;
+            const widgets = field.acroField?.getWidgets?.() || [];
+            const boxH = widgets[0]?.getRectangle?.()?.height || 20;
+            field.setFontSize(resolveFormFontSize(daSize, boxH));
+          }
+        } catch {
+          /* ignore appearance resize errors */
+        }
+      }
       for (const [name, val] of state.formValues.entries()) {
         try {
           const field = form.getField(name);
@@ -1955,6 +1978,12 @@
             const width = Math.max(8, Math.abs(vx2 - vx1));
             const height = Math.max(8, Math.abs(vy2 - vy1));
             const name = ann.fieldName || ann.id;
+            const rectHeightPt = Math.abs(ann.rect[3] - ann.rect[1]) || 20;
+            const daFontSize = Number(ann.defaultAppearanceData?.fontSize) || 0;
+            const fieldFontPx = Math.max(
+              8,
+              resolveFormFontSize(daFontSize, rectHeightPt) * viewport.scale,
+            );
 
             let input = null;
             if (ann.fieldType === 'Tx') {
@@ -1964,7 +1993,7 @@
               input.value = state.formValues.has(name)
                 ? state.formValues.get(name)
                 : ann.fieldValue || '';
-              input.style.fontSize = `${Math.max(9, Math.min(18, height * 0.65))}px`;
+              input.style.fontSize = `${fieldFontPx}px`;
               input.addEventListener('input', () => {
                 state.formValues.set(name, input.value);
                 setDirty(true);
@@ -1995,7 +2024,7 @@
                   ? ann.fieldValue[0]
                   : ann.fieldValue || '';
               if (curVal) input.value = curVal;
-              input.style.fontSize = `${Math.max(9, Math.min(16, height * 0.62))}px`;
+              input.style.fontSize = `${fieldFontPx}px`;
               input.addEventListener('change', () => {
                 state.formValues.set(name, input.value);
                 setDirty(true);
