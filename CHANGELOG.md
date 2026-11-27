@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.7.2] - 2026-11-27
+
+### Corregido
+
+- **Scroll horizontal y alineación al hacer zoom:** en vista inicial o tras reducir con `-`, la barra horizontal desaparece automáticamente (`zoomOut` vuelve a *Ajustar* al llegar al ajuste inicial); al ampliar con zoom, `#viewer` usa `align-items: safe center` y escala de forma coherente las páginas más anchas para evitar huecos negros excesivos a la derecha.
+
 ## [0.7.1] - 2026-11-27
 
 ### Corregido
