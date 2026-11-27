@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.9.0] - 2026-11-27
+
+### Mejorado
+
+- **Roadmap:** añadidos los 3 puntos de optimización (rendimiento/memoria, modularización de `src/app.js` y tamaño en disco) en *Prioridad 4*, y marcados como completados *Comparar dos PDFs* y *Certificado / Firma digital criptográfica (`.pfx` / `.p12`)*.
+
+### Corregido
+
+- Restaurado el arrastre de la ventana desde la barra superior (evitando que los contenedores `.tb-left`, `.tb-center` y `.tb-right` bloqueen el movimiento de la ventana).
+
 ## [0.8.9] - 2026-11-27
 
 ### Añadido
