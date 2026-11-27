@@ -55,6 +55,7 @@
     strokeWidth: 3,
     fontSize: 14,
     annotations: new Map(),
+    formValues: new Map(),
     selection: null,
     textEdit: null,
     history: [],
@@ -525,6 +526,7 @@
       state.sources.clear();
       state.pages = [];
       state.annotations = new Map();
+      state.formValues = new Map();
       state.selected.clear();
       state.history = [];
       state.future = [];
@@ -1071,6 +1073,29 @@
           documentAssembly: !!sec.modifying,
         },
       });
+    }
+    if (state.formValues && state.formValues.size > 0) {
+      try {
+        const form = doc.getForm();
+        for (const [name, val] of state.formValues.entries()) {
+          try {
+            const field = form.getField(name);
+            if (typeof val === 'boolean') {
+              if (val) field.check();
+              else field.uncheck();
+            } else if (field.setText) {
+              field.setText(String(val ?? ''));
+            } else if (field.select) {
+              field.select(String(val ?? ''));
+            }
+          } catch {
+            /* skip missing or incompatible field */
+          }
+        }
+        form.flatten();
+      } catch {
+        /* ignore if document has no AcroForm */
+      }
     }
     return doc.save({ useObjectStreams: false });
   }
@@ -1881,11 +1906,14 @@
     const imageLayer = document.createElement('div');
     imageLayer.className = 'page-image-layer';
 
+    const formLayer = document.createElement('div');
+    formLayer.className = 'form-layer';
+
     const badge = document.createElement('span');
     badge.className = 'page-badge';
     badge.textContent = String(index + 1);
 
-    wrapper.append(canvas, overlay, textLayer, imageLayer, badge);
+    wrapper.append(canvas, overlay, textLayer, imageLayer, formLayer, badge);
 
     let rendered = false;
     let rendering = false;
@@ -1911,6 +1939,74 @@
           viewport,
           textDivs: [],
         }).promise;
+        formLayer.innerHTML = '';
+        try {
+          const anns = await page.getAnnotations();
+          for (const ann of anns) {
+            if (ann.subtype !== 'Widget' || !ann.rect) continue;
+            const [vx1, vy1, vx2, vy2] = viewport.convertToViewportRectangle(ann.rect);
+            const left = Math.min(vx1, vx2);
+            const top = Math.min(vy1, vy2);
+            const width = Math.max(8, Math.abs(vx2 - vx1));
+            const height = Math.max(8, Math.abs(vy2 - vy1));
+            const name = ann.fieldName || ann.id;
+
+            let input = null;
+            if (ann.fieldType === 'Tx') {
+              input = document.createElement(ann.multiLine ? 'textarea' : 'input');
+              if (!ann.multiLine) input.type = 'text';
+              input.className = 'form-field';
+              input.value = state.formValues.has(name)
+                ? state.formValues.get(name)
+                : ann.fieldValue || '';
+              input.style.fontSize = `${Math.max(9, Math.min(18, height * 0.65))}px`;
+              input.addEventListener('input', () => {
+                state.formValues.set(name, input.value);
+                setDirty(true);
+              });
+            } else if (ann.fieldType === 'Btn' && ann.checkBox) {
+              input = document.createElement('input');
+              input.type = 'checkbox';
+              input.className = 'form-field form-field-check';
+              input.checked = state.formValues.has(name)
+                ? Boolean(state.formValues.get(name))
+                : Boolean(ann.fieldValue && ann.fieldValue !== 'Off');
+              input.addEventListener('change', () => {
+                state.formValues.set(name, input.checked);
+                setDirty(true);
+              });
+            } else if (ann.fieldType === 'Ch' && Array.isArray(ann.options)) {
+              input = document.createElement('select');
+              input.className = 'form-field';
+              for (const opt of ann.options) {
+                const o = document.createElement('option');
+                o.value = opt.exportValue ?? opt.displayValue ?? '';
+                o.textContent = opt.displayValue ?? opt.exportValue ?? '';
+                input.appendChild(o);
+              }
+              const curVal = state.formValues.has(name)
+                ? state.formValues.get(name)
+                : Array.isArray(ann.fieldValue)
+                  ? ann.fieldValue[0]
+                  : ann.fieldValue || '';
+              if (curVal) input.value = curVal;
+              input.style.fontSize = `${Math.max(9, Math.min(16, height * 0.62))}px`;
+              input.addEventListener('change', () => {
+                state.formValues.set(name, input.value);
+                setDirty(true);
+              });
+            }
+            if (input) {
+              input.style.left = `${left}px`;
+              input.style.top = `${top}px`;
+              input.style.width = `${width}px`;
+              input.style.height = `${height}px`;
+              formLayer.appendChild(input);
+            }
+          }
+        } catch {
+          /* ignore form widget errors */
+        }
         imageLayer.innerHTML = '';
         try {
           const opList = await page.getOperatorList();

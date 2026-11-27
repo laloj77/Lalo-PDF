@@ -2565,3 +2565,38 @@ body.theme-transitioning * {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* ------------------------------------------------------------------ AcroForms layer */
+
+.form-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.form-field {
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+  border: 1px solid rgba(10, 132, 255, 0.45);
+  background: rgba(10, 132, 255, 0.06);
+  color: #111;
+  font-family: Helvetica, Arial, sans-serif;
+  padding: 1px 4px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.form-field:focus {
+  border-color: #0a84ff;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25);
+}
+
+.form-field-check {
+  padding: 0;
+  margin: 0;
+  accent-color: #0a84ff;
+  cursor: pointer;
+}
