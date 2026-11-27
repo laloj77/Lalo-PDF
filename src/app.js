@@ -6356,7 +6356,6 @@
     $('#dsign-cert-name').textContent = 'Ninguno seleccionado';
     $('#dsign-password').value = '';
     $('#dsign-reason').value = '';
-    $('#dsign-location').value = '';
     const err = $('#dsign-error');
     if (err) {
       err.textContent = '';
@@ -6403,7 +6402,6 @@
           certPath: dsignCertPath,
           password: $('#dsign-password').value,
           reason: $('#dsign-reason').value.trim(),
-          location: $('#dsign-location').value.trim(),
           defaultName: `${base}_firmado.pdf`,
         });
         if (res?.canceled) return;
