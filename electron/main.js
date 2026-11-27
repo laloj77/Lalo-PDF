@@ -1461,6 +1461,12 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
 
+  const sendUpdateProgress = (payload) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('app:update-progress', payload);
+    }
+  };
+
   autoUpdater.on('update-available', async (info) => {
     if (!mainWindow || mainWindow.isDestroyed()) return;
     const { response } = await dialog.showMessageBox(mainWindow, {
@@ -1474,17 +1480,35 @@ function setupAutoUpdater() {
         'Al pulsar "Actualizar ahora", se descargará la nueva versión, se cerrará la app y se instalará automáticamente manteniendo tu configuración.',
     });
     if (response === 0) {
-      autoUpdater.downloadUpdate().catch(() => {});
+      sendUpdateProgress({ status: 'downloading', percent: 0, version: info.version });
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(0.02);
+      autoUpdater.downloadUpdate().catch(() => {
+        sendUpdateProgress({ status: 'error' });
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1);
+      });
+    }
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    const pct = Math.max(0, Math.min(100, Math.round(progress?.percent || 0)));
+    sendUpdateProgress({ status: 'downloading', percent: pct });
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setProgressBar(Math.max(0.02, pct / 100));
     }
   });
 
   autoUpdater.on('update-downloaded', () => {
+    sendUpdateProgress({ status: 'downloaded', percent: 100 });
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1);
     forceCloseConfirmed = true;
-    autoUpdater.quitAndInstall(true, true);
+    setTimeout(() => {
+      autoUpdater.quitAndInstall(true, true);
+    }, 600);
   });
 
   autoUpdater.on('error', () => {
-    /* ignore background update check errors */
+    sendUpdateProgress({ status: 'error' });
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.setProgressBar(-1);
   });
 
   setTimeout(() => {

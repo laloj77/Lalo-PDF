@@ -62,5 +62,10 @@ contextBridge.exposeInMainWorld('lalo', {
   openExternal: (url) => ipcRenderer.invoke('app:open-external', url),
   checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
   getLatestVersion: () => ipcRenderer.invoke('app:get-latest-version'),
+  onUpdateProgress: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('app:update-progress', listener);
+    return () => ipcRenderer.removeListener('app:update-progress', listener);
+  },
   setTheme: (theme) => ipcRenderer.invoke('app:set-theme', theme),
 });

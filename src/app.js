@@ -6938,6 +6938,25 @@
 
     updateDot?.addEventListener('click', () => checkLatestVersion(true));
 
+    const updWrap = $('#update-progress-wrap');
+    const updLabel = $('#update-progress-label');
+    const updFill = $('#update-progress-fill');
+    if (updWrap && window.lalo?.onUpdateProgress) {
+      window.lalo.onUpdateProgress((p) => {
+        if (!p || p.status === 'error') {
+          updWrap.hidden = true;
+          return;
+        }
+        updWrap.hidden = false;
+        const pct = Math.max(0, Math.min(100, Number(p.percent) || 0));
+        if (updFill) updFill.style.width = `${pct}%`;
+        if (updLabel) {
+          updLabel.textContent =
+            p.status === 'downloaded' ? 'Instalando…' : `Actualizando… ${pct}%`;
+        }
+      });
+    }
+
     if (versionEl && window.lalo?.appInfo) {
       window.lalo
         .appInfo()

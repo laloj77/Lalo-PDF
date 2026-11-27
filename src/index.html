@@ -496,6 +496,12 @@
           Ir a pág. <input id="page-jump" type="number" min="1" value="1" aria-label="Ir a página" />
         </span>
         <span id="status-right"></span>
+        <div id="update-progress-wrap" class="update-progress-wrap" hidden>
+          <span id="update-progress-label" class="update-progress-label">Actualizando…</span>
+          <div class="update-progress-track">
+            <div id="update-progress-fill" class="update-progress-fill"></div>
+          </div>
+        </div>
         <div class="status-version-group">
           <button type="button" id="btn-check-update" class="update-icon-btn" title="Comprobar actualizaciones" aria-label="Comprobar actualizaciones">
             <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><polyline points="21 3 21 9 15 9" /></svg>

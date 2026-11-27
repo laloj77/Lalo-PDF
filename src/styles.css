@@ -2605,3 +2605,36 @@ body.theme-transitioning * {
   accent-color: #0a84ff;
   cursor: pointer;
 }
+
+.update-progress-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 10px;
+}
+
+.update-progress-wrap[hidden] {
+  display: none;
+}
+
+.update-progress-label {
+  font-size: 11px;
+  color: var(--text-muted, #9aa0a6);
+  white-space: nowrap;
+}
+
+.update-progress-track {
+  width: 96px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(128, 128, 128, 0.25);
+  overflow: hidden;
+}
+
+.update-progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent, #0a84ff);
+  transition: width 180ms ease;
+}
