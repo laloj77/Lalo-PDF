@@ -198,24 +198,19 @@
         <span class="tb-sep" aria-hidden="true"></span>
 
         <div class="tb-group tb-center">
-          <button id="btn-split-pdf" class="pill-btn" title="Dividir PDF en varios archivos">
-            <span>Dividir</span>
-          </button>
-          <button id="btn-compress-pdf" class="pill-btn" title="Comprimir imágenes del PDF">
-            <span>Comprimir</span>
-          </button>
-          <button id="btn-crop-pages" class="pill-btn" title="Recortar márgenes o ajustar a A4">
-            <span>Recortar</span>
-          </button>
-          <button id="btn-compare" class="pill-btn" title="Comparar con otro PDF">
-            <span>Comparar</span>
-          </button>
-          <button id="btn-ocr" class="pill-btn" title="Reconocimiento de texto (OCR)">
-            <span>OCR</span>
-          </button>
-          <button id="btn-sign-digital" class="pill-btn" title="Firmar digitalmente con certificado (.pfx / .p12)">
-            <span>Firmar (.pfx)</span>
-          </button>
+          <div id="tools-menu-wrap" class="tools-menu-wrap">
+            <button id="btn-tools" class="pill-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Herramientas de PDF">
+              <span>Herramientas ▾</span>
+            </button>
+            <div id="tools-menu" class="tools-menu" role="menu" hidden>
+              <button id="btn-split-pdf" class="tools-menu-item" type="button" role="menuitem" title="Dividir PDF en varios archivos">Dividir</button>
+              <button id="btn-compress-pdf" class="tools-menu-item" type="button" role="menuitem" title="Comprimir imágenes del PDF">Comprimir</button>
+              <button id="btn-crop-pages" class="tools-menu-item" type="button" role="menuitem" title="Recortar márgenes o ajustar a A4">Recortar</button>
+              <button id="btn-compare" class="tools-menu-item" type="button" role="menuitem" title="Comparar con otro PDF">Comparar</button>
+              <button id="btn-ocr" class="tools-menu-item" type="button" role="menuitem" title="Reconocimiento de texto (OCR)">OCR</button>
+              <button id="btn-sign-digital" class="tools-menu-item" type="button" role="menuitem" title="Firmar digitalmente con certificado (.pfx / .p12)">Firmar (.pfx)</button>
+            </div>
+          </div>
         </div>
 
         <span class="tb-sep" aria-hidden="true"></span>

@@ -2782,3 +2782,40 @@ body.platform-darwin .compare-head {
 .compare-text del { background: rgba(230, 40, 40, 0.22); color: #ff6b6b; text-decoration: line-through; border-radius: 3px; padding: 0 2px; }
 .compare-text ins { background: rgba(30, 160, 60, 0.22); color: #34c759; text-decoration: none; border-radius: 3px; padding: 0 2px; }
 .compare-same { color: var(--text-2); }
+
+/* ----------------------------------------------------------- tools menu */
+.tools-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  -webkit-app-region: no-drag;
+}
+.tools-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 170px;
+  padding: 5px;
+  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--sep);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 80;
+}
+.tools-menu-item {
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tools-menu-item:hover {
+  background: var(--hover);
+}
