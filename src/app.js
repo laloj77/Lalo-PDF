@@ -1595,9 +1595,14 @@
       }
       const page = await pdf.getPage(index + 1);
       let pageScale = scale;
-      if (state.zoomMode === 'fit' && state.viewMode !== 'two') {
+      if (state.viewMode !== 'two') {
         const p1 = page.getViewport({ scale: 1 });
-        pageScale = Math.min(scale, availW / p1.width);
+        if (state.zoomMode === 'fit') {
+          pageScale = Math.min(scale, availW / p1.width);
+        } else if (state.lastFitScale > 0) {
+          const maxCoherentW = availW * Math.max(1, scale / state.lastFitScale);
+          pageScale = Math.min(scale, maxCoherentW / p1.width);
+        }
       }
       const viewport = page.getViewport({ scale: pageScale });
       maxRenderedWidth = Math.max(maxRenderedWidth, viewport.width);
