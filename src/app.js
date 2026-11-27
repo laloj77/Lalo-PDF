@@ -224,7 +224,18 @@
     el.btnMarkup.classList.toggle('active', state.markupOpen);
     el.btnSearch.classList.toggle('active', !el.searchPanel.hidden);
     if (el.btnProtect) el.btnProtect.classList.toggle('is-protected', !!state.security);
-    el.markupBar.hidden = !state.markupOpen;
+    if (state.markupOpen) {
+      el.markupBar.classList.remove('closing');
+      el.markupBar.hidden = false;
+    } else if (!el.markupBar.hidden && !el.markupBar.classList.contains('closing')) {
+      el.markupBar.classList.add('closing');
+      setTimeout(() => {
+        if (!state.markupOpen) {
+          el.markupBar.hidden = true;
+          el.markupBar.classList.remove('closing');
+        }
+      }, 210);
+    }
     el.viewer.classList.toggle('markup-open', state.markupOpen);
     el.viewer.classList.toggle('tool-active', state.markupOpen && state.tool !== 'select');
     el.viewer.classList.toggle('eraser', state.markupOpen && state.tool === 'eraser');
