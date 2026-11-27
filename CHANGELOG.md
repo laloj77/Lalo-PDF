@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.9] - 2026-11-26
+
+### Cambiado
+
+- **Barra de marcado (`#markup-bar`):** acoplada justo debajo de la barra superior (`top: 0`) con animación deslizante suave (`0.36s`) tanto al aparecer como al ocultarse.
+
 ## [0.6.8] - 2026-11-26
 
 ### Añadido
