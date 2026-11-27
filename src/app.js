@@ -7179,6 +7179,7 @@
     }
 
     const containers = [
+      { key: 'toolbar', el: $('#toolbar') },
       { key: 'tb-left', el: $('#toolbar .tb-left') },
       { key: 'tb-center', el: $('#toolbar .tb-center') },
       { key: 'tb-right', el: $('#toolbar .tb-right') },
@@ -7186,6 +7187,7 @@
     ];
 
     const getItemId = (node) => {
+      if (node.classList.contains('app-brand')) return null;
       if (node.dataset.sepId) return node.dataset.sepId;
       if (node.id) return node.id;
       const childWithId = node.querySelector('[id]');
