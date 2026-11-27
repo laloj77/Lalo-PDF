@@ -16,8 +16,8 @@ contextBridge.exposeInMainWorld('lalo', {
   cancelDrag: () => ipcRenderer.invoke('drag:disarm'),
   exportImages: (baseName, images, startFolder) =>
     ipcRenderer.invoke('dialog:export-images', { baseName, images, startFolder }),
-  exportWord: (baseName, pages) =>
-    ipcRenderer.invoke('dialog:export-word', { baseName, pages }),
+  exportWord: (baseName, pages, pdfBytes) =>
+    ipcRenderer.invoke('dialog:export-word', { baseName, pages, pdfBytes }),
   splitPdf: (files, startFolder) =>
     ipcRenderer.invoke('dialog:split-pdf', { files, startFolder }),
   saveSignature: (bytes, defaultName) =>

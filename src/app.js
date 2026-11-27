@@ -1374,7 +1374,8 @@
         await pdf.destroy();
       }
       const name = (state.fileName || 'Documento').replace(/\.pdf$/i, '');
-      const result = await window.lalo.exportWord(name, pages);
+      const pdfBytes = await composeBytes(state.pages, { editableAnnotations: false });
+      const result = await window.lalo.exportWord(name, pages, pdfBytes);
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
       toast(`Word guardado: ${result.name}`);

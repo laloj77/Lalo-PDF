@@ -25,6 +25,19 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      - name: Preparar Python embebido + pdf2docx
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path vendor-win/python | Out-Null
+          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip" -OutFile "vendor-win/python.zip"
+          Expand-Archive -Path "vendor-win/python.zip" -DestinationPath "vendor-win/python" -Force
+          Remove-Item "vendor-win/python.zip"
+          (Get-Content "vendor-win/python/python311._pth") -replace '#import site', 'import site' | Set-Content "vendor-win/python/python311._pth"
+          Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile "vendor-win/get-pip.py"
+          & "vendor-win/python/python.exe" "vendor-win/get-pip.py" --no-warn-script-location
+          Remove-Item "vendor-win/get-pip.py"
+          & "vendor-win/python/python.exe" -m pip install --no-warn-script-location pdf2docx
+
       - name: Compilar instalador y portable
         run: npm run dist:win -- --publish never
 

@@ -48,6 +48,13 @@
       "src/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "vendor-win/python",
+        "to": "python",
+        "filter": ["**/*"]
+      }
+    ],
     "asar": true,
     "npmRebuild": false,
     "publish": [

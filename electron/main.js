@@ -753,7 +753,7 @@ function registerIpc() {
     }
   });
 
-  ipcMain.handle('dialog:export-word', async (_event, { baseName, pages }) => {
+  ipcMain.handle('dialog:export-word', async (_event, { baseName, pages, pdfBytes } = {}) => {
     try {
       if (!Array.isArray(pages) || !pages.length) {
         return { canceled: false, error: 'No hay páginas que exportar.' };
@@ -773,6 +773,42 @@ function registerIpc() {
       const target = /\.docx$/i.test(result.filePath)
         ? result.filePath
         : `${result.filePath}.docx`;
+
+      if (pdfBytes && pdfBytes.length) {
+        const { execFile } = require('node:child_process');
+        const candidates = [
+          path.join(process.resourcesPath || '', 'python', 'python.exe'),
+          path.join(__dirname, '..', 'vendor-win', 'python', 'python.exe'),
+          'python',
+          'python3',
+        ];
+        const tmpPdf = path.join(app.getPath('temp'), `lalo-docx-${Date.now()}.pdf`);
+        try {
+          await fs.writeFile(tmpPdf, Buffer.from(pdfBytes));
+          for (const py of candidates) {
+            if (!py) continue;
+            if (path.isAbsolute(py) && !fsSync.existsSync(py)) continue;
+            const ok = await new Promise((resolve) => {
+              execFile(
+                py,
+                [
+                  '-c',
+                  'import sys; from pdf2docx import Converter; cv = Converter(sys.argv[1]); cv.convert(sys.argv[2]); cv.close()',
+                  tmpPdf,
+                  target,
+                ],
+                { windowsHide: true, timeout: 120000 },
+                (err) => resolve(!err),
+              );
+            });
+            if (ok) {
+              return { canceled: false, filePath: target, engine: 'pdf2docx' };
+            }
+          }
+        } finally {
+          await fs.rm(tmpPdf, { force: true }).catch(() => {});
+        }
+      }
 
       const { Document, Packer, Paragraph, TextRun, ImageRun, PageBreak } = require('docx');
       const children = [];
