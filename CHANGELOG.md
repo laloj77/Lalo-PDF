@@ -7,6 +7,18 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.0] - 2026-11-27
+
+### Añadido
+
+- **Clonado fiel PDF → Word (`.docx`) con motor externo (`pdf2docx`):** integración de Python embebido (`vendor-win/python`) + `pdf2docx` en el instalador/portable de Windows (y detección automática de Python local en desarrollo) para reconstruir tablas, columnas, imágenes y diseño al exportar a Word, con respaldo automático al motor básico (`docx`) y aviso del motor usado en el toast.
+- **Post-procesado de maquetación en `.docx` (`python-docx`):** compactación de márgenes superior/inferior y espaciado de párrafos para reducir saltos de página, y conversión automática de índices con líneas de puntos en tabulaciones alineadas a la derecha con relleno de puntos (`WD_TAB_LEADER.DOTS`).
+
+### Corregido
+
+- **Exportación de formularios rellenos (AcroForms):** aplanado de campos sobre el documento origen antes de `copyPages` para que los valores introducidos no se pierdan al exportar a PDF o Word, y normalización de tamaños de fuente desproporcionados en `/DA` tanto al aplanar como en el visor.
+- **Menú de exportación y compatibilidad con Python en Windows:** corregido el recorte de `#export-menu` en `#right-rail` (`overflow: visible`) y ejecución mediante script temporal `.py` compatible con Python de Microsoft Store y lanzador `py -3`.
+
 ## [0.7.3] - 2026-11-27
 
 ### Añadido

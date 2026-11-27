@@ -76,8 +76,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🟣 Prioridad 4: Al final del proyecto
 
-- [ ] **Clonado fiel PDF → Word (`.docx`) con motor externo**
-  - Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.
+- [x] ~~**Clonado fiel PDF → Word (`.docx`) con motor externo**~~
+  - ~~Integrar un motor externo en la app (como **LibreOffice** o **Python `pdf2docx`**) para reconstruir tablas, columnas y diseño exacto al exportar a `.docx`.~~
 - [x] ~~**OCR para documentos escaneados**~~
   - ~~Reconocimiento óptico de caracteres para generar una capa de texto invisible que permita seleccionar, copiar y buscar texto en PDFs escaneados.~~
 - [x] ~~**Actualizador automático desde GitHub Releases**~~
