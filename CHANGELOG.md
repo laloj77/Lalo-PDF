@@ -7,6 +7,14 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.6] - 2026-11-27
+
+### Mejorado
+
+- **Icono y marca en la interfaz:**
+  - Refinado el icono principal ([build/icon.png](file:///home/antigravity/laloj77/Lalo-PDF/build/icon.png), [build/icon.ico](file:///home/antigravity/laloj77/Lalo-PDF/build/icon.ico) y [src/icon.png](file:///home/antigravity/laloj77/Lalo-PDF/src/icon.png)) haciendo el lado derecho de la hoja más translúcido para que la `L` destaque con claridad.
+  - Añadido el icono (`28×28 px`) y el nombre **Lalo PDF** en la esquina superior izquierda de la barra de herramientas, siempre visible.
+
 ## [0.8.5] - 2026-11-27
 
 ### Cambiado
