@@ -1310,6 +1310,20 @@ function registerIpc() {
       return { ok: false, error: error.message };
     }
   });
+
+  ipcMain.handle('app:set-theme', (_event, theme) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return false;
+    const dark = theme === 'dark';
+    if (process.platform === 'win32') {
+      mainWindow.setTitleBarOverlay({
+        color: dark ? TITLEBAR_DARK : '#f2f2f4',
+        symbolColor: dark ? '#f5f5f7' : '#1d1d1f',
+        height: 40,
+      });
+    }
+    mainWindow.setBackgroundColor(dark ? TITLEBAR_DARK : '#f2f2f4');
+    return true;
+  });
 }
 
 function setupAutoUpdater() {

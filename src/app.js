@@ -6437,6 +6437,7 @@
       document.documentElement.setAttribute('data-theme', theme);
       lightBtn?.classList.toggle('active', theme === 'light');
       darkBtn?.classList.toggle('active', theme === 'dark');
+      window.lalo?.setTheme?.(theme);
     };
 
     applyTheme(getEffectiveTheme(), false);
