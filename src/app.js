@@ -1527,8 +1527,7 @@
     }
   }
 
-  function computeScale(baseViewport, count) {
-    if (state.zoomMode === 'custom') return clamp(state.scale, 0.1, 8);
+  function computeFitScale(baseViewport, count) {
     const availWidth = Math.max(180, el.viewer.clientWidth - 76);
     const availHeight = Math.max(180, el.viewer.clientHeight - 56);
     const twoUp = state.viewMode === 'two' && count > 1;
@@ -1536,6 +1535,11 @@
     const heightScale = availHeight / baseViewport.height;
     const scale = state.viewMode === 'continuous' ? widthScale : Math.min(widthScale, heightScale);
     return clamp(scale, 0.1, 8);
+  }
+
+  function computeScale(baseViewport, count) {
+    if (state.zoomMode === 'custom') return clamp(state.scale, 0.1, 8);
+    return computeFitScale(baseViewport, count);
   }
 
   async function renderViewer({
@@ -1560,13 +1564,10 @@
     }
     if (!indices.length) return;
 
-    const allowX = state.zoomMode === 'custom' || state.viewMode === 'two';
-    el.viewer.classList.toggle('allow-x-scroll', allowX);
-    if (!allowX) el.viewer.scrollLeft = 0;
-
     const firstPage = await pdf.getPage(indices[0] + 1);
     if (token !== state.renderToken) return;
     const baseViewport = firstPage.getViewport({ scale: 1 });
+    state.lastFitScale = computeFitScale(baseViewport, indices.length);
     const scale = computeScale(baseViewport, indices.length);
     state.currentScale = scale;
     const availW = Math.max(180, el.viewer.clientWidth - 76);
@@ -1586,6 +1587,7 @@
     state.observer = observer;
 
     let spread = null;
+    let maxRenderedWidth = 0;
     for (const index of indices) {
       if (token !== state.renderToken) {
         observer.disconnect();
@@ -1598,6 +1600,7 @@
         pageScale = Math.min(scale, availW / p1.width);
       }
       const viewport = page.getViewport({ scale: pageScale });
+      maxRenderedWidth = Math.max(maxRenderedWidth, viewport.width);
       const pageEl = buildPageElement(index, page, viewport, pageScale, dpr);
       if (state.viewMode === 'two' && indices.length > 1) {
         if (!spread) {
@@ -1611,6 +1614,13 @@
       }
       observer.observe(pageEl);
     }
+
+    const twoUpWidth = spread ? spread.scrollWidth : maxRenderedWidth;
+    const needX =
+      (state.zoomMode === 'custom' && maxRenderedWidth > el.viewer.clientWidth - 8) ||
+      (state.viewMode === 'two' && twoUpWidth > el.viewer.clientWidth - 8);
+    el.viewer.classList.toggle('allow-x-scroll', needX);
+    if (!needX) el.viewer.scrollLeft = 0;
 
     if (state.viewMode === 'continuous' && preserveScroll && !scrollToCurrent) {
       const ratio = oldTop / Math.max(1, oldHeight);
@@ -3643,7 +3653,14 @@
   }
 
   function zoomOut() {
-    zoomTo((state.currentScale || 1) / 1.25);
+    const cur = state.currentScale || 1;
+    const next = cur / 1.25;
+    const fit = state.lastFitScale;
+    if (fit && cur > fit * 1.02 && next <= fit * 1.03) {
+      fitWidth();
+      return;
+    }
+    zoomTo(next);
   }
 
   function zoomReset() {
