@@ -101,8 +101,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Parsear y reescribir el *content stream* (`BT ... ET`) con `pdf-lib` para eliminar el texto original sin tapar fondos de color, tablas ni imágenes.
 - [x] ~~**Recortar páginas (Crop) y normalizar tamaño**~~
   - ~~Recortar márgenes de una o todas las páginas (útil en PDFs escaneados o tickets) y ajustar/normalizar páginas a A4.~~
-- [x] **Comparar dos PDFs**
-  - Abrir dos versiones de un documento y resaltar diferencias visuales o de texto página a página.
+- [x] ~~**Comparar dos PDFs**~~
+  - ~~Abrir dos versiones de un documento y resaltar diferencias visuales o de texto página a página.~~
 - [x] ~~**Certificado / Firma digital criptográfica (`.pfx` / `.p12`)**~~
   - ~~Firmar documentos con certificado digital (distinto a la firma manuscrita visual) con validez criptográfica.~~
 
