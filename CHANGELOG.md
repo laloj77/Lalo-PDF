@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.4] - 2026-11-27
+
+### Corregido
+
+- **Abrir PDFs en nueva pestaña al hacer doble clic:** corregida la llamada a [`createNewTab()`](file:///home/antigravity/laloj77/Lalo-PDF/src/app.js#L6203) en el manejador `open-file` (en lugar de `newBlankTab()`), permitiendo abrir otro PDF en una pestaña nueva sin necesidad de crearla manualmente antes.
+
 ## [0.8.3] - 2026-11-27
 
 ### Mejorado
