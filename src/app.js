@@ -1560,11 +1560,16 @@
     }
     if (!indices.length) return;
 
+    const allowX = state.zoomMode === 'custom' || state.viewMode === 'two';
+    el.viewer.classList.toggle('allow-x-scroll', allowX);
+    if (!allowX) el.viewer.scrollLeft = 0;
+
     const firstPage = await pdf.getPage(indices[0] + 1);
     if (token !== state.renderToken) return;
     const baseViewport = firstPage.getViewport({ scale: 1 });
     const scale = computeScale(baseViewport, indices.length);
     state.currentScale = scale;
+    const availW = Math.max(180, el.viewer.clientWidth - 76);
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     if (state.observer) state.observer.disconnect();
@@ -1587,8 +1592,13 @@
         return;
       }
       const page = await pdf.getPage(index + 1);
-      const viewport = page.getViewport({ scale });
-      const pageEl = buildPageElement(index, page, viewport, scale, dpr);
+      let pageScale = scale;
+      if (state.zoomMode === 'fit' && state.viewMode !== 'two') {
+        const p1 = page.getViewport({ scale: 1 });
+        pageScale = Math.min(scale, availW / p1.width);
+      }
+      const viewport = page.getViewport({ scale: pageScale });
+      const pageEl = buildPageElement(index, page, viewport, pageScale, dpr);
       if (state.viewMode === 'two' && indices.length > 1) {
         if (!spread) {
           spread = document.createElement('div');
