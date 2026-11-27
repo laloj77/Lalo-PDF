@@ -89,6 +89,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [ ] **Revisar OCR**
   - Afinar la precisión visual y la selección de texto tras aplicar OCR en documentos escaneados.
+- [ ] **Optimizar tamaño en disco y ligereza**
+  - Reducir el peso de la aplicación y del instalador/portable para que ocupe menos espacio y sea más rápida de mover.
 
 ---
 
