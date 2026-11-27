@@ -30,8 +30,8 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Protección por contraseña y permisos**~~
   - ~~Abrir PDFs protegidos por contraseña.~~
   - ~~Guardar/exportar estableciendo contraseña de apertura y restricciones de edición/impresión.~~
-- [ ] **Formularios (AcroForms)**
-  - Rellenar campos de formulario interactivos y aplanarlos al guardar.
+- [x] ~~**Formularios (AcroForms)**~~
+  - ~~Rellenar campos de formulario interactivos y aplanarlos al guardar.~~
 - [x] ~~**Más formatos de exportación**~~
   - ~~Exportar contenido a texto plano (`.txt`), TIFF, JPEG (`.jpg`), PNG (`.png`) o Microsoft Word (`.docx`).~~
 

@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.7.3] - 2026-11-27
+
+### Añadido
+
+- **Formularios (AcroForms):** rellenado interactivo de campos de texto, multilínea, casillas de verificación y desplegables directamente en el visor, con aplanado automático al guardar (`form.flatten()`) y documento de ejemplo `docs/ejemplo-formulario.pdf`.
+
 ## [0.7.2] - 2026-11-27
 
 ### Corregido
