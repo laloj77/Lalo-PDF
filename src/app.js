@@ -7179,7 +7179,6 @@
     }
 
     const containers = [
-      { key: 'toolbar', el: $('#toolbar') },
       { key: 'tb-left', el: $('#toolbar .tb-left') },
       { key: 'tb-center', el: $('#toolbar .tb-center') },
       { key: 'tb-right', el: $('#toolbar .tb-right') },
