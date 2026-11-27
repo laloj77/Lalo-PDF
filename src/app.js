@@ -2314,7 +2314,7 @@
     ctx.restore();
   }
 
-  function paintCompareOverlay(canvas, pageId, width, height, extra) {
+  function paintOverlay(canvas, pageId, width, height, extra) {
     const ctx = canvas.getContext('2d');
     const dpr = canvas.__dpr || 1;
     const scale = canvas.__scale || 1;
