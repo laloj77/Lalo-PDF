@@ -7,6 +7,20 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.8] - 2026-11-27
+
+### Añadido
+
+- **Comparar dos PDFs:** nuevo botón **Comparar** en la barra de herramientas para abrir un segundo PDF y compararlo con el documento actual página a página:
+  - Vista **Lado a lado** (diferencias resaltadas en rojo en A y verde en B) y vista **Superpuesto**.
+  - Panel lateral con porcentaje de píxeles distintos y diff de texto palabra a palabra (`<del>` / `<ins>`).
+  - Navegación por páginas (`←` / `→`, `Esc` para cerrar) y chips de página que marcan en rojo las páginas con diferencias de texto.
+
+### Corregido
+
+- Colisión de nombre `paintOverlay` en el visor al añadir la vista de comparación.
+- Estilos de `#compare-modal` (variables de tema, margen para controles de ventana en Windows y ancho automático en los botones de modo).
+
 ## [0.8.7] - 2026-11-27
 
 ### Añadido
