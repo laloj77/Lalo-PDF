@@ -777,21 +777,23 @@ function registerIpc() {
       if (pdfBytes && pdfBytes.length) {
         const { execFile } = require('node:child_process');
         const candidates = [
-          path.join(process.resourcesPath || '', 'python', 'python.exe'),
-          path.join(__dirname, '..', 'vendor-win', 'python', 'python.exe'),
-          'python',
-          'python3',
+          { cmd: path.join(process.resourcesPath || '', 'python', 'python.exe'), prefix: [] },
+          { cmd: path.join(__dirname, '..', 'vendor-win', 'python', 'python.exe'), prefix: [] },
+          { cmd: 'python', prefix: [] },
+          { cmd: 'py', prefix: ['-3'] },
+          { cmd: 'python3', prefix: [] },
         ];
         const tmpPdf = path.join(app.getPath('temp'), `lalo-docx-${Date.now()}.pdf`);
         try {
           await fs.writeFile(tmpPdf, Buffer.from(pdfBytes));
-          for (const py of candidates) {
-            if (!py) continue;
-            if (path.isAbsolute(py) && !fsSync.existsSync(py)) continue;
+          for (const { cmd, prefix } of candidates) {
+            if (!cmd) continue;
+            if (path.isAbsolute(cmd) && !fsSync.existsSync(cmd)) continue;
             const ok = await new Promise((resolve) => {
               execFile(
-                py,
+                cmd,
                 [
+                  ...prefix,
                   '-c',
                   'import sys; from pdf2docx import Converter; cv = Converter(sys.argv[1]); cv.convert(sys.argv[2]); cv.close()',
                   tmpPdf,
@@ -802,7 +804,12 @@ function registerIpc() {
               );
             });
             if (ok) {
-              return { canceled: false, filePath: target, engine: 'pdf2docx' };
+              return {
+                canceled: false,
+                filePath: target,
+                name: path.basename(target),
+                engine: 'pdf2docx',
+              };
             }
           }
         } finally {

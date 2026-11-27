@@ -1378,7 +1378,9 @@
       const result = await window.lalo.exportWord(name, pages, pdfBytes);
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
-      toast(`Word guardado: ${result.name}`);
+      toast(
+        `Word guardado: ${result.name || 'documento.docx'}${result.engine === 'pdf2docx' ? ' (clonado fiel)' : ' (básico)'}`,
+      );
     } catch (error) {
       showError('No se pudo exportar a Word', error);
     } finally {
