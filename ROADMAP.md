@@ -55,8 +55,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Configurar "Abrir con Lalo PDF" automáticamente en el instalador de Windows.~~
 - [ ] **Redacción real (Sanitización)**
   - Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).
-- [ ] **Modo claro para la interfaz**
-  - Añadir selector de tema claro/oscuro en la interfaz.
+- [x] ~~**Modo claro para la interfaz**~~
+  - ~~Añadir selector de tema claro/oscuro en la interfaz.~~
 - [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~
   - ~~Arrastrar un archivo PDF sobre la barra lateral de miniaturas para añadir sus páginas al documento actual.~~
 - [x] ~~**Arrastrar PDF a la pantalla central al iniciar**~~

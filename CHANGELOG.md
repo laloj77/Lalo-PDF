@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.8] - 2026-11-26
+
+### Añadido
+
+- **Selector de tema claro / oscuro en vivo:** iconos de **Sol** y **Luna** en la barra vertical derecha para cambiar entre modo claro y oscuro al instante con transición gradual (`0.28s`), persistencia en `localStorage` y actualización en vivo de la barra de título de Windows.
+
 ## [0.6.7] - 2026-11-26
 
 ### Añadido
