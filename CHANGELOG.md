@@ -7,6 +7,18 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.9] - 2026-11-27
+
+### Añadido
+
+- **Firma digital con certificado `.pfx` / `.p12`:** nueva herramienta para firmar criptográficamente el PDF con certificado personal, contraseña y motivo opcional, guardando el archivo `_firmado.pdf`.
+- **Menú desplegable Herramientas ▾:** agrupa *Dividir*, *Comprimir*, *Recortar*, *Comparar*, *OCR* y *Firmar (.pfx)* en la barra superior para evitar solapamientos.
+- **Separadores reordenables:** los separadores de las barras de herramientas ahora también se pueden arrastrar y guardar en su nueva posición.
+
+### Cambiado
+
+- Movidos **Deshacer** y **Rehacer** a la barra superior junto a **Herramientas ▾**, y eliminados de la barra lateral derecha.
+
 ## [0.8.8] - 2026-11-27
 
 ### Añadido
