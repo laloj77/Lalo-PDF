@@ -101,7 +101,7 @@ Este documento contiene la lista completa de características planificadas, prio
 ## 🐛 Errores conocidos
 
 - [ ] **Sin barra de archivo** (menú superior *Archivo / Editar / Ver…* en Windows).
-- [ ] **Actualizar no funciona**.
+- [x] ~~**Actualizar no funciona**.~~
 - [ ] **Abrir PDF por defecto:** si se asigna la app como visor predeterminado para `.pdf`, al hacer doble clic en un PDF abre el programa, pero vacío, sin el PDF.
 
 ---
