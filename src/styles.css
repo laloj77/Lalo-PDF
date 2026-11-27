@@ -17,7 +17,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --toolbar-bg: rgba(38, 38, 41, 0.86);
     --sidebar-bg: #232326;
     --viewer-bg: #171719;
@@ -33,6 +33,23 @@
     --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 36px rgba(0, 0, 0, 0.5);
     --card-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.4);
   }
+}
+
+:root[data-theme='dark'] {
+  --toolbar-bg: rgba(38, 38, 41, 0.86);
+  --sidebar-bg: #232326;
+  --viewer-bg: #171719;
+  --panel-bg: #2c2c2f;
+  --text: #f5f5f7;
+  --text-2: #a1a1a6;
+  --text-3: #8e8e93;
+  --sep: rgba(255, 255, 255, 0.12);
+  --hover: rgba(255, 255, 255, 0.08);
+  --active: rgba(255, 255, 255, 0.13);
+  --accent: #0a84ff;
+  --accent-soft: rgba(10, 132, 255, 0.24);
+  --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 36px rgba(0, 0, 0, 0.5);
+  --card-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -2497,4 +2514,13 @@ body.presentation-mode #right-rail {
 
 .status-version-btn:hover {
   background: rgba(128, 128, 128, 0.28);
+}
+
+body.theme-transitioning,
+body.theme-transitioning * {
+  transition:
+    background-color 0.28s ease,
+    color 0.28s ease,
+    border-color 0.28s ease,
+    box-shadow 0.28s ease !important;
 }

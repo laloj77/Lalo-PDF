@@ -6418,6 +6418,39 @@
     }
   }
 
+  function bindThemeSwitcher() {
+    const THEME_KEY = 'lalo-pdf-theme';
+    const lightBtn = $('#btn-theme-light');
+    const darkBtn = $('#btn-theme-dark');
+
+    const getEffectiveTheme = () => {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === 'light' || saved === 'dark') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    const applyTheme = (theme, animate = false) => {
+      if (animate) {
+        document.body.classList.add('theme-transitioning');
+        setTimeout(() => document.body.classList.remove('theme-transitioning'), 320);
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+      lightBtn?.classList.toggle('active', theme === 'light');
+      darkBtn?.classList.toggle('active', theme === 'dark');
+    };
+
+    applyTheme(getEffectiveTheme(), false);
+
+    lightBtn?.addEventListener('click', () => {
+      localStorage.setItem(THEME_KEY, 'light');
+      applyTheme('light', true);
+    });
+    darkBtn?.addEventListener('click', () => {
+      localStorage.setItem(THEME_KEY, 'dark');
+      applyTheme('dark', true);
+    });
+  }
+
   function init() {
     $('#btn-presentation')?.addEventListener('click', togglePresentation);
     $('#pres-prev')?.addEventListener('click', () => {
@@ -6572,6 +6605,7 @@
       }
     });
     bindReorderableToolbars();
+    bindThemeSwitcher();
     updateStatus();
     updateToolbarState();
     const versionEl = $('#status-version');
