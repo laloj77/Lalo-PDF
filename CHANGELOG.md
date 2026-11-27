@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.6.7] - 2026-11-26
+
+### Añadido
+
+- **Botones Deshacer y Rehacer en la barra vertical derecha:** acceso directo con iconos (`btn-rail-undo`, `btn-rail-redo`) sincronizados con el historial de cambios.
+
+### Corregido
+
+- **Estado de Rehacer (`redo`):** sincronización de `updateUndoButtons()` en `undo()`, `redo()` y `restoreSnapshot()` para que el botón se habilite correctamente tras deshacer anotaciones.
+
 ## [0.6.5] - 2026-11-26
 
 ### Cambiado
