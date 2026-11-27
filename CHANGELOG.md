@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.7.0] - 2026-11-27
+
+### Añadido
+
+- **Redacción real (Sanitización):** nueva herramienta **Redactar / Censurar** en la barra de marcado para dibujar recuadros sobre datos sensibles y botón **Aplicar redacción** que quema los recuadros negros en la página y elimina definitivamente el texto subyacente.
+
 ## [0.6.9] - 2026-11-26
 
 ### Cambiado

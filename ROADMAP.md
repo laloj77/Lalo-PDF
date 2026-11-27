@@ -53,8 +53,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - ~~Redimensionar miniaturas arrastrando el divisor de la barra lateral (renderizadas a `360 px` base para máxima nitidez) y caja `Ir a pág.` para saltar a un número de página específico.~~
 - [x] ~~**Asociación de archivos en Windows**~~
   - ~~Configurar "Abrir con Lalo PDF" automáticamente en el instalador de Windows.~~
-- [ ] **Redacción real (Sanitización)**
-  - Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).
+- [x] ~~**Redacción real (Sanitización)**~~
+  - ~~Eliminación definitiva del contenido y texto subyacente (en lugar de superponer un rectángulo negro).~~
 - [x] ~~**Modo claro para la interfaz**~~
   - ~~Añadir selector de tema claro/oscuro en la interfaz.~~
 - [x] ~~**Arrastrar PDF a las miniaturas para añadir páginas**~~

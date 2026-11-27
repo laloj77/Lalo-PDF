@@ -1,4 +1,4 @@
-# Plan de Pruebas — Lalo PDF (`v0.6.9`)
+# Plan de Pruebas — Lalo PDF (`v0.7.0`)
 
 Este documento define las pruebas obligatorias que debe ejecutar un agente (o desarrollador) en **Windows** para validar el estado de la aplicación.
 
