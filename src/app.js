@@ -263,6 +263,17 @@
     });
     const size = selected && selected.type === 'text' ? selected.size : state.fontSize;
     setFontOption(el.fontSize, size || 14);
+    const redactBtn = $('#btn-apply-redact');
+    if (redactBtn) {
+      let hasRedact = false;
+      for (const list of state.annotations.values()) {
+        if (list && list.some((a) => a.type === 'redact')) {
+          hasRedact = true;
+          break;
+        }
+      }
+      redactBtn.hidden = !hasRedact;
+    }
     updateUndoButtons();
   }
 
@@ -1949,6 +1960,13 @@
         annotation.w * width,
         annotation.h * height,
       );
+    } else if (annotation.type === 'redact') {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(annotation.x * w, annotation.y * h, annotation.w * w, annotation.h * h);
+      ctx.strokeStyle = '#ff453a';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(annotation.x * w, annotation.y * h, annotation.w * w, annotation.h * h);
     } else if (annotation.type === 'rect') {
       ctx.strokeStyle = annotation.color;
       ctx.lineWidth = thickness;
@@ -2892,7 +2910,7 @@
       let annotation;
       if (state.tool === 'highlight') {
         annotation = { ...base, type: 'highlight', x: point.nx, y: point.ny, w: 0, h: 0 };
-      } else if (state.tool === 'rect' || state.tool === 'ellipse') {
+      } else if (state.tool === 'rect' || state.tool === 'ellipse' || state.tool === 'redact') {
         annotation = { ...base, type: state.tool, x: point.nx, y: point.ny, w: 0, h: 0 };
       } else if (state.tool === 'line' || state.tool === 'arrow') {
         annotation = {
@@ -3054,6 +3072,7 @@
         ? Math.hypot(annotation.x2 - annotation.x1, annotation.y2 - annotation.y1) < 0.006
         : (annotation.type === 'highlight' ||
             annotation.type === 'rect' ||
+            annotation.type === 'redact' ||
             annotation.type === 'ellipse') &&
           (annotation.w < 0.004 || annotation.h < 0.004);
       const emptyPen = annotation.type === 'pen' && annotation.points.length < 2;
@@ -3068,7 +3087,12 @@
       setDirty(true);
 
       // Tras dibujar una forma queda seleccionada para moverla o redimensionarla.
-      if (annotation.type === 'rect' || annotation.type === 'ellipse' || isLine) {
+      if (
+        annotation.type === 'rect' ||
+        annotation.type === 'redact' ||
+        annotation.type === 'ellipse' ||
+        isLine
+      ) {
         state.selection = { pageId, id: annotation.id };
         state.tool = 'select';
         updateToolbarState();
@@ -6614,6 +6638,87 @@
         } finally {
           fixingSelection = false;
         }
+      }
+    });
+    $('#btn-apply-redact')?.addEventListener('click', async () => {
+      if (!state.pages.length || !state.pdf) return;
+      const pagesToRedact = [];
+      state.pages.forEach((p, idx) => {
+        const list = state.annotations.get(p.id) || [];
+        if (list.some((a) => a.type === 'redact')) pagesToRedact.push(idx);
+      });
+      if (!pagesToRedact.length) return;
+      setBusy(true);
+      toast('Aplicando redacción definitiva…', 2000);
+      try {
+        const doc = await buildDocument(state.pages);
+        const outDoc = await PDFDocument.create();
+        const docPages = doc.getPages();
+        for (let i = 0; i < state.pages.length; i += 1) {
+          const model = state.pages[i];
+          const list = state.annotations.get(model.id) || [];
+          const redacts = list.filter((a) => a.type === 'redact');
+          if (!redacts.length) {
+            const [copied] = await outDoc.copyPages(doc, [i]);
+            outDoc.addPage(copied);
+            continue;
+          }
+          const pdfjsPage = await state.pdf.getPage(i + 1);
+          const vp1 = pdfjsPage.getViewport({ scale: 1 });
+          const scale = 2.0;
+          const viewport = pdfjsPage.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(viewport.width));
+          canvas.height = Math.max(1, Math.round(viewport.height));
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await pdfjsPage.render({ canvasContext: ctx, viewport }).promise;
+
+          ctx.fillStyle = '#000000';
+          for (const r of redacts) {
+            ctx.fillRect(
+              r.x * canvas.width,
+              r.y * canvas.height,
+              r.w * canvas.width,
+              r.h * canvas.height,
+            );
+          }
+          const jpgBytes = await canvasToJpegBytes(canvas, 0.92);
+          const jpgImg = await outDoc.embedJpg(jpgBytes);
+          const { width: pw, height: ph } = docPages[i].getSize();
+          const outPage = outDoc.addPage([pw, ph]);
+          outPage.drawImage(jpgImg, { x: 0, y: 0, width: pw, height: ph });
+          state.annotations.set(
+            model.id,
+            list.filter((a) => a.type !== 'redact'),
+          );
+        }
+        const bytes = await outDoc.save({ useObjectStreams: false });
+        const sourceId = uid('src');
+        state.sources.set(sourceId, { name: state.fileName || 'redacted.pdf', bytes });
+        state.pages = state.pages.map((p, idx) => ({
+          id: p.id,
+          kind: 'pdf',
+          sourceId,
+          srcIndex: idx,
+          width: p.width,
+          height: p.height,
+          rotation: p.rotation,
+        }));
+        state.history = [];
+        state.future = [];
+        state.dirty = true;
+        window.lalo?.setDirtyState?.(true);
+        await refresh({ preserveScroll: true });
+        toast(
+          `Redacción aplicada en ${pagesToRedact.length} página${pagesToRedact.length === 1 ? '' : 's'}`,
+          4000,
+        );
+      } catch (err) {
+        showError('No se pudo aplicar la redacción', err);
+      } finally {
+        setBusy(false);
       }
     });
     bindReorderableToolbars();
