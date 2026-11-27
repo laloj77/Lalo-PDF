@@ -2314,7 +2314,7 @@
     ctx.restore();
   }
 
-  function paintOverlay(canvas, pageId, width, height, extra) {
+  function paintCompareOverlay(canvas, pageId, width, height, extra) {
     const ctx = canvas.getContext('2d');
     const dpr = canvas.__dpr || 1;
     const scale = canvas.__scale || 1;
@@ -6140,7 +6140,7 @@
     ctx.putImageData(img, 0, 0);
   }
 
-  function paintOverlay(target, diff) {
+  function paintCompareOverlay(target, diff) {
     target.width = diff.w;
     target.height = diff.h;
     const ctx = target.getContext('2d');
@@ -6194,7 +6194,7 @@
       paintWithDiff($('#compare-canvas-left'), ca, diff, [230, 40, 40]);
       paintWithDiff($('#compare-canvas-right'), cb, diff, [30, 160, 60]);
     } else {
-      paintOverlay($('#compare-canvas-overlay'), diff);
+      paintCompareOverlay($('#compare-canvas-overlay'), diff);
     }
 
     const [wa, wb] = await Promise.all([
