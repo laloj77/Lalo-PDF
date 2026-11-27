@@ -2446,7 +2446,7 @@ body.busy * {
   padding: 10px 6px;
   background: var(--sidebar-bg, var(--toolbar-bg));
   border-left: 1px solid var(--sep);
-  overflow-y: auto;
+  overflow: visible;
   z-index: 25;
 }
 
