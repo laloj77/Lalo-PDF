@@ -5805,6 +5805,225 @@
     runCompressPreview();
   }
 
+  let cropPreviewImage = null;
+
+  async function renderCropPreview() {
+    const canvas = $('#crop-preview');
+    if (!canvas || !state.pages.length) return;
+    const ctx = canvas.getContext('2d');
+    const model = state.pages[state.current] || state.pages[0];
+    if (!cropPreviewImage) {
+      try {
+        const page = await loadPdfJsPage(model);
+        const vp = page.getViewport({ scale: 0.4 });
+        const off = document.createElement('canvas');
+        off.width = Math.max(1, Math.round(vp.width));
+        off.height = Math.max(1, Math.round(vp.height));
+        await page.render({ canvasContext: off.getContext('2d'), viewport: vp }).promise;
+        cropPreviewImage = off;
+      } catch {
+        cropPreviewImage = null;
+      }
+    }
+    const pageW = model.width || 595.28;
+    const pageH = model.height || 841.89;
+    const maxW = 180;
+    const maxH = 210;
+    const scale = Math.min(maxW / pageW, maxH / pageH);
+    canvas.width = Math.max(40, Math.round(pageW * scale));
+    canvas.height = Math.max(40, Math.round(pageH * scale));
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (cropPreviewImage) {
+      ctx.drawImage(cropPreviewImage, 0, 0, canvas.width, canvas.height);
+    }
+
+    const mmToPt = 72 / 25.4;
+    const topPt = Math.max(0, Number($('#crop-top')?.value) || 0) * mmToPt;
+    const bottomPt = Math.max(0, Number($('#crop-bottom')?.value) || 0) * mmToPt;
+    const leftPt = Math.max(0, Number($('#crop-left')?.value) || 0) * mmToPt;
+    const rightPt = Math.max(0, Number($('#crop-right')?.value) || 0) * mmToPt;
+
+    const x = Math.min(canvas.width - 10, leftPt * scale);
+    const y = Math.min(canvas.height - 10, topPt * scale);
+    const w = Math.max(8, canvas.width - (leftPt + rightPt) * scale);
+    const h = Math.max(8, canvas.height - (topPt + bottomPt) * scale);
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.fillRect(0, 0, canvas.width, y);
+    ctx.fillRect(0, y + h, canvas.width, canvas.height - (y + h));
+    ctx.fillRect(0, y, x, h);
+    ctx.fillRect(x + w, y, canvas.width - (x + w), h);
+
+    ctx.strokeStyle = '#ff3b30';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(x + 0.5, y + 0.5, Math.max(1, w - 1), Math.max(1, h - 1));
+    ctx.setLineDash([]);
+  }
+
+  function openCropModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de recortar');
+      return;
+    }
+    cropPreviewImage = null;
+    $('#crop-top').value = '0';
+    $('#crop-bottom').value = '0';
+    $('#crop-left').value = '0';
+    $('#crop-right').value = '0';
+    $('#crop-normalize-a4').checked = false;
+    const scopeSel = $('#crop-scope');
+    if (scopeSel) {
+      scopeSel.value = state.selected.size > 0 ? 'selected' : 'all';
+    }
+    $('#crop-modal').hidden = false;
+    renderCropPreview();
+  }
+
+  async function applyCropAndNormalize() {
+    if (!state.pages.length) return;
+    const mmToPt = 72 / 25.4;
+    const topPt = Math.max(0, Number($('#crop-top')?.value) || 0) * mmToPt;
+    const bottomPt = Math.max(0, Number($('#crop-bottom')?.value) || 0) * mmToPt;
+    const leftPt = Math.max(0, Number($('#crop-left')?.value) || 0) * mmToPt;
+    const rightPt = Math.max(0, Number($('#crop-right')?.value) || 0) * mmToPt;
+    const normalizeA4 = Boolean($('#crop-normalize-a4')?.checked);
+    const scope = $('#crop-scope')?.value || 'all';
+
+    if (topPt === 0 && bottomPt === 0 && leftPt === 0 && rightPt === 0 && !normalizeA4) {
+      $('#crop-modal').hidden = true;
+      return;
+    }
+
+    const targetIndices = new Set();
+    if (scope === 'current') {
+      targetIndices.add(state.current);
+    } else if (scope === 'selected' && state.selected.size > 0) {
+      for (const id of state.selected) {
+        const idx = state.pages.findIndex((p) => p.id === id);
+        if (idx >= 0) targetIndices.add(idx);
+      }
+    } else {
+      for (let i = 0; i < state.pages.length; i += 1) targetIndices.add(i);
+    }
+    if (!targetIndices.size) targetIndices.add(state.current);
+
+    $('#crop-modal').hidden = true;
+    setBusy(true);
+    try {
+      pushHistory(true);
+      const srcDoc = await buildDocument(state.pages);
+      const outDoc = await PDFDocument.create();
+      const srcPages = srcDoc.getPages();
+      const A4_W = 595.28;
+      const A4_H = 841.89;
+
+      for (let i = 0; i < srcPages.length; i += 1) {
+        const sp = srcPages[i];
+        if (!targetIndices.has(i)) {
+          const [copied] = await outDoc.copyPages(srcDoc, [i]);
+          outDoc.addPage(copied);
+          continue;
+        }
+        const box = sp.getCropBox() || sp.getMediaBox();
+        const bx = box.x || 0;
+        const by = box.y || 0;
+        const bw = box.width;
+        const bh = box.height;
+        const cropW = Math.max(36, bw - leftPt - rightPt);
+        const cropH = Math.max(36, bh - topPt - bottomPt);
+        const cropX = Math.min(bx + bw - 36, bx + leftPt);
+        const cropY = Math.min(by + bh - 36, by + bottomPt);
+
+        if (normalizeA4) {
+          const landscape = cropW > cropH;
+          const targetW = landscape ? A4_H : A4_W;
+          const targetH = landscape ? A4_W : A4_H;
+          const embedded = await outDoc.embedPage(sp, {
+            left: cropX,
+            bottom: cropY,
+            right: cropX + cropW,
+            top: cropY + cropH,
+          });
+          const scale = Math.min(targetW / cropW, targetH / cropH);
+          const drawW = cropW * scale;
+          const drawH = cropH * scale;
+          const page = outDoc.addPage([targetW, targetH]);
+          page.drawPage(embedded, {
+            x: (targetW - drawW) / 2,
+            y: (targetH - drawH) / 2,
+            width: drawW,
+            height: drawH,
+          });
+        } else {
+          const [copied] = await outDoc.copyPages(srcDoc, [i]);
+          copied.setCropBox(cropX, cropY, cropW, cropH);
+          copied.setMediaBox(cropX, cropY, cropW, cropH);
+          outDoc.addPage(copied);
+        }
+      }
+
+      const newBytes = await outDoc.save();
+      const sourceId = uid('src');
+      const pdfDoc = await pdfjsLib.getDocument({ data: newBytes.slice() }).promise;
+      state.sources.clear();
+      state.sources.set(sourceId, {
+        id: sourceId,
+        name: state.fileName || 'Documento.pdf',
+        bytes: newBytes,
+        pdfDoc,
+      });
+
+      const newPages = [];
+      for (let i = 0; i < pdfDoc.numPages; i += 1) {
+        const p = await pdfDoc.getPage(i + 1);
+        const vp = p.getViewport({ scale: 1 });
+        newPages.push({
+          id: uid('page'),
+          kind: 'pdf',
+          sourceId,
+          srcIndex: i,
+          width: vp.width,
+          height: vp.height,
+          rotation: 0,
+        });
+      }
+      state.pages = newPages;
+      state.selected.clear();
+      state.dirty = true;
+      await refresh({ preserveScroll: true });
+      toast(
+        normalizeA4
+          ? 'Páginas recortadas y normalizadas a A4'
+          : 'Márgenes recortados correctamente',
+      );
+    } catch (error) {
+      showError('No se pudo recortar el PDF', error);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function bindCropModal() {
+    $('#btn-crop-pages')?.addEventListener('click', openCropModal);
+    const modal = $('#crop-modal');
+    if (!modal) return;
+    $('#crop-close')?.addEventListener('click', () => {
+      modal.hidden = true;
+    });
+    $('#crop-cancel')?.addEventListener('click', () => {
+      modal.hidden = true;
+    });
+    $('#crop-apply')?.addEventListener('click', applyCropAndNormalize);
+    for (const id of ['#crop-top', '#crop-bottom', '#crop-left', '#crop-right']) {
+      $(id)?.addEventListener('input', renderCropPreview);
+    }
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) modal.hidden = true;
+    });
+  }
+
   function bindCompressModal() {
     $('#btn-compress-pdf')?.addEventListener('click', openCompressModal);
     const modal = $('#compress-modal');
@@ -6782,6 +7001,7 @@
     bindWatermarkModal();
     bindPageNumbersModal();
     bindSplitModal();
+    bindCropModal();
     bindCompressModal();
     bindSidebarTabs();
     bindTabsAndRecent();

@@ -95,8 +95,8 @@ Este documento contiene la lista completa de características planificadas, prio
   - Hacer doble clic sobre una línea de texto para editarla encima (fondo liso/blanco), reemplazando el bloque visualmente.
 - [ ] **Edición directa de texto en PDF (avanzado, estilo Sejda)**
   - Parsear y reescribir el *content stream* (`BT ... ET`) con `pdf-lib` para eliminar el texto original sin tapar fondos de color, tablas ni imágenes.
-- [ ] **Recortar páginas (Crop) y normalizar tamaño**
-  - Recortar márgenes de una o todas las páginas (útil en PDFs escaneados o tickets) y ajustar/normalizar páginas a A4.
+- [x] ~~**Recortar páginas (Crop) y normalizar tamaño**~~
+  - ~~Recortar márgenes de una o todas las páginas (útil en PDFs escaneados o tickets) y ajustar/normalizar páginas a A4.~~
 - [ ] **Comparar dos PDFs**
   - Abrir dos versiones de un documento y resaltar diferencias visuales o de texto página a página.
 - [ ] **Certificado / Firma digital criptográfica (`.pfx` / `.p12`)**

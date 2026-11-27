@@ -204,6 +204,9 @@
           <button id="btn-compress-pdf" class="pill-btn" title="Comprimir imágenes del PDF">
             <span>Comprimir</span>
           </button>
+          <button id="btn-crop-pages" class="pill-btn" title="Recortar márgenes o ajustar a A4">
+            <span>Recortar</span>
+          </button>
           <button id="btn-ocr" class="pill-btn" title="Reconocimiento de texto (OCR)">
             <span>OCR</span>
           </button>
@@ -800,6 +803,56 @@
           <button type="submit" class="primary-btn">Dividir</button>
         </div>
       </form>
+    </div>
+
+    <div id="crop-modal" class="modal-backdrop" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="crop-title" style="max-width: 440px;">
+        <div class="modal-head">
+          <h2 id="crop-title">Recortar y normalizar páginas</h2>
+          <button id="crop-close" class="icon-btn" type="button" title="Cerrar">
+            <svg><use href="#i-close" /></svg>
+          </button>
+        </div>
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: center; background: rgba(0,0,0,0.22); border-radius: 8px; padding: 10px;">
+            <canvas id="crop-preview" width="180" height="240" style="max-width: 100%; max-height: 210px; border-radius: 4px; background: #fff;"></canvas>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span>Superior (mm)</span>
+              <input id="crop-top" type="number" min="0" max="150" step="1" value="0" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span>Inferior (mm)</span>
+              <input id="crop-bottom" type="number" min="0" max="150" step="1" value="0" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span>Izquierdo (mm)</span>
+              <input id="crop-left" type="number" min="0" max="150" step="1" value="0" />
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+              <span>Derecho (mm)</span>
+              <input id="crop-right" type="number" min="0" max="150" step="1" value="0" />
+            </label>
+          </div>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+            <input id="crop-normalize-a4" type="checkbox" />
+            <span>Normalizar tamaño a A4 (210 × 297 mm)</span>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <span>Aplicar a</span>
+            <select id="crop-scope">
+              <option value="all">Todas las páginas</option>
+              <option value="current">Solo página actual</option>
+              <option value="selected">Páginas seleccionadas</option>
+            </select>
+          </label>
+        </div>
+        <div class="modal-foot">
+          <button id="crop-cancel" class="pill-btn" type="button">Cancelar</button>
+          <button id="crop-apply" class="pill-btn primary" type="button">Aplicar</button>
+        </div>
+      </div>
     </div>
 
     <div id="compress-modal" class="modal-backdrop" hidden>
