@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.5] - 2026-11-27
+
+### Cambiado
+
+- **Nuevo icono de la aplicación (estilo Apple):** actualizado el icono principal ([build/icon.png](file:///home/antigravity/laloj77/Lalo-PDF/build/icon.png) y [build/icon.ico](file:///home/antigravity/laloj77/Lalo-PDF/build/icon.ico)) al diseño minimalista *Monograma L en cinta* sobre fondo cerámico claro.
+
 ## [0.8.4] - 2026-11-27
 
 ### Corregido
