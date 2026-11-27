@@ -783,23 +783,28 @@ function registerIpc() {
           { cmd: 'py', prefix: ['-3'] },
           { cmd: 'python3', prefix: [] },
         ];
-        const tmpPdf = path.join(app.getPath('temp'), `lalo-docx-${Date.now()}.pdf`);
+        const stamp = Date.now();
+        const tmpPdf = path.join(app.getPath('temp'), `lalo-docx-${stamp}.pdf`);
+        const tmpPy = path.join(app.getPath('temp'), `lalo-docx-${stamp}.py`);
         try {
           await fs.writeFile(tmpPdf, Buffer.from(pdfBytes));
+          await fs.writeFile(
+            tmpPy,
+            'import sys\nfrom pdf2docx import Converter\ncv = Converter(sys.argv[1])\ncv.convert(sys.argv[2])\ncv.close()\n',
+          );
           for (const { cmd, prefix } of candidates) {
             if (!cmd) continue;
-            if (path.isAbsolute(cmd) && !fsSync.existsSync(cmd)) continue;
+            const isAbs = path.isAbsolute(cmd);
+            if (isAbs && !fsSync.existsSync(cmd)) continue;
             const ok = await new Promise((resolve) => {
               execFile(
                 cmd,
-                [
-                  ...prefix,
-                  '-c',
-                  'import sys; from pdf2docx import Converter; cv = Converter(sys.argv[1]); cv.convert(sys.argv[2]); cv.close()',
-                  tmpPdf,
-                  target,
-                ],
-                { windowsHide: true, timeout: 120000 },
+                [...prefix, tmpPy, tmpPdf, target],
+                {
+                  windowsHide: true,
+                  shell: !isAbs && process.platform === 'win32',
+                  timeout: 120000,
+                },
                 (err) => resolve(!err),
               );
             });
@@ -814,6 +819,7 @@ function registerIpc() {
           }
         } finally {
           await fs.rm(tmpPdf, { force: true }).catch(() => {});
+          await fs.rm(tmpPy, { force: true }).catch(() => {});
         }
       }
 

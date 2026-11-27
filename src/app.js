@@ -586,7 +586,32 @@
     }
   }
 
-  async function buildDocument(models = state.pages) {
+  function applyFormValuesToDoc(doc) {
+    if (!state.formValues || state.formValues.size === 0) return;
+    try {
+      const form = doc.getForm();
+      for (const [name, val] of state.formValues.entries()) {
+        try {
+          const field = form.getField(name);
+          if (typeof val === 'boolean') {
+            if (val) field.check();
+            else field.uncheck();
+          } else if (field.setText) {
+            field.setText(String(val ?? ''));
+          } else if (field.select) {
+            field.select(String(val ?? ''));
+          }
+        } catch {
+          /* skip missing or incompatible field */
+        }
+      }
+      form.flatten();
+    } catch {
+      /* ignore if document has no AcroForm */
+    }
+  }
+
+  async function buildDocument(models = state.pages, { applyForms = false } = {}) {
     const out = await PDFDocument.create();
     const cache = new Map();
     for (const model of models) {
@@ -612,6 +637,7 @@
         const loadOpts =
           source.password !== undefined ? { password: source.password } : { ignoreEncryption: true };
         sourceDoc = await PDFDocument.load(source.bytes, loadOpts);
+        if (applyForms) applyFormValuesToDoc(sourceDoc);
         cache.set(model.sourceId, sourceDoc);
       }
       const [copied] = await out.copyPages(sourceDoc, [model.srcIndex]);
@@ -952,8 +978,8 @@
     }
   }
 
-  async function composePdf(models = state.pages, { editableAnnotations = false } = {}) {
-    const doc = await buildDocument(models);
+  async function composePdf(models = state.pages, { editableAnnotations = false, applyForms = true } = {}) {
+    const doc = await buildDocument(models, { applyForms });
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const pages = doc.getPages();
     for (let i = 0; i < pages.length; i += 1) {
@@ -1073,29 +1099,6 @@
           documentAssembly: !!sec.modifying,
         },
       });
-    }
-    if (state.formValues && state.formValues.size > 0) {
-      try {
-        const form = doc.getForm();
-        for (const [name, val] of state.formValues.entries()) {
-          try {
-            const field = form.getField(name);
-            if (typeof val === 'boolean') {
-              if (val) field.check();
-              else field.uncheck();
-            } else if (field.setText) {
-              field.setText(String(val ?? ''));
-            } else if (field.select) {
-              field.select(String(val ?? ''));
-            }
-          } catch {
-            /* skip missing or incompatible field */
-          }
-        }
-        form.flatten();
-      } catch {
-        /* ignore if document has no AcroForm */
-      }
     }
     return doc.save({ useObjectStreams: false });
   }
@@ -1338,9 +1341,8 @@
     }
     setBusy(true);
     try {
-      const bytes =
-        state.workingBytes && !hasAnnotations() ? state.workingBytes : await composeBytes();
-      const pdf = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+      const pdfBytes = await composeBytes(state.pages, { editableAnnotations: false });
+      const pdf = await pdfjsLib.getDocument({ data: pdfBytes.slice() }).promise;
       const pages = [];
       try {
         for (let i = 1; i <= pdf.numPages; i += 1) {
@@ -1374,12 +1376,12 @@
         await pdf.destroy();
       }
       const name = (state.fileName || 'Documento').replace(/\.pdf$/i, '');
-      const pdfBytes = await composeBytes(state.pages, { editableAnnotations: false });
       const result = await window.lalo.exportWord(name, pages, pdfBytes);
       if (!result || result.canceled) return;
       if (result.error) throw new Error(result.error);
       toast(
         `Word guardado: ${result.name || 'documento.docx'}${result.engine === 'pdf2docx' ? ' (clonado fiel)' : ' (básico)'}`,
+        6000,
       );
     } catch (error) {
       showError('No se pudo exportar a Word', error);
