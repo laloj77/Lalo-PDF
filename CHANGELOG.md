@@ -7,6 +7,19 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.7] - 2026-11-27
+
+### Añadido
+
+- **Recortar y normalizar páginas:** nuevo botón **Recortar** en la barra de herramientas con modal que permite recortar márgenes (superior, inferior, izquierdo, derecho en mm) con vista previa, normalizar el tamaño a A4 (210 × 297 mm) y aplicarlo a todas las páginas, la actual o las seleccionadas. Compatible con deshacer.
+- **Roadmap:** añadidos *Comparar dos PDFs* y *Firma digital con certificado .pfx/.p12*.
+
+### Corregido
+
+- El modal Recortar no se mostraba al pulsar el botón (faltaban estilos de overlay).
+- Campos, desplegable y pie del modal Recortar con estilos coherentes (Cancelar a la izquierda, Aplicar a la derecha).
+- Los desplegables nativos se veían con fondo blanco y texto ilegible en tema oscuro; ahora respetan el `color-scheme` del tema.
+
 ## [0.8.6] - 2026-11-27
 
 ### Mejorado
