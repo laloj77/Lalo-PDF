@@ -2459,9 +2459,12 @@ body.busy * {
 
 .rail-sep {
   width: 24px;
-  height: 1px;
+  height: 9px;
+  padding: 4px 0;
   background: var(--sep);
-  margin: 2px 0;
+  background-clip: content-box;
+  margin: 0;
+  cursor: grab;
 }
 
 #right-rail .export-group {

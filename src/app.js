@@ -7186,6 +7186,7 @@
     ];
 
     const getItemId = (node) => {
+      if (node.dataset.sepId) return node.dataset.sepId;
       if (node.id) return node.id;
       const childWithId = node.querySelector('[id]');
       return childWithId ? `wrap:${childWithId.id}` : null;
@@ -7193,17 +7194,13 @@
 
     for (const { key, el: container } of containers) {
       if (!container) continue;
-      const items = Array.from(container.children).filter(
-        (c) => !c.classList.contains('rail-sep') && !c.classList.contains('tb-sep') && getItemId(c),
-      );
-
-      const seps = Array.from(container.children)
-        .map((c, idx) =>
-          c.classList.contains('rail-sep') || c.classList.contains('tb-sep')
-            ? { node: c, idx }
-            : null,
-        )
-        .filter(Boolean);
+      let sepCount = 0;
+      for (const c of Array.from(container.children)) {
+        if (c.classList.contains('rail-sep') || c.classList.contains('tb-sep')) {
+          c.dataset.sepId = `sep:${sepCount++}`;
+        }
+      }
+      const items = Array.from(container.children).filter((c) => getItemId(c));
 
       if (Array.isArray(saved[key])) {
         const byId = new Map(items.map((n) => [getItemId(n), n]));
@@ -7213,11 +7210,6 @@
         }
         for (const n of items) {
           if (!saved[key].includes(getItemId(n))) container.appendChild(n);
-        }
-        for (const { node, idx } of seps) {
-          const ref = container.children[idx];
-          if (ref) container.insertBefore(node, ref);
-          else container.appendChild(node);
         }
       }
 
