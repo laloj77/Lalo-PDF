@@ -234,7 +234,7 @@
           el.markupBar.hidden = true;
           el.markupBar.classList.remove('closing');
         }
-      }, 210);
+      }, 350);
     }
     el.viewer.classList.toggle('markup-open', state.markupOpen);
     el.viewer.classList.toggle('tool-active', state.markupOpen && state.tool !== 'select');

@@ -816,7 +816,7 @@ body.thumb-dragging * {
   border: 1px solid var(--sep);
   border-top: none;
   box-shadow: var(--card-shadow);
-  animation: bar-slide-down 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: bar-slide-down 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   max-width: calc(100% - 20px);
   flex-wrap: wrap;
   justify-content: center;
@@ -835,7 +835,7 @@ body.thumb-dragging * {
 }
 
 #markup-bar.closing {
-  animation: bar-slide-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  animation: bar-slide-up 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes bar-slide-up {
