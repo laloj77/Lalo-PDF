@@ -4631,7 +4631,22 @@
           openPdfDialog();
           break;
         case 'open-file':
-          if (payload && payload.bytes) openFiles([payload]);
+          if (payload && payload.bytes) {
+            (async () => {
+              if (payload.path) {
+                ensureActiveTab();
+                const existing = docTabs.find((t) => t.filePath === payload.path);
+                if (existing) {
+                  await switchTab(existing.id);
+                  return;
+                }
+              }
+              if (state.pages.length > 0) {
+                await newBlankTab();
+              }
+              await openFiles([payload]);
+            })();
+          }
           break;
         case 'add-pdf':
           addPdfDialog();

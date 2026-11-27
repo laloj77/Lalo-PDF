@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.3] - 2026-11-27
+
+### Mejorado
+
+- **Abrir PDFs en nueva pestaña al hacer doble clic:** si ya hay un documento abierto en Lalo PDF y se abre otro PDF desde el explorador (doble clic), se abre automáticamente en una nueva pestaña (o cambia a su pestaña si ya estaba abierto) en lugar de reemplazar el documento actual.
+
 ## [0.8.2] - 2026-11-27
 
 ### Añadido
