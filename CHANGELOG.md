@@ -7,6 +7,12 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.7.1] - 2026-11-27
+
+### Corregido
+
+- **Esquina de scroll blanca:** ocultado el cuadrado blanco en la esquina inferior derecha del visor (`::-webkit-scrollbar-corner { background: transparent; }`).
+
 ## [0.7.0] - 2026-11-27
 
 ### Añadido
