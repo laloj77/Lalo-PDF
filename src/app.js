@@ -256,8 +256,14 @@
   }
 
   function updateUndoButtons() {
-    el.btnUndo.disabled = state.history.length === 0;
-    el.btnRedo.disabled = state.future.length === 0;
+    const noUndo = state.history.length === 0;
+    const noRedo = state.future.length === 0;
+    el.btnUndo.disabled = noUndo;
+    el.btnRedo.disabled = noRedo;
+    const railUndo = $('#btn-rail-undo');
+    const railRedo = $('#btn-rail-redo');
+    if (railUndo) railUndo.disabled = noUndo;
+    if (railRedo) railRedo.disabled = noRedo;
   }
 
   /* ---------------------------------------------------------------- history */
@@ -3878,6 +3884,8 @@
     });
     el.btnUndo.addEventListener('click', undo);
     el.btnRedo.addEventListener('click', redo);
+    $('#btn-rail-undo')?.addEventListener('click', undo);
+    $('#btn-rail-redo')?.addEventListener('click', redo);
     $('#btn-markup-done').addEventListener('click', () => toggleMarkup(false));
 
     el.searchInput.addEventListener('input', () => {
