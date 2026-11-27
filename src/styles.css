@@ -2555,3 +2555,7 @@ body.theme-transitioning * {
     border-color 0.28s ease,
     box-shadow 0.28s ease !important;
 }
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
