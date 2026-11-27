@@ -802,24 +802,36 @@ body.thumb-dragging * {
 #markup-bar {
   position: absolute;
   z-index: 20;
-  top: 12px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border-radius: 11px;
+  border-radius: 0 0 11px 11px;
   background: var(--toolbar-bg);
   backdrop-filter: saturate(180%) blur(22px);
   -webkit-backdrop-filter: saturate(180%) blur(22px);
   border: 1px solid var(--sep);
+  border-top: none;
   box-shadow: var(--card-shadow);
-  animation: bar-in 0.16s ease both;
+  animation: bar-slide-down 0.24s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   max-width: calc(100% - 20px);
   flex-wrap: wrap;
   justify-content: center;
   row-gap: 4px;
+}
+
+@keyframes bar-slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @keyframes bar-in {
