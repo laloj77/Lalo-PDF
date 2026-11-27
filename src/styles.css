@@ -1378,6 +1378,7 @@ body.thumb-dragging * {
 #pagenum-modal,
 #split-modal,
 #compress-modal,
+#crop-modal,
 #ocr-modal {
   position: fixed;
   inset: 0;
