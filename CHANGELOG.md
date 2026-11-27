@@ -7,6 +7,16 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.8.2] - 2026-11-27
+
+### Añadido
+
+- **Barra de progreso minimalista al actualizar:** indicador discreto en la barra de estado (`Actualizando… XX%` / `Instalando…`) y progreso en el icono de la barra de tareas de Windows durante la descarga de actualizaciones.
+
+### Corregido
+
+- **Abrir PDF por defecto (doble clic en Windows):** corregido el momento en que se abre el archivo pasado por argumento al iniciar la app (`openPathInWindow` justo tras resolver `loadURL`), evitando que el evento `did-finish-load` se registrara demasiado tarde.
+
 ## [0.8.0] - 2026-11-27
 
 ### Añadido
