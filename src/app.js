@@ -1962,11 +1962,11 @@
       );
     } else if (annotation.type === 'redact') {
       ctx.fillStyle = '#000000';
-      ctx.fillRect(annotation.x * w, annotation.y * h, annotation.w * w, annotation.h * h);
+      ctx.fillRect(annotation.x * width, annotation.y * height, annotation.w * width, annotation.h * height);
       ctx.strokeStyle = '#ff453a';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 3]);
-      ctx.strokeRect(annotation.x * w, annotation.y * h, annotation.w * w, annotation.h * h);
+      ctx.strokeRect(annotation.x * width, annotation.y * height, annotation.w * width, annotation.h * height);
     } else if (annotation.type === 'rect') {
       ctx.strokeStyle = annotation.color;
       ctx.lineWidth = thickness;
