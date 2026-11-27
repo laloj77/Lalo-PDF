@@ -311,6 +311,7 @@
       redrawAllOverlays();
       updateThumbSelection();
       updateStatus();
+      updateUndoButtons();
     }
   }
 
@@ -321,8 +322,10 @@
       return;
     }
     state.future.push({ ...snapshot(entry.structural), structural: entry.structural });
+    updateUndoButtons();
     await restoreSnapshot(entry);
     setDirty(true);
+    updateUndoButtons();
   }
 
   async function redo() {
@@ -332,8 +335,10 @@
       return;
     }
     state.history.push({ ...snapshot(entry.structural), structural: entry.structural });
+    updateUndoButtons();
     await restoreSnapshot(entry);
     setDirty(true);
+    updateUndoButtons();
   }
 
   /* ------------------------------------------------------------ doc model */
