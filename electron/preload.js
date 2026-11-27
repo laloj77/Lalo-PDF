@@ -68,4 +68,6 @@ contextBridge.exposeInMainWorld('lalo', {
     return () => ipcRenderer.removeListener('app:update-progress', listener);
   },
   setTheme: (theme) => ipcRenderer.invoke('app:set-theme', theme),
+  pickCert: () => ipcRenderer.invoke('pdf:pickCert'),
+  signDigital: (payload) => ipcRenderer.invoke('pdf:signDigital', payload),
 });

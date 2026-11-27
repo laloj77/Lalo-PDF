@@ -1558,3 +1558,51 @@ app.on('window-all-closed', () => {
   armForceQuit();
   app.quit();
 });
+
+ipcMain.handle('pdf:pickCert', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+  const res = await dialog.showOpenDialog(win, {
+    title: 'Seleccionar certificado digital (.pfx / .p12)',
+    properties: ['openFile'],
+    filters: [{ name: 'Certificados PKCS#12', extensions: ['pfx', 'p12'] }],
+  });
+  if (res.canceled || !res.filePaths.length) return { canceled: true };
+  const filePath = res.filePaths[0];
+  return { canceled: false, filePath, name: path.basename(filePath) };
+});
+
+ipcMain.handle('pdf:signDigital', async (event, payload) => {
+  try {
+    const { pdfBytes, certPath, password, reason, location, defaultName } = payload || {};
+    if (!pdfBytes || !certPath) throw new Error('Faltan datos para firmar el documento.');
+    const win = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow();
+    const saveRes = await dialog.showSaveDialog(win, {
+      title: 'Guardar PDF firmado',
+      defaultPath: defaultName || 'documento_firmado.pdf',
+      filters: [{ name: 'PDF', extensions: ['pdf'] }],
+    });
+    if (saveRes.canceled || !saveRes.filePath) return { canceled: true };
+
+    const { PDFDocument } = require('pdf-lib');
+    const signpdf = require('@signpdf/signpdf').default;
+    const { P12Signer } = require('@signpdf/signer-p12');
+    const { pdflibAddPlaceholder } = require('@signpdf/placeholder-pdf-lib');
+
+    const p12Buffer = fs.readFileSync(certPath);
+    const pdfDoc = await PDFDocument.load(Buffer.from(pdfBytes));
+    pdflibAddPlaceholder({
+      pdfDoc,
+      reason: reason || 'Firmado digitalmente con Lalo PDF',
+      contactInfo: '',
+      name: 'Lalo PDF',
+      location: location || '',
+    });
+    const pdfWithPlaceholder = await pdfDoc.save({ useObjectStreams: false });
+    const signer = new P12Signer(p12Buffer, { passphrase: password || '' });
+    const signedPdf = await signpdf.sign(Buffer.from(pdfWithPlaceholder), signer);
+    fs.writeFileSync(saveRes.filePath, signedPdf);
+    return { canceled: false, ok: true, outputPath: saveRes.filePath };
+  } catch (err) {
+    return { canceled: false, ok: false, error: err.message || String(err) };
+  }
+});

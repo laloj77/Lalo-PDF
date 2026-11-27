@@ -213,6 +213,9 @@
           <button id="btn-ocr" class="pill-btn" title="Reconocimiento de texto (OCR)">
             <span>OCR</span>
           </button>
+          <button id="btn-sign-digital" class="pill-btn" title="Firmar digitalmente con certificado (.pfx / .p12)">
+            <span>Firmar (.pfx)</span>
+          </button>
         </div>
 
         <span class="tb-sep" aria-hidden="true"></span>
@@ -841,6 +844,40 @@
           <div id="compare-text" class="compare-text"></div>
         </aside>
       </div>
+    </div>
+
+    <div id="digital-sign-modal" class="modal-backdrop" hidden>
+      <form id="digital-sign-form" class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="dsign-title">
+        <div class="modal-head">
+          <h2 id="dsign-title">Firma digital (.pfx / .p12)</h2>
+          <button type="button" id="dsign-close" class="mini-btn" title="Cerrar"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p class="modal-desc">Firma criptográficamente el PDF con tu certificado personal.</p>
+        <div class="modal-field">
+          <label>Certificado (.pfx / .p12)</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button type="button" id="dsign-pick-cert" class="pill-btn">Elegir certificado…</button>
+            <span id="dsign-cert-name" style="font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Ninguno seleccionado</span>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="dsign-password">Contraseña del certificado</label>
+          <input id="dsign-password" type="password" autocomplete="off" placeholder="Contraseña" />
+        </div>
+        <div class="modal-field">
+          <label for="dsign-reason">Motivo (opcional)</label>
+          <input id="dsign-reason" type="text" placeholder="Ej. Aprobado / Conforme" />
+        </div>
+        <div class="modal-field">
+          <label for="dsign-location">Ubicación (opcional)</label>
+          <input id="dsign-location" type="text" placeholder="Ej. Madrid, España" />
+        </div>
+        <p id="dsign-error" class="modal-error" hidden></p>
+        <div class="modal-foot" style="display:flex;justify-content:space-between;margin-top:14px;">
+          <button type="button" id="dsign-cancel" class="pill-btn">Cancelar</button>
+          <button type="submit" id="dsign-apply" class="pill-btn primary">Firmar y guardar</button>
+        </div>
+      </form>
     </div>
 
     <div id="crop-modal" class="modal-backdrop" hidden>

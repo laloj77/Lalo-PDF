@@ -6343,6 +6343,82 @@
     }, true);
   }
 
+  /* --------------------------------------------------------- digital sign */
+
+  let dsignCertPath = null;
+
+  function openDigitalSignModal() {
+    if (!state.pages.length) {
+      toast('Abre un PDF antes de firmar');
+      return;
+    }
+    dsignCertPath = null;
+    $('#dsign-cert-name').textContent = 'Ninguno seleccionado';
+    $('#dsign-password').value = '';
+    $('#dsign-reason').value = '';
+    $('#dsign-location').value = '';
+    const err = $('#dsign-error');
+    if (err) {
+      err.textContent = '';
+      err.hidden = true;
+    }
+    $('#digital-sign-modal').hidden = false;
+  }
+
+  function bindDigitalSignModal() {
+    $('#btn-sign-digital')?.addEventListener('click', openDigitalSignModal);
+    const modal = $('#digital-sign-modal');
+    const form = $('#digital-sign-form');
+    if (!modal || !form) return;
+    const close = () => {
+      modal.hidden = true;
+    };
+    $('#dsign-close')?.addEventListener('click', close);
+    $('#dsign-cancel')?.addEventListener('click', close);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) close();
+    });
+    $('#dsign-pick-cert')?.addEventListener('click', async () => {
+      const res = await window.lalo.pickCert();
+      if (!res || res.canceled) return;
+      dsignCertPath = res.filePath;
+      $('#dsign-cert-name').textContent = res.name;
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = $('#dsign-error');
+      err.hidden = true;
+      if (!dsignCertPath) {
+        err.textContent = 'Selecciona primero un certificado .pfx o .p12.';
+        err.hidden = false;
+        return;
+      }
+      setBusy(true);
+      try {
+        const doc = await buildDocument();
+        const pdfBytes = await doc.save();
+        const base = (state.fileName || 'documento.pdf').replace(/\.pdf$/i, '');
+        const res = await window.lalo.signDigital({
+          pdfBytes,
+          certPath: dsignCertPath,
+          password: $('#dsign-password').value,
+          reason: $('#dsign-reason').value.trim(),
+          location: $('#dsign-location').value.trim(),
+          defaultName: `${base}_firmado.pdf`,
+        });
+        if (res?.canceled) return;
+        if (!res?.ok) throw new Error(res?.error || 'Error al firmar el PDF');
+        close();
+        toast('PDF firmado digitalmente');
+      } catch (error) {
+        err.textContent = error.message || 'No se pudo firmar el PDF.';
+        err.hidden = false;
+      } finally {
+        setBusy(false);
+      }
+    });
+  }
+
   function bindCropModal() {
     $('#btn-crop-pages')?.addEventListener('click', openCropModal);
     const modal = $('#crop-modal');
@@ -7340,6 +7416,7 @@
     bindPageNumbersModal();
     bindSplitModal();
     bindCompare();
+    bindDigitalSignModal();
     bindCropModal();
     bindCompressModal();
     bindSidebarTabs();
