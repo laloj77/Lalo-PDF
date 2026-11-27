@@ -102,7 +102,7 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [ ] **Sin barra de archivo** (menú superior *Archivo / Editar / Ver…* en Windows).
 - [x] ~~**Actualizar no funciona**.~~
-- [ ] **Abrir PDF por defecto:** si se asigna la app como visor predeterminado para `.pdf`, al hacer doble clic en un PDF abre el programa, pero vacío, sin el PDF.
+- [x] ~~**Abrir PDF por defecto:** si se asigna la app como visor predeterminado para `.pdf`, al hacer doble clic en un PDF abre el programa, pero vacío, sin el PDF.~~
 
 ---
 

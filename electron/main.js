@@ -352,12 +352,11 @@ async function createWindow() {
 
   await mainWindow.loadURL(`${APP_SCHEME}://app/index.html`);
 
-  mainWindow.webContents.once('did-finish-load', () => {
-    if (!pendingOpenPath) return;
+  if (pendingOpenPath) {
     const filePath = pendingOpenPath;
     pendingOpenPath = null;
     openPathInWindow(filePath);
-  });
+  }
 }
 
 function toBuffer(bytes) {
