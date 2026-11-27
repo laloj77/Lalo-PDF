@@ -1529,7 +1529,7 @@
 
   function computeScale(baseViewport, count) {
     if (state.zoomMode === 'custom') return clamp(state.scale, 0.1, 8);
-    const availWidth = Math.max(180, el.viewer.clientWidth - 64);
+    const availWidth = Math.max(180, el.viewer.clientWidth - 76);
     const availHeight = Math.max(180, el.viewer.clientHeight - 56);
     const twoUp = state.viewMode === 'two' && count > 1;
     const widthScale = (twoUp ? (availWidth - 4) / 2 : availWidth) / baseViewport.width;

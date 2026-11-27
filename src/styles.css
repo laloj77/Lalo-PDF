@@ -2021,6 +2021,7 @@ body.presentation-mode #viewer-wrap {
 #thumbs::-webkit-scrollbar,
 #search-results::-webkit-scrollbar {
   width: 11px;
+  height: 11px;
 }
 
 #viewer::-webkit-scrollbar-thumb,
