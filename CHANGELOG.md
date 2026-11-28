@@ -7,6 +7,14 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.9.2] - 2026-11-28
+
+### Mejorado
+
+- **Rendimiento y memoria ([src/app.js](src/app.js)):**
+  - Liberación automática de los canvases de páginas que salen del área visible (`IntersectionObserver` + `__unload`), reduciendo drásticamente el consumo de RAM/GPU en PDFs largos.
+  - Eliminada copia duplicada `file.bytes.slice()` al abrir el segundo documento en **Comparar PDFs**.
+
 ## [0.9.1] - 2026-11-28
 
 ### Mejorado

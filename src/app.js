@@ -1632,7 +1632,8 @@
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting && entry.target.__render) entry.target.__render();
+          if (entry.isIntersecting) entry.target.__render?.();
+          else entry.target.__unload?.();
         }
       },
       { root: el.viewer, rootMargin: '800px 0px' },
@@ -1943,12 +1944,22 @@
 
     wrapper.append(canvas, overlay, textLayer, imageLayer, formLayer, badge);
 
+    const targetW = canvas.width;
+    const targetH = canvas.height;
     let rendered = false;
     let rendering = false;
+    wrapper.__unload = () => {
+      if (!rendered || rendering) return;
+      canvas.width = 0;
+      canvas.height = 0;
+      rendered = false;
+    };
     wrapper.__render = async () => {
       if (rendered || rendering) return;
       rendering = true;
       try {
+        if (canvas.width !== targetW) canvas.width = targetW;
+        if (canvas.height !== targetH) canvas.height = targetH;
         const ctx = canvas.getContext('2d');
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.fillStyle = '#ffffff';
@@ -6265,7 +6276,7 @@
     setBusy(true);
     try {
       if (compare.right) compare.right.destroy();
-      compare.right = await pdfjsLib.getDocument({ data: file.bytes.slice() }).promise;
+      compare.right = await pdfjsLib.getDocument({ data: file.bytes }).promise;
     } catch (error) {
       setBusy(false);
       toast(`No se pudo leer el PDF: ${error.message}`, 6000);
