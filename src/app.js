@@ -5978,7 +5978,6 @@
       const newBytes = await outDoc.save();
       const sourceId = uid('src');
       const pdfDoc = await pdfjsLib.getDocument({ data: newBytes.slice() }).promise;
-      state.sources.clear();
       state.sources.set(sourceId, {
         id: sourceId,
         name: state.fileName || 'Documento.pdf',
