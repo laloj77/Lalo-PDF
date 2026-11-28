@@ -113,6 +113,13 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🐛 Errores conocidos
 
+- [ ] **Recortar (Crop) no se deshace:** tras usar Recortar, la función Deshacer no revierte el cambio.
+- [ ] **Arrastrar PDF con otro abierto:** al arrastrar un PDF al visor con uno ya abierto no se abre en una pestaña nueva (solo debe añadirse al final si se arrastra a la barra de miniaturas).
+- [ ] **Herramienta de figuras se deselecciona:** tras dibujar una figura (cuadrado, flecha, etc.), vuelve automáticamente a "Seleccionar" en lugar de mantener la última herramienta activa.
+- [ ] **Rehacer firma manuscrita:** Deshacer elimina la firma manuscrita correctamente, pero Rehacer no la vuelve a mostrar.
+- [ ] **Marca de agua personalizable:** permitir seleccionarla y moverla libremente como una imagen (manteniendo la posición actual por defecto) y elegir alcance (todas las páginas, seleccionadas o actual).
+- [ ] **Márgenes internos del cuadro de texto:** al alinear el texto a la izquierda o a la derecha queda muy pegado al borde del recuadro.
+- [ ] **Color de fuente en cuadro de texto:** no se puede escoger el color del texto en el recuadro de texto.
 - [ ] **Sin barra de archivo** (menú superior *Archivo / Editar / Ver…* en Windows).
 - [x] ~~**Actualizar no funciona**.~~
 - [x] ~~**Abrir PDF por defecto:** si se asigna la app como visor predeterminado para `.pdf`, al hacer doble clic en un PDF abre el programa, pero vacío, sin el PDF.~~
