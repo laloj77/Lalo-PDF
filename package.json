@@ -49,8 +49,22 @@
     "files": [
       "electron/**/*",
       "src/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map",
+      "!**/*.d.ts",
+      "!**/README*",
+      "!**/CHANGELOG*",
+      "!**/LICENSE*",
+      "!**/test/**",
+      "!**/tests/**",
+      "!**/docs/**",
+      "!**/examples/**",
+      "!node_modules/pdfjs-dist/legacy/**",
+      "!node_modules/pdfjs-dist/web/**",
+      "!node_modules/pdf-lib/umd/**",
+      "!node_modules/pdf-lib/es/**"
     ],
+    "compression": "maximum",
     "extraResources": [
       {
         "from": "vendor-win/python",
