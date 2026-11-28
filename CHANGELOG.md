@@ -7,6 +7,15 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.9.3] - 2026-11-28
+
+### Mejorado
+
+- **Modularización inicial (`src/modules/`):**
+  - Creado [src/modules/utils.js](src/modules/utils.js) (`window.LaloUtils`: `clamp`, `escapeHtml`).
+  - Creado [src/modules/tools-menu.js](src/modules/tools-menu.js) (`window.LaloToolsMenu`: `bindToolsMenu`).
+  - Cargados en [src/index.html](src/index.html) antes de [src/app.js](src/app.js), estableciendo la base modular sin alterar el comportamiento del visor.
+
 ## [0.9.2] - 2026-11-28
 
 ### Mejorado

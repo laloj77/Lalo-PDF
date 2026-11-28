@@ -87,8 +87,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 - [x] ~~**Optimizar rendimiento y memoria**~~
   - ~~Evitar copias innecesarias de bytes del PDF en memoria, liberar canvases/miniaturas fuera de pantalla en documentos largos y acelerar el renderizado al cambiar de página o hacer zoom.~~
-- [ ] **Modularizar `src/app.js`**
-  - Dividir `src/app.js` (+7.600 líneas) en módulos por responsabilidad (visor, anotaciones, herramientas PDF, modales, pestañas/historial) para facilitar el mantenimiento y evitar colisiones de nombres.
+- [x] ~~**Modularizar `src/app.js`**~~
+  - ~~Dividir `src/app.js` (+7.600 líneas) en módulos por responsabilidad (visor, anotaciones, herramientas PDF, modales, pestañas/historial) para facilitar el mantenimiento y evitar colisiones de nombres.~~
 - [x] ~~**Optimizar tamaño en disco y ligereza**~~
   - ~~Reducir el peso de la aplicación y del instalador/portable revisando dependencias y recursos empaquetados (`tesseract.js`, `vendor-win/python`, `asar`).~~
 

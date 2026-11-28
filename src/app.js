@@ -20,7 +20,7 @@
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  const { clamp } = window.LaloUtils;
   const uid = (prefix = 'id') =>
     `${prefix}_${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-3)}`;
   const normAngle = (angle) => ((Math.round(angle || 0) % 360) + 360) % 360;
@@ -6375,27 +6375,7 @@
     $('#digital-sign-modal').hidden = false;
   }
 
-  function bindToolsMenu() {
-    const wrap = $('#tools-menu-wrap');
-    const btn = $('#btn-tools');
-    const menu = $('#tools-menu');
-    if (!wrap || !btn || !menu) return;
-    const setOpen = (open) => {
-      menu.hidden = !open;
-      btn.setAttribute('aria-expanded', String(open));
-    };
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      setOpen(menu.hidden);
-    });
-    menu.addEventListener('click', () => setOpen(false));
-    document.addEventListener('click', (e) => {
-      if (!menu.hidden && !wrap.contains(e.target)) setOpen(false);
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !menu.hidden) setOpen(false);
-    });
-  }
+  const bindToolsMenu = () => window.LaloToolsMenu?.bindToolsMenu($);
 
   function bindDigitalSignModal() {
     $('#btn-sign-digital')?.addEventListener('click', openDigitalSignModal);
