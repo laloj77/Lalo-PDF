@@ -4585,7 +4585,7 @@
         if (!selText && state.selection) {
           const ann = getAnnotation(state.selection.pageId, state.selection.id);
           if (ann) {
-            copiedAnnotation = JSON.parse(JSON.stringify(ann));
+            copiedAnnotation = { ...JSON.parse(JSON.stringify(ann)), ...(ann.image ? { image: ann.image } : {}) };
             event.preventDefault();
             toast('Figura copiada');
             return;
@@ -4597,7 +4597,7 @@
           const page = state.pages[state.current] || state.pages[0];
           const pageId = page.id;
           pushHistory(false);
-          const clone = JSON.parse(JSON.stringify(copiedAnnotation));
+          const clone = { ...JSON.parse(JSON.stringify(copiedAnnotation)), ...(copiedAnnotation.image ? { image: copiedAnnotation.image } : {}) };
           clone.id = uid('ann');
           const d = 0.02;
           if (typeof clone.x === 'number') clone.x = clamp(clone.x + d, 0, 0.95);
@@ -4613,7 +4613,7 @@
           list.push(clone);
           state.annotations.set(pageId, list);
           state.selection = { pageId, id: clone.id };
-          copiedAnnotation = JSON.parse(JSON.stringify(clone));
+          copiedAnnotation = { ...JSON.parse(JSON.stringify(clone)), ...(clone.image ? { image: clone.image } : {}) };
           setDirty(true);
           const ov = document.querySelector(`.page-overlay[data-page-id="${pageId}"]`);
           if (ov) paintOverlay(ov, pageId, ov.clientWidth, ov.clientHeight);
