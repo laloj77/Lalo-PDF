@@ -3252,7 +3252,7 @@
       state.annotations.set(pageId, annotations);
       setDirty(true);
 
-      // Tras dibujar una forma queda seleccionada para moverla o redimensionarla.
+      // Tras dibujar una forma queda seleccionada, manteniendo la herramienta activa.
       if (
         annotation.type === 'rect' ||
         annotation.type === 'redact' ||
@@ -3260,8 +3260,6 @@
         isLine
       ) {
         state.selection = { pageId, id: annotation.id };
-        state.tool = 'select';
-        updateToolbarState();
       }
       paintOverlay(overlay, pageId, current.width, current.height);
     };
@@ -3908,7 +3906,10 @@
       return;
     }
     if (!state.pages.length) await openFiles(prepared);
-    else await appendFiles(prepared);
+    else {
+      await createNewTab();
+      await openFiles(prepared);
+    }
   }
 
   async function showAbout() {
