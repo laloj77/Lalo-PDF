@@ -3884,7 +3884,7 @@
     }
   }
 
-  async function handleDroppedFiles(files) {
+  async function handleDroppedFiles(files, onThumbs = false) {
     const prepared = [];
     for (const file of files) {
       if (!isPdf(file) && !isImage(file)) continue;
@@ -3906,6 +3906,7 @@
       return;
     }
     if (!state.pages.length) await openFiles(prepared);
+    else if (onThumbs) await appendFiles(prepared);
     else {
       await createNewTab();
       await openFiles(prepared);
@@ -4534,7 +4535,8 @@
       const files = Array.from(event.dataTransfer?.files || []);
       if (!files.length) return;
       event.preventDefault();
-      await handleDroppedFiles(files);
+      const onThumbs = Boolean(event.target?.closest?.('#sidebar, #thumbs'));
+      await handleDroppedFiles(files, onThumbs);
     });
 
     window.addEventListener('keydown', (event) => {
