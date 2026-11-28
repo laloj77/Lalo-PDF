@@ -5225,6 +5225,17 @@
   let wmBackup = null;
 
   function syncWatermarkFromModal() {
+    const scope = $('#wm-scope')?.value || 'all';
+    const pageIds =
+      scope === 'current'
+        ? [state.pages[state.current]?.id].filter(Boolean)
+        : scope === 'selected'
+          ? Array.from(state.selected)
+              .map((i) => state.pages[i]?.id)
+              .filter(Boolean)
+          : null;
+    const x = (Number($('#wm-pos-x')?.value) || 50) / 100;
+    const y = (Number($('#wm-pos-y')?.value) || 50) / 100;
     if (wmMode === 'image') {
       if (!wmImageData) return;
       state.watermark = {
@@ -5234,6 +5245,9 @@
         size: Number($('#wm-size').value) || 54,
         rotation: Number($('#wm-rotation').value) || 0,
         opacity: clamp(Number($('#wm-opacity').value) / 100, 0.05, 1),
+        x,
+        y,
+        pageIds,
       };
     } else {
       const text = $('#wm-text').value.trim();
@@ -5243,6 +5257,9 @@
         state.watermark = {
           kind: 'text',
           text,
+          x,
+          y,
+          pageIds,
           color: $('#wm-color').value,
           size: Number($('#wm-size').value) || 54,
           rotation: Number($('#wm-rotation').value) || 0,
