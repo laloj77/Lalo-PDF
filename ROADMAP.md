@@ -113,7 +113,8 @@ Este documento contiene la lista completa de características planificadas, prio
 
 ## 🐛 Errores conocidos
 
-- [ ] **Recortar (Crop) no se deshace:** tras usar Recortar, la función Deshacer no revierte el cambio.
+- [x] ~~**Recortar (Crop) no se deshace:** tras usar Recortar, la función Deshacer no revierte el cambio.~~
+- [x] ~~**Aplicar recorte con Intro:** permitir confirmar el modal de Recortar pulsando la tecla Intro.~~
 - [ ] **Arrastrar PDF con otro abierto:** al arrastrar un PDF al visor con uno ya abierto no se abre en una pestaña nueva (solo debe añadirse al final si se arrastra a la barra de miniaturas).
 - [ ] **Herramienta de figuras se deselecciona:** tras dibujar una figura (cuadrado, flecha, etc.), vuelve automáticamente a "Seleccionar" en lugar de mantener la última herramienta activa.
 - [ ] **Rehacer firma manuscrita:** Deshacer elimina la firma manuscrita correctamente, pero Rehacer no la vuelve a mostrar.
