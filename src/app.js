@@ -2919,7 +2919,7 @@
           annotation.x2 * width,
           annotation.y2 * height,
         ) <=
-        Math.max(7, thickness / 2 + 5)
+        Math.max(14, thickness / 2 + 10)
       );
     }
     if (annotation.type === 'pen') {
