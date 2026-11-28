@@ -1032,7 +1032,7 @@
       } else {
         await flattenAnnotations(doc, pages[i], models[i], font);
       }
-      if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
+      if (state.watermark && (state.watermark.text || state.watermark.dataUrl) && (!state.watermark.pageIds || state.watermark.pageIds.includes(model.id))) {
         const wm = state.watermark;
         const page = pages[i];
         const { width, height } = page.getSize();
@@ -2378,11 +2378,11 @@
       }
     }
 
-    if (state.watermark && (state.watermark.text || state.watermark.dataUrl)) {
+    if (state.watermark && (state.watermark.text || state.watermark.dataUrl) && (!state.watermark.pageIds || state.watermark.pageIds.includes(pageId))) {
       const wm = state.watermark;
       ctx.save();
       ctx.globalAlpha = wm.opacity;
-      ctx.translate(width / 2, height / 2);
+      ctx.translate(width * (wm.x ?? 0.5), height * (wm.y ?? 0.5));
       ctx.rotate((wm.rotation * Math.PI) / 180);
       if (wm.kind === 'image' && wm.dataUrl) {
         let img = wm.__img;
@@ -5325,6 +5325,8 @@
       $('#wm-rot-val').textContent = e.target.value;
       syncWatermarkFromModal();
     });
+    $('#wm-pos-x')?.addEventListener('input', (e) => { $('#wm-x-val').textContent = e.target.value; });
+    $('#wm-pos-y')?.addEventListener('input', (e) => { $('#wm-y-val').textContent = e.target.value; });
     $('#wm-opacity').addEventListener('input', (e) => {
       $('#wm-op-val').textContent = e.target.value;
       syncWatermarkFromModal();

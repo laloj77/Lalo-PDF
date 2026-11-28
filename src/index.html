@@ -689,6 +689,24 @@
           <label for="wm-opacity">Opacidad (<span id="wm-op-val">22</span>%)</label>
           <input id="wm-opacity" type="range" min="5" max="100" value="22" />
         </div>
+        <div class="modal-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="modal-field">
+            <label for="wm-pos-x">Posición X (<span id="wm-x-val">50</span>%)</label>
+            <input id="wm-pos-x" type="range" min="5" max="95" value="50" />
+          </div>
+          <div class="modal-field">
+            <label for="wm-pos-y">Posición Y (<span id="wm-y-val">50</span>%)</label>
+            <input id="wm-pos-y" type="range" min="5" max="95" value="50" />
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="wm-scope">Aplicar a</label>
+          <select id="wm-scope">
+            <option value="all">Todas las páginas</option>
+            <option value="current">Solo página actual</option>
+            <option value="selected">Páginas seleccionadas</option>
+          </select>
+        </div>
         <div class="modal-actions">
           <button type="button" id="wm-clear" class="pill-btn" hidden>Quitar</button>
           <span class="modal-spacer"></span>
