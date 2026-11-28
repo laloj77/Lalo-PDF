@@ -5325,8 +5325,14 @@
       $('#wm-rot-val').textContent = e.target.value;
       syncWatermarkFromModal();
     });
-    $('#wm-pos-x')?.addEventListener('input', (e) => { $('#wm-x-val').textContent = e.target.value; });
-    $('#wm-pos-y')?.addEventListener('input', (e) => { $('#wm-y-val').textContent = e.target.value; });
+    $('#wm-pos-x')?.addEventListener('input', (e) => {
+      $('#wm-x-val').textContent = e.target.value;
+      if (state.watermark) { state.watermark.x = Number(e.target.value) / 100; redrawAllOverlays(); }
+    });
+    $('#wm-pos-y')?.addEventListener('input', (e) => {
+      $('#wm-y-val').textContent = e.target.value;
+      if (state.watermark) { state.watermark.y = Number(e.target.value) / 100; redrawAllOverlays(); }
+    });
     $('#wm-opacity').addEventListener('input', (e) => {
       $('#wm-op-val').textContent = e.target.value;
       syncWatermarkFromModal();
