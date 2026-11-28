@@ -121,7 +121,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [x] ~~**Herramienta de figuras se deselecciona:** tras dibujar una figura (cuadrado, flecha, etc.), vuelve automáticamente a "Seleccionar" en lugar de mantener la última herramienta activa.~~
 - [ ] **Rehacer firma manuscrita:** Deshacer elimina la firma manuscrita correctamente, pero Rehacer no la vuelve a mostrar.
 - [ ] **Marca de agua personalizable:** permitir seleccionarla y moverla libremente como una imagen (manteniendo la posición actual por defecto) y elegir alcance (todas las páginas, seleccionadas o actual).
-- [ ] **Márgenes internos del cuadro de texto:** al alinear el texto a la izquierda o a la derecha queda muy pegado al borde del recuadro.
+- [x] ~~**Márgenes internos del cuadro de texto:** al alinear el texto a la izquierda o a la derecha queda muy pegado al borde del recuadro.~~
 - [ ] **Color de fuente en cuadro de texto:** no se puede escoger el color del texto en el recuadro de texto.
 - [ ] **Sin barra de archivo** (menú superior *Archivo / Editar / Ver…* en Windows).
 - [x] ~~**Actualizar no funciona**.~~
