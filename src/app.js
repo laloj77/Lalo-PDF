@@ -2983,7 +2983,43 @@
       updateStatus();
     };
 
+    let suppressContextMenu = false;
+    overlay.addEventListener('contextmenu', (e) => {
+      if (suppressContextMenu) {
+        suppressContextMenu = false;
+        e.preventDefault();
+      }
+    });
+
     overlay.addEventListener('pointerdown', (event) => {
+      if (event.button === 2 && state.markupOpen) {
+        const point = pointFor(event);
+        const hit = findAnnotationAt(pageId, point.nx, point.ny, point.rect.width, point.rect.height, scale);
+        if (hit) {
+          event.preventDefault();
+          suppressContextMenu = true;
+          ensureTextGeometry(hit, point.rect.width, point.rect.height, scale);
+          state.selection = { pageId, id: hit.id };
+          focusPage();
+          updateToolbarState();
+          try {
+            overlay.setPointerCapture(event.pointerId);
+          } catch {
+            /* ignore */
+          }
+          gesture = {
+            kind: 'move',
+            annotation: hit,
+            before: snapshot(false),
+            changed: false,
+            start: point,
+            origin: { ...hit },
+            overlay,
+          };
+          paintOverlay(overlay, pageId, point.rect.width, point.rect.height);
+        }
+        return;
+      }
       if (event.button !== 0) return;
       if (!state.markupOpen) {
         selectPage(index, event);
@@ -4539,10 +4575,52 @@
       await handleDroppedFiles(files, onThumbs);
     });
 
+    let copiedAnnotation = null;
     window.addEventListener('keydown', (event) => {
       const target = event.target;
       const typing =
-        target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
+        target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+      if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+        const selText = window.getSelection()?.toString() || '';
+        if (!selText && state.selection) {
+          const ann = getAnnotation(state.selection.pageId, state.selection.id);
+          if (ann) {
+            copiedAnnotation = JSON.parse(JSON.stringify(ann));
+            event.preventDefault();
+            toast('Figura copiada');
+            return;
+          }
+        }
+      }
+      if (!typing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'v') {
+        if (copiedAnnotation && state.pages.length) {
+          const page = state.pages[state.current] || state.pages[0];
+          const pageId = page.id;
+          pushHistory(false);
+          const clone = JSON.parse(JSON.stringify(copiedAnnotation));
+          clone.id = uid('ann');
+          const d = 0.02;
+          if (typeof clone.x === 'number') clone.x = clamp(clone.x + d, 0, 0.95);
+          if (typeof clone.y === 'number') clone.y = clamp(clone.y + d, 0, 0.95);
+          if (typeof clone.x1 === 'number') clone.x1 = clamp(clone.x1 + d, 0, 0.98);
+          if (typeof clone.y1 === 'number') clone.y1 = clamp(clone.y1 + d, 0, 0.98);
+          if (typeof clone.x2 === 'number') clone.x2 = clamp(clone.x2 + d, 0, 0.98);
+          if (typeof clone.y2 === 'number') clone.y2 = clamp(clone.y2 + d, 0, 0.98);
+          if (Array.isArray(clone.points)) {
+            clone.points = clone.points.map((pt) => ({ x: clamp(pt.x + d, 0, 1), y: clamp(pt.y + d, 0, 1) }));
+          }
+          const list = state.annotations.get(pageId) || [];
+          list.push(clone);
+          state.annotations.set(pageId, list);
+          state.selection = { pageId, id: clone.id };
+          copiedAnnotation = JSON.parse(JSON.stringify(clone));
+          setDirty(true);
+          const ov = document.querySelector(`.page-overlay[data-page-id="${pageId}"]`);
+          if (ov) paintOverlay(ov, pageId, ov.clientWidth, ov.clientHeight);
+          event.preventDefault();
+          return;
+        }
+      }
       if (event.key === 'Escape') {
         if (el.passwordModal && !el.passwordModal.hidden) {
           resolvePasswordPrompt(null);
