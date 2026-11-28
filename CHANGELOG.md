@@ -7,6 +7,13 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.9.1] - 2026-11-28
+
+### Mejorado
+
+- **Tamaño del instalador y empaquetado:** activada `compression: "maximum"` en `electron-builder` y excluidos archivos innecesarios en producción (`.map`, `.d.ts`, `README`, `test/`, `docs/`, `pdfjs-dist/legacy`, `pdfjs-dist/web`, `pdf-lib/umd`, `pdf-lib/es`).
+- **Plan de pruebas ([docs/TESTING.md](docs/TESTING.md)):** esquematizado por bloques (`A`–`F`) y apartados numerados cubriendo todas las funciones de la aplicación.
+
 ## [0.9.0] - 2026-11-27
 
 ### Mejorado

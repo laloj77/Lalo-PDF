@@ -1,4 +1,4 @@
-# Plan de Pruebas Completo — Lalo PDF (`v0.9.0`)
+# Plan de Pruebas Completo — Lalo PDF (`v0.9.1`)
 
 Este documento define las pruebas completas de **Lalo PDF** organizadas por **bloques y apartados** (`A.1`, `B.1`, etc.) para identificar rápidamente qué bloque o apartado falla en **Windows**.
 
