@@ -114,7 +114,7 @@ Este documento contiene la lista completa de características planificadas, prio
 ## 🐛 Errores conocidos
 
 - [x] ~~**Mover figuras con botón derecho:** una vez creada una figura (círculo, línea, etc.), poder arrastrarla directamente con el botón derecho del ratón.~~
-- [ ] **Copiar y pegar figuras (`Ctrl+C` / `Ctrl+V`):** permitir copiar y pegar figuras/anotaciones seleccionadas usando `Ctrl+C` y `Ctrl+V`.
+- [x] ~~**Copiar y pegar figuras (`Ctrl+C` / `Ctrl+V`):** permitir copiar y pegar figuras/anotaciones seleccionadas usando `Ctrl+C` y `Ctrl+V`.~~
 - [x] ~~**Recortar (Crop) no se deshace:** tras usar Recortar, la función Deshacer no revierte el cambio.~~
 - [x] ~~**Aplicar recorte con Intro:** permitir confirmar el modal de Recortar pulsando la tecla Intro.~~
 - [x] ~~**Arrastrar PDF con otro abierto:** al arrastrar un PDF al visor con uno ya abierto no se abre en una pestaña nueva (solo debe añadirse al final si se arrastra a la barra de miniaturas).~~
@@ -122,7 +122,7 @@ Este documento contiene la lista completa de características planificadas, prio
 - [ ] **Rehacer firma manuscrita:** Deshacer elimina la firma manuscrita correctamente, pero Rehacer no la vuelve a mostrar.
 - [ ] **Marca de agua personalizable:** permitir seleccionarla y moverla libremente como una imagen (manteniendo la posición actual por defecto) y elegir alcance (todas las páginas, seleccionadas o actual).
 - [x] ~~**Márgenes internos del cuadro de texto:** al alinear el texto a la izquierda o a la derecha queda muy pegado al borde del recuadro.~~
-- [ ] **Color de fuente en cuadro de texto:** no se puede escoger el color del texto en el recuadro de texto.
+- [x] ~~**Color de fuente en cuadro de texto:** no se puede escoger el color del texto en el recuadro de texto.~~
 - [ ] **Sin barra de archivo** (menú superior *Archivo / Editar / Ver…* en Windows).
 - [x] ~~**Actualizar no funciona**.~~
 - [x] ~~**Abrir PDF por defecto:** si se asigna la app como visor predeterminado para `.pdf`, al hacer doble clic en un PDF abre el programa, pero vacío, sin el PDF.~~
