@@ -3480,7 +3480,7 @@
           underline,
           strike,
         });
-        existing.color = state.textColor;
+        existing.color = $('#te-color')?.value || state.textColor;
         changed = true;
       }
     } else if (text.trim()) {
@@ -3502,7 +3502,7 @@
         italic,
         underline,
         strike,
-        color: state.textColor,
+        color: $('#te-color')?.value || state.textColor,
         width: state.strokeWidth,
       });
       selectedId = id;
