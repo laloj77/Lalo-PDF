@@ -3377,6 +3377,8 @@
 
     if (editing) {
       if (annotation.color) state.textColor = annotation.color;
+      const teColor = $('#te-color');
+      if (teColor) teColor.value = state.textColor;
       ensureTextGeometry(annotation, pageRect.width, pageRect.height, scale);
       el.textEditor.style.left = `${pageRect.left - wrapRect.left + annotation.x * pageRect.width}px`;
       el.textEditor.style.top = `${pageRect.top - wrapRect.top + annotation.y * pageRect.height}px`;
