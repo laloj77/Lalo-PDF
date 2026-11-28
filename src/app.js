@@ -2257,8 +2257,9 @@
         annotation.text,
         Math.max(8, box.w - pad * 2),
       );
+      const padY = Math.min(4 * scale, box.h * 0.1);
       lines.forEach((line, index) => {
-        const y = box.y + index * lineHeight;
+        const y = box.y + padY + index * lineHeight;
         if (y > box.y + box.h + lineHeight) return;
         ctx.fillText(line, textX, y);
         if (annotation.underline || annotation.strike) {
