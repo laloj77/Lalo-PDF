@@ -325,6 +325,16 @@
   async function restoreSnapshot(entry) {
     state.pages = entry.pages;
     state.annotations = new Map(entry.annotations);
+    for (const list of state.annotations.values()) {
+      for (const ann of list || []) {
+        if (ann.dataUrl && !ann.image) {
+          const img = new Image();
+          img.onload = () => redrawAllOverlays();
+          img.src = ann.dataUrl;
+          ann.image = img;
+        }
+      }
+    }
     state.selected = new Set(entry.selected);
     state.current = entry.current;
     state.selection = entry.selection ? { ...entry.selection } : null;
@@ -2231,8 +2241,13 @@
       ctx.textBaseline = 'top';
       const align = annotation.align || 'left';
       ctx.textAlign = align;
+      const pad = Math.min(6 * scale, box.w * 0.1);
       const textX =
-        align === 'center' ? box.x + box.w / 2 : align === 'right' ? box.x + box.w : box.x;
+        align === 'center'
+          ? box.x + box.w / 2
+          : align === 'right'
+            ? box.x + box.w - pad
+            : box.x + pad;
       ctx.save();
       ctx.beginPath();
       ctx.rect(box.x, box.y, Math.max(1, box.w), Math.max(1, box.h));
@@ -2240,7 +2255,7 @@
       const lines = wrapLines(
         (value) => ctx.measureText(value).width,
         annotation.text,
-        Math.max(8, box.w),
+        Math.max(8, box.w - pad * 2),
       );
       lines.forEach((line, index) => {
         const y = box.y + index * lineHeight;
