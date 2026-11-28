@@ -6440,6 +6440,12 @@
       modal.hidden = true;
     });
     $('#crop-apply')?.addEventListener('click', applyCropAndNormalize);
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !modal.hidden) {
+        e.preventDefault();
+        applyCropAndNormalize();
+      }
+    });
     for (const id of ['#crop-top', '#crop-bottom', '#crop-left', '#crop-right']) {
       $(id)?.addEventListener('input', renderCropPreview);
     }
