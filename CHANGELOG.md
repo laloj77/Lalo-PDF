@@ -7,6 +7,22 @@ y el proyecto sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Sin publicar]
 
+## [0.9.4] - 2026-11-28
+
+### Añadido
+
+- **Marca de agua personalizable:** añadidos deslizadores de posición **X / Y (%)** con vista previa en tiempo real y selector de alcance (**Todas las páginas**, **Solo página actual** o **Páginas seleccionadas**).
+- **Color de fuente en cuadro de texto:** selector nativo de color (`#te-color`) junto al tamaño de la letra en el editor de texto.
+- **Mover y copiar/pegar figuras:** arrastrar figuras/anotaciones con el botón derecho del ratón (con margen ampliado a `14 px` en líneas y flechas) y copiar/pegar con `Ctrl+C` / `Ctrl+V`.
+- **Aplicar recorte con Intro:** el modal de Recortar se puede confirmar pulsando `Enter`.
+
+### Corregido
+
+- **Deshacer Recortar:** `applyCropAndNormalize` ya no limpia `state.sources`, permitiendo deshacer el recorte.
+- **Arrastrar PDF con otro abierto:** abre el nuevo PDF en una pestaña nueva salvo si se suelta en la barra de miniaturas (donde se añade al final).
+- **Herramienta de figuras:** tras dibujar una figura se mantiene la herramienta activa en lugar de volver a "Seleccionar".
+- **Márgenes internos del cuadro de texto:** añadido margen interior horizontal y superior para que el texto no toque el borde.
+
 ## [0.9.3] - 2026-11-28
 
 ### Mejorado
